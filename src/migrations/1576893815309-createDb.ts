@@ -14,6 +14,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 use_role INTEGER NOT NULL,
                 use_description TEXT NOT NULL,
                 use_term_of_contract BOOLEAN NOT NULL,
+                use_creation_date TIMESTAMP NOT NULL,
+                use_update_date TIMESTAMP,
                 PRIMARY KEY (use_id)
             );
 
@@ -24,6 +26,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 con_number VARCHAR(13) NOT NULL,
                 con_ddd VARCHAR(3) NOT NULL,
                 con_type INTEGER NOT NULL,
+                con_creation_date TIMESTAMP NOT NULL,
+                con_update_date TIMESTAMP,
                 con_use_id INTEGER NOT NULL,
                 PRIMARY KEY (con_id),
                 FOREIGN KEY (con_use_id) REFERENCES use_user (use_id)
@@ -38,6 +42,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 adr_number VARCHAR(10) NOT NULL,
                 adr_complement TEXT NOT NULL,
                 adr_type TEXT NOT NULL,
+                adr_creation_date TIMESTAMP NOT NULL,
+                adr_update_date TIMESTAMP,
                 adr_use_id INTEGER NOT NULL,
                 PRIMARY KEY (adr_id),
                 FOREIGN KEY (adr_use_id) REFERENCES use_user (use_id)
@@ -51,6 +57,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 car_last_digits VARCHAR(4) NOT NULL,
                 car_brand TEXT NOT NULL,
                 car_getnet_id TEXT NOT NULL,
+                car_creation_date TIMESTAMP NOT NULL,
+                car_update_date TIMESTAMP,
                 car_use_id INTEGER NOT NULL,
                 PRIMARY KEY (car_id),
                 FOREIGN KEY (car_use_id) REFERENCES use_user (use_id)
@@ -65,11 +73,15 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_id SERIAL,
                 ord_card_code VARCHAR(60),
                 ord_type INTEGER NOT NULL,
+                ord_status INTEGER NOT NULL,
                 ord_total_value_cents TEXT NOT NULL,
                 ord_total_product_value_cents TEXT NOT NULL,
                 ord_total_freight_value_cents TEXT,
                 ord_get_on_market BOOLEAN,
                 ord_change_value_cents TEXT,
+                ord_creation_date TIMESTAMP NOT NULL,
+                ord_update_date TIMESTAMP,
+                ord_receive_date TIMESTAMP,
                 ord_use_id INTEGER NOT NULL,
                 ord_adr_id INTEGER,
                 PRIMARY KEY (ord_id),
@@ -79,11 +91,13 @@ export class createDb1576893815309 implements MigrationInterface {
 
             comment on column ord_order.ord_card_code is 'Código do cartão se a venda foi feita online';
             comment on column ord_order.ord_type is 'Tipo da venda (0 para dinheiro, 1 para crédito e 2 para débito)';
+            comment on column ord_order.ord_status is 'Status do pedido. (0 para pedido feito, 1 para Preparando, 2 para Entregando, 3 para Entregue)';
             comment on column ord_order.ord_total_value_cents is 'Valor total da venda';
             comment on column ord_order.ord_total_product_value_cents is 'Valor total dos produtos vendidos';
             comment on column ord_order.ord_total_freight_value_cents is 'Valor total do frete';
             comment on column ord_order.ord_get_on_market is 'Se é para pegar na loja ou não';
             comment on column ord_order.ord_change_value_cents is 'Se for dinheiro, ela vai existir e vai ser o valor que ele vai ter em mãos, para levar o troco';
+            comment on column ord_order.ord_receive_date is 'Data e hora de recebimento, se for feita uma entrega';
 
             CREATE TABLE pro_product (
                 pro_id SERIAL,
@@ -93,6 +107,10 @@ export class createDb1576893815309 implements MigrationInterface {
                 pro_type INTEGER NOT NULL,
                 pro_actual_value TEXT NOT NULL,
                 pro_last_value TEXT,
+                pro_creation_date TIMESTAMP NOT NULL,
+                pro_update_date TIMESTAMP,
+                pro_user_backoffice_who_created INTEGER NOT NULL,
+                pro_user_backoffice_who_updated INTEGER,
                 PRIMARY KEY (pro_id)
             );
 
@@ -108,6 +126,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 usb_role INTEGER NOT NULL,
                 usb_password TEXT NOT NULL,
                 usb_img_url TEXT,
+                usb_creation_date TIMESTAMP NOT NULL,
+                usb_update_date TIMESTAMP,
                 PRIMARY KEY (usb_id)
             );
 
@@ -117,7 +137,13 @@ export class createDb1576893815309 implements MigrationInterface {
 
     public async down(queryRunner: QueryRunner): Promise<any> {
         return await queryRunner.query(`
+            DROP TABLE pro_product;
+            DROP TABLE ord_order;
+            DROP TABLE car_card;
+            DROP TABLE adr_address;
+            DROP TABLE con_contact;
             DROP TABLE use_user;
+            DROP TABLE usb_user_backoffice;
         `);
     }
 
