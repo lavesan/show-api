@@ -1,0 +1,53 @@
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+
+enum UserRole {
+    NENHUM = 0,
+    MAE = 1,
+    PAI = 2,
+    ESTUDANTE = 3,
+    VEGANO = 4,
+}
+
+enum UserStatus {
+    ATIVO = 1,
+    INATIVO = 2,
+}
+
+@Entity('use_user')
+export class UserEntity {
+    @PrimaryGeneratedColumn({ name: 'use_id' })
+    id: number;
+
+    @Column({ name: 'use_email', type: 'text', unique: true })
+    email: string;
+
+    @Column({ name: 'use_password', type: 'text' })
+    password: string;
+
+    @Column({ name: 'use_name', type: 'text' })
+    name: string;
+
+    @Column({ name: 'use_status', type: 'integer' })
+    status: UserStatus;
+
+    @Column({ name: 'use_img_url', type: 'text', nullable: true })
+    imgUrl: string;
+
+    @Column({ name: 'use_age', type: 'integer', nullable: true })
+    age: number;
+
+    @Column({ name: 'use_role', type: 'integer' })
+    role: UserRole;
+
+    @Column({ name: 'use_description', type: 'text' })
+    description: string;
+
+    @Column({ name: 'use_term_of_contract', type: 'boolean' })
+    termOfContract: boolean;
+
+    @Column({ name: 'use_creation_date', type: 'timestamp', update: false })
+    creationDate: Date;
+
+    @Column({ name: 'use_update_date', type: 'timestamp', nullable: true })
+    updateDate: Date;
+}
