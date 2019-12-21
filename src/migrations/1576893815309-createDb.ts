@@ -9,8 +9,9 @@ export class createDb1576893815309 implements MigrationInterface {
                 use_email VARCHAR(45) NOT NULL UNIQUE,
                 use_password VARCHAR(45) NOT NULL,
                 use_name TEXT NOT NULL,
-                use_age INTEGER,
+                use_status INTEGER NOT NULL,
                 use_img_url TEXT,
+                use_age INTEGER,
                 use_role INTEGER NOT NULL,
                 use_description TEXT NOT NULL,
                 use_term_of_contract BOOLEAN NOT NULL,
@@ -20,6 +21,7 @@ export class createDb1576893815309 implements MigrationInterface {
             );
 
             comment on column use_user.use_role is 'Tipo do usuário. (0 para nenhum, 1 para mãe, 2 para pai, 3 para estudante, 4 para vegano)';
+            comment on column use_user.use_status is 'Status do usuário. (1 para ativo, 2 para inativo)';
 
             CREATE TABLE con_contact (
                 con_id SERIAL,
