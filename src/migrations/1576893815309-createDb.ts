@@ -107,8 +107,10 @@ export class createDb1576893815309 implements MigrationInterface {
                 pro_img_url TEXT,
                 pro_description TEXT NOT NULL,
                 pro_type INTEGER NOT NULL,
+                pro_status INTEGER NOT NULL,
                 pro_actual_value TEXT NOT NULL,
                 pro_last_value TEXT,
+                pro_category INTEGER NOT NULL,
                 pro_creation_date TIMESTAMP NOT NULL,
                 pro_update_date TIMESTAMP,
                 pro_user_backoffice_who_created INTEGER NOT NULL,
@@ -117,6 +119,7 @@ export class createDb1576893815309 implements MigrationInterface {
             );
 
             comment on column pro_product.pro_type is 'Tipo do produto. 0 para Normal, 1 para Promoção';
+            comment on column pro_product.pro_status is 'Status do produto. 0 para ATIVO, 1 para INATIVO';
             comment on column pro_product.pro_actual_value is 'O valor atual que o produto está sendo vendido';
             comment on column pro_product.pro_last_value is 'O valor anterior que o produto estava sendo vendido, antes de uma promoção ou seja la o que for';
 

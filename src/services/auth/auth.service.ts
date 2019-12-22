@@ -37,6 +37,11 @@ export class AuthService {
         }, HttpStatus.NOT_FOUND);
     }
 
+    // TODO: Implementar um logoff
+    async logoffUser() {
+        console.log('deslogar')
+    }
+
     async registerUser(userDTO: RegisterUserForm) {
         const user = await this.userService.save(userDTO);
 

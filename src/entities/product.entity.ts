@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { ProductType } from 'src/model/constants/product.constants';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { ProductType, ProductStatus, ProductCategory } from 'src/model/constants/product.constants';
 import { UserBackofficeEntity } from './userBackoffice.entity';
 
 @Entity('pro_product')
@@ -18,6 +18,12 @@ export class ProductEntity {
 
     @Column({ name: 'pro_type', type: 'integer' })
     type: ProductType;
+
+    @Column({ name: 'pro_status', type: 'integer' })
+    status: ProductStatus;
+
+    @Column({ name: 'pro_category', type: 'integer' })
+    category: ProductCategory;
 
     @Column({ name: 'pro_actual_value', type: 'text' })
     actualValueCents: string;

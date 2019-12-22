@@ -87,4 +87,9 @@ export class UserService {
             error: 'Usuário não encontrado',
         }, HttpStatus.NOT_FOUND);
     }
+
+    // TODO: Implementar a paginação
+    async findAllPaginated(): Promise<any> {
+        return await this.userRepo.findAndCount();
+    }
 }
