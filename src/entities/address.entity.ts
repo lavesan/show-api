@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { UserEntity } from './user.entity';
 
 @Entity('adr_address')
 export class AddressEntity {
@@ -25,4 +26,8 @@ export class AddressEntity {
 
     @Column({ name: 'adr_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
+
+    @ManyToOne(table => UserEntity, user => user.id)
+    @JoinColumn({ name: 'adr_use_id' })
+    user: UserEntity;
 }

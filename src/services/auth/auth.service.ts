@@ -20,17 +20,17 @@ export class AuthService {
     }
 
     async loginUser(userDTO: LoginUserForm) {
-        // const user = await this.userService.loginUser(userDTO);
-        // if (user) {
-        //     const payload = {
-        //         login: user.login,
-        //         role: user.type,
-        //         establishment: await user.establishment,
-        //     };
+        const user = await this.userService.loginUser(userDTO);
+        if (user) {
+            const payload = {
+                login: user.login,
+                role: user.type,
+                establishment: await user.establishment,
+            };
     
-        //     const token = await this.signPayload(payload);
-        //     return { user, token };
-        // }
+            const token = await this.signPayload(payload);
+            return { user, token };
+        }
         throw new HttpException({
             status: HttpStatus.NOT_FOUND,
             error: 'Usuário não encontrado',
@@ -38,14 +38,17 @@ export class AuthService {
     }
 
     async registerUser(userDTO: RegisterUserForm) {
-        // const user = await this.userService.save(userDTO);
-        // const payload = {
-        //     login: user.login,
-        //     role: user.type,
-        //     establishment: await user.establishment,
-        // }
+        const user = await this.userService.save(userDTO);
 
-        // const token = await this.signPayload(payload);
-        // return { user, token };
+        if (user) {
+            const payload = {
+                login: user.login,
+                role: user.type,
+                establishment: await user.establishment,
+            };
+
+            const token = await this.signPayload(payload);
+            return { user, token };
+        }
     }
 }

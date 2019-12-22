@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { UserBackofficeRole } from '../model/constants/userBackoffice.constants';
+import { ProductEntity } from './product.entity';
 
 @Entity('usb_user_backoffice')
 export class UserBackofficeEntity {
@@ -26,4 +27,11 @@ export class UserBackofficeEntity {
 
     @Column({ name: 'usb_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
+    
+    @OneToMany(table => ProductEntity, product => product.backofficeWhoCreated)
+    productsCreated: ProductEntity[];
+
+    @OneToMany(table => ProductEntity, product => product.backofficeWhoUpdated)
+    productsUpdated: ProductEntity[];
+
 }

@@ -19,10 +19,10 @@ export class UserService {
         // TODO: Salvar a role em um local separado para Lis setá-la no backoffice
         const data = {
             ...user,
-            status: UserStatus.ATIVO,
+            status: UserStatus.ACTIVE,
             role: UserRole.NENHUM,
             creationDate: new Date(),
-            password: generateHashPwd('123'),
+            password: generateHashPwd(user.password),
         };
         return await this.userRepo.save(data);
     }
@@ -35,11 +35,15 @@ export class UserService {
         return await this.userRepo.update({ email: user.email }, data);
     }
 
-    async loginUser({ email, password }): Promise<any> {
+    /**
+     * @description Uses bcrypt to compare the password
+     * @param param0 
+     */
+    async loginUser({ login, password }): Promise<any> {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
         // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
         const user = await this.userRepo.findOne({
-            where: { email, status: UserStatus.ATIVO }
+            where: { email: login, status: UserStatus.ACTIVE }
         });
 
         if (user) {

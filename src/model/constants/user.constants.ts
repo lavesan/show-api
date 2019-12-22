@@ -7,8 +7,8 @@ enum UserRole {
 }
 
 enum UserStatus {
-    ATIVO = 1,
-    INATIVO = 2,
+    ACTIVE = 1,
+    INACTIVE = 2,
 }
 
 export { UserRole, UserStatus };

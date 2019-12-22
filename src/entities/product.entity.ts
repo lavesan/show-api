@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { ProductType } from 'src/model/constants/product.constants';
+import { UserBackofficeEntity } from './userBackoffice.entity';
 
 @Entity('pro_product')
 export class ProductEntity {
@@ -29,4 +30,12 @@ export class ProductEntity {
 
     @Column({ name: 'pro_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
+
+    @ManyToOne(table => UserBackofficeEntity, userBackoffce => userBackoffce.id)
+    @JoinColumn({ name: 'pro_user_backoffice_who_created' })
+    backofficeWhoCreated: UserBackofficeEntity;
+
+    @ManyToOne(table => UserBackofficeEntity, userBackoffce => userBackoffce.id)
+    @JoinColumn({ name: 'pro_user_backoffice_who_updated' })
+    backofficeWhoUpdated: UserBackofficeEntity;
 }

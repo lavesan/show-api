@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderType, OrderStatus } from '../model/constants/order.constants';
+import { UserEntity } from './user.entity';
 
 @Entity('ord_order')
 export class OrderEntity {
@@ -39,4 +40,8 @@ export class OrderEntity {
 
     @Column({ name: 'con_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
+
+    @ManyToOne(table => UserEntity, user => user.id)
+    @JoinColumn({ name: 'con_use_id' })
+    user: UserEntity;
 }

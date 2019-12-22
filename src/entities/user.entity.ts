@@ -1,5 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { UserRole, UserStatus } from '../model/constants/user.constants';
+import { AddressEntity } from './address.entity';
+import { CardEntity } from './card.entity';
+import { ProductEntity } from './product.entity';
+import { OrderEntity } from './order.entity';
 
 @Entity('use_user')
 export class UserEntity {
@@ -38,4 +42,13 @@ export class UserEntity {
 
     @Column({ name: 'use_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
+
+    @OneToMany(table => AddressEntity, address => address.user)
+    addresses: AddressEntity[];
+
+    @OneToMany(table => OrderEntity, order => order.user)
+    orders: OrderEntity[];
+
+    @OneToMany(table => CardEntity, card => card.user)
+    cards: CardEntity[];
 }

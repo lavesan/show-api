@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { CardType } from '../model/constants/card.constants';
+import { UserEntity } from './user.entity';
 
 @Entity('car_card')
 export class CardEntity {
@@ -23,4 +24,8 @@ export class CardEntity {
 
     @Column({ name: 'car_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
+
+    @ManyToOne(table => UserEntity, user => user.id)
+    @JoinColumn({ name: 'car_use_id' })
+    user: UserEntity;
 }
