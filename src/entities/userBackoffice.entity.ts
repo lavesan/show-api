@@ -1,0 +1,29 @@
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { UserBackofficeRole } from '../model/constants/userBackoffice.constants';
+
+@Entity('usb_user_backoffice')
+export class UserBackofficeEntity {
+    @PrimaryGeneratedColumn({ name: 'usb_id' })
+    id: number;
+
+    @Column({ name: 'usb_name', type: 'text' })
+    name: string;
+
+    @Column({ name: 'usb_email', type: 'text' })
+    email: string;
+
+    @Column({ name: 'usb_password', type: 'integer' })
+    password: string;
+
+    @Column({ name: 'usb_img_url', type: 'integer', nullable: true })
+    imgUrl: string;
+
+    @Column({ name: 'usb_role', type: 'integer' })
+    role: UserBackofficeRole;
+
+    @Column({ name: 'usb_creation_date', type: 'timestamp', update: false })
+    creationDate: Date;
+
+    @Column({ name: 'usb_update_date', type: 'timestamp', nullable: true })
+    updateDate: Date;
+}

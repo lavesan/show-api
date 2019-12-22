@@ -35,7 +35,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 FOREIGN KEY (con_use_id) REFERENCES use_user (use_id)
             );
 
-            comment on column con_contact.con_type is 'Se o contato é um celular ou telefone';
+            comment on column con_contact.con_type is '0 para um celular e 1 para telefone';
 
             CREATE TABLE adr_address (
                 adr_id SERIAL,
