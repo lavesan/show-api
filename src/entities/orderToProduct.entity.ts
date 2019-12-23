@@ -8,7 +8,7 @@ export class OrderToProductEntity {
     id: number;
 
     @Column({ name: 'orp_quantity', type: 'float8' })
-    quantity: string;
+    quantity: number;
 
     @ManyToOne(type => OrderEntity, order => order.id)
     @JoinColumn({ name: 'orp_ord_id' })

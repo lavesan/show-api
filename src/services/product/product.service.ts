@@ -39,6 +39,10 @@ export class ProductService {
         return await this.productRepo.delete({ id: productId });
     }
 
+    async findById(productId: number): Promise<ProductEntity> {
+        return await this.productRepo.findOne({ id: productId });
+    }
+
     // TODO: Adiciona os filtros de paginação
     async findAllFilteredPaginate(): Promise<any[]> {
         return await this.productRepo.findAndCount();

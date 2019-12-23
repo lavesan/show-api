@@ -31,7 +31,7 @@ export class OrderEntity {
 
     // Troco
     @Column({ name: 'ord_change_value_cents', type: 'text', nullable: true })
-    changeValueCents: boolean;
+    changeValueCents: string;
 
     @Column({ name: 'ord_receive_date', type: 'timestamp', nullable: true })
     receiveDate: Date;
