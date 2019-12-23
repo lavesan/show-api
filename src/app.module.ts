@@ -11,6 +11,7 @@ import { CardModule } from './modules/card/card.module';
 import { OrderModule } from './modules/order/order.module';
 import { ProductModule } from './modules/product/product.module';
 import { UserBackofficeModule } from './modules/user-backoffice/user-backoffice.module';
+import { OrderToProductService } from './services/order-to-product/order-to-product.service';
 import config = require('./ormconfig');
 
 @Module({
@@ -26,7 +27,7 @@ import config = require('./ormconfig');
     UserBackofficeModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, OrderToProductService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

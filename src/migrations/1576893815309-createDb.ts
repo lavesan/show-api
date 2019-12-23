@@ -139,6 +139,17 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column pro_product.pro_status is 'Status do produto. 0 para ATIVO, 1 para INATIVO';
             comment on column pro_product.pro_actual_value is 'O valor atual que o produto está sendo vendido';
             comment on column pro_product.pro_last_value is 'O valor anterior que o produto estava sendo vendido, antes de uma promoção ou seja la o que for';
+
+            -- Tabela para linkar as ordens com os produtos
+            CREATE TABLE orp_order_product (
+                orp_id SERIAL,
+                orp_quantity FLOAT8 NOT NULL,
+                orp_ord_id INTEGER NOT NULL,
+                orp_pro_id INTEGER NOT NULL,
+                PRIMARY KEY (orp_id),
+                FOREIGN KEY (orp_ord_id) REFERENCES ord_order (ord_id),
+                FOREIGN KEY (orp_pro_id) REFERENCES pro_product (pro_id)
+            );
         `);
     }
 

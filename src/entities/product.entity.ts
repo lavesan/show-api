@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { ProductType, ProductStatus, ProductCategory } from 'src/model/constants/product.constants';
 import { UserBackofficeEntity } from './userBackoffice.entity';
+import { OrderToProductEntity } from './orderToProduct.entity';
 
 @Entity('pro_product')
 export class ProductEntity {
@@ -44,4 +45,7 @@ export class ProductEntity {
     @ManyToOne(table => UserBackofficeEntity, userBackoffce => userBackoffce.id)
     @JoinColumn({ name: 'pro_user_backoffice_who_updated_id' })
     backofficeWhoUpdated: UserBackofficeEntity;
+
+    @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.product)
+    orderToProd: OrderToProductEntity[];
 }

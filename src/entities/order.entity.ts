@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { OrderType, OrderStatus } from '../model/constants/order.constants';
 import { UserEntity } from './user.entity';
+import { OrderToProductEntity } from './orderToProduct.entity';
 
 @Entity('ord_order')
 export class OrderEntity {
@@ -44,4 +45,7 @@ export class OrderEntity {
     @ManyToOne(table => UserEntity, user => user.id)
     @JoinColumn({ name: 'con_use_id' })
     user: UserEntity;
+
+    @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order)
+    orderToProd: OrderToProductEntity[];
 }
