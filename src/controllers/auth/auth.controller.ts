@@ -10,19 +10,19 @@ export class AuthController {
     ) {}
 
     // Retorna token do usuário
-    @Post('login')
+    @Post('user/login')
     logIn(@Body() body: LoginUserForm) {
         return this.authService.loginUser(body);
     }
 
     // Token no header
-    @Delete('logoff')
+    @Delete('user/logoff')
     logoff() {
         return this.authService.logoffUser();
     }
 
     // Adiciona novo usuário
-    @Post('register')
+    @Post('user/register')
     register(@Body() body: RegisterUserForm) {
         return this.authService.registerUser(body);
     }

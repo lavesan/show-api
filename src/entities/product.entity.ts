@@ -38,10 +38,10 @@ export class ProductEntity {
     updateDate: Date;
 
     @ManyToOne(table => UserBackofficeEntity, userBackoffce => userBackoffce.id)
-    @JoinColumn({ name: 'pro_user_backoffice_who_created' })
+    @JoinColumn({ name: 'pro_user_backoffice_who_created_id' })
     backofficeWhoCreated: UserBackofficeEntity;
 
     @ManyToOne(table => UserBackofficeEntity, userBackoffce => userBackoffce.id)
-    @JoinColumn({ name: 'pro_user_backoffice_who_updated' })
+    @JoinColumn({ name: 'pro_user_backoffice_who_updated_id' })
     backofficeWhoUpdated: UserBackofficeEntity;
 }

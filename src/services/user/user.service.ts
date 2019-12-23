@@ -35,11 +35,16 @@ export class UserService {
         return await this.userRepo.update({ email: user.email }, data);
     }
 
+    async findByPayload(payload: any): Promise<any> {
+        const { login } = payload;
+        return await this.userRepo.findOne({ email: login });
+    }
+
     /**
      * @description Uses bcrypt to compare the password
-     * @param param0 
+     * @param param0
      */
-    async loginUser({ login, password }): Promise<any> {
+    async loginUser({ login, password }: LoginUserForm): Promise<UserEntity> {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
         // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
         const user = await this.userRepo.findOne({
@@ -49,15 +54,8 @@ export class UserService {
         if (user) {
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
-                // const establishments = await user.establishments;
-                // const establishmentsIds = establishments.map(est => est.id);
-
-                // delete user.password;
-                // const userData = {
-                //     ...user,
-                //     establishmentsIds,
-                // }
-                // return await Promise.resolve(userData);
+                delete user.password;
+                return await Promise.resolve(user);
             } else {
                 throw new HttpException({
                     status: HttpStatus.NOT_ACCEPTABLE,
@@ -91,5 +89,9 @@ export class UserService {
     // TODO: Implementar a paginação
     async findAllPaginated(): Promise<any> {
         return await this.userRepo.findAndCount();
+    }
+
+    async findOneByIdOrFail(userId: number): Promise<UserEntity> {
+        return await this.userRepo.findOneOrFail({ id: userId });
     }
 }
