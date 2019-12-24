@@ -42,7 +42,7 @@ export class UserService {
 
     /**
      * @description Uses bcrypt to compare the password
-     * @param param0
+     * @param {LoginUserForm} param0
      */
     async loginUser({ login, password }: LoginUserForm): Promise<UserEntity> {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
@@ -91,7 +91,25 @@ export class UserService {
         return await this.userRepo.findAndCount();
     }
 
+    async findById(userId: number): Promise<UserEntity> {
+        return await this.userRepo.findOne({ id: userId });
+    }
+
     async findOneByIdOrFail(userId: number): Promise<UserEntity> {
         return await this.userRepo.findOneOrFail({ id: userId });
+    }
+
+    /**
+     * @description Inactivates the user
+     * @param {number} userId
+     */
+    async softDelete(userId: number): Promise<any> {
+        const user = await this.findById(userId);
+
+        if (user) {
+            user.status = UserStatus.INACTIVE;
+
+            return await this.userRepo.update({ id: user.id }, user);
+        }
     }
 }

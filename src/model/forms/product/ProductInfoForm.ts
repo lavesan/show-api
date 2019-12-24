@@ -1,4 +1,4 @@
-import { IsNumber } from "class-validator";
+import { IsNumber } from 'class-validator';
 
 export class ProductInfoForm {
 
@@ -6,6 +6,6 @@ export class ProductInfoForm {
     quantity: number;
 
     @IsNumber()
-    id: number
+    id: number;
 
 }

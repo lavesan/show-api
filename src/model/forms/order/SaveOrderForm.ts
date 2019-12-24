@@ -1,9 +1,12 @@
-import { OrderStatus, OrderType } from "src/model/constants/order.constants";
-import { ProductInfoForm } from "../product/ProductInfoForm";
-import { IsEnum, IsNumberString, IsOptional, IsNotEmpty } from "class-validator";
+import { OrderType } from 'src/model/constants/order.constants';
+import { ProductInfoForm } from '../product/ProductInfoForm';
+import { IsEnum, IsNumberString, IsOptional, IsString, IsBoolean, IsDate, IsArray } from 'class-validator';
+import { UserEntity } from 'src/entities/user.entity';
 
 export class SaveOrderForm {
 
+    @IsString()
+    @IsOptional()
     cardCode: string;
 
     @IsEnum(OrderType)
@@ -22,12 +25,16 @@ export class SaveOrderForm {
     @IsOptional()
     changeValueCents: string;
 
+    @IsBoolean()
+    @IsOptional()
     getOnMarket: boolean;
 
-    @IsNotEmpty()
+    @IsDate()
     receiveDate: Date;
 
-    @IsNotEmpty()
+    @IsArray()
     products: ProductInfoForm[];
+
+    user: UserEntity;
 
 }

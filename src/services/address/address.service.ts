@@ -25,13 +25,16 @@ export class AddressService {
     }
 
     async updateWithToken(address: UpdateAddressForm, token: string) {
-        const { id } = decodeToken(token);
-        const data = {
-            ...address,
-            userId: id,
-        }
+        const tokenObj = decodeToken(token);
 
-        return this.update(data);
+        if (tokenObj) {
+            const data = {
+                ...address,
+                userId: tokenObj.id,
+            }
+
+            return this.update(data);
+        }
     }
 
     async update({ userId, ...address }: IUpdateAddress): Promise<any> {

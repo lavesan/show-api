@@ -84,7 +84,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_creation_date TIMESTAMP NOT NULL,
                 ord_update_date TIMESTAMP,
                 ord_receive_date TIMESTAMP,
-                ord_use_id INTEGER NOT NULL,
+                ord_use_id INTEGER,
                 ord_adr_id INTEGER,
                 PRIMARY KEY (ord_id),
                 FOREIGN KEY (ord_use_id) REFERENCES use_user (use_id),
@@ -155,6 +155,7 @@ export class createDb1576893815309 implements MigrationInterface {
 
     public async down(queryRunner: QueryRunner): Promise<any> {
         return await queryRunner.query(`
+            DROP TABLE orp_order_product;
             DROP TABLE pro_product;
             DROP TABLE ord_order;
             DROP TABLE car_card;

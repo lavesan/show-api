@@ -12,6 +12,9 @@ export const comparePwdWithHash = (passowrd: string, hashPwd: string): boolean =
     return bcrypt.compareSync(passowrd, hashPwd);
 }
 
-export const decodeToken = (token: string = ''): TokenPayloadType => {
-    return jwtDecode(token);
+export const decodeToken = (token: string): TokenPayloadType | null => {
+    if (token) {
+        return jwtDecode(token);
+    }
+    return null;
 }

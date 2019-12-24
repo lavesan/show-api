@@ -12,3 +12,9 @@ export const paginateResponseSchema = (data: any[], allResultsCount: number, pag
         allResultsCount,
         page,
     });
+
+export enum Code {
+    OK = 1,
+    NOT_FOUND = 2,
+    SELL_ERROR = 3,
+}

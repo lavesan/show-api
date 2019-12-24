@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
+import { decodeToken } from 'src/utils/auth.utils';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class OrderToProductService {
@@ -13,21 +15,35 @@ export class OrderToProductService {
         private readonly orderToProductRepo: Repository<OrderToProductEntity>,
         private readonly orderService: OrderService,
         private readonly productService: ProductService,
+        private readonly userService: UserService,
     ) {}
 
-    async save({ products, ...body }: SaveOrderForm) {
+    /**
+     * @description Saves a new order
+     * @param {SaveOrderForm} param0
+     * @param {string} token If there's a token, use this to save the user
+     */
+    async save({ products, ...body }: SaveOrderForm, token: string) {
+        const tokenObj = decodeToken(token);
+
+        // If the token exists, the user is vinculated with the order
+        if (tokenObj) {
+            const user = await this.userService.findById(tokenObj.id);
+            body.user = user;
+        }
+
         const order = await this.orderService.save(body);
 
         if (order) {
             const insertValues = [];
 
-            for (const productInfo of products) {
-                const product = await this.productService.findById(productInfo.id);
+            for (const { id, quantity } of products) {
+                const productDB = await this.productService.findById(id);
 
-                if (product) {
+                if (productDB) {
                     insertValues.push({
-                        quantity: productInfo.quantity,
-                        product,
+                        quantity,
+                        product: productDB,
                         order,
                     });
                 }
