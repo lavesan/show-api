@@ -16,7 +16,7 @@ export class ContactController {
         @Body() contact: SaveContactForm[],
         @Headers('authorization') tokenAuth: string,
     ) {
-        return this.contactService.saveManyWithAuth(contact, tokenAuth)
+        return this.contactService.saveManyWithAuth(contact, tokenAuth);
     }
 
     @Put('user')

@@ -2,7 +2,6 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { UserRole, UserStatus } from '../model/constants/user.constants';
 import { AddressEntity } from './address.entity';
 import { CardEntity } from './card.entity';
-import { ProductEntity } from './product.entity';
 import { OrderEntity } from './order.entity';
 
 @Entity('use_user')

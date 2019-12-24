@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Delete, Get } from '@nestjs/common';
 import { AuthService } from '../../services/auth/auth.service';
 import { RegisterUserForm } from '../../model/forms/user/RegisterUserForm';
 import { LoginUserForm } from '../../model/forms/user/LoginUserForm';
@@ -26,4 +26,5 @@ export class AuthController {
     register(@Body() body: RegisterUserForm) {
         return this.authService.registerUser(body);
     }
+
 }

@@ -1,12 +1,15 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 
 import { UserEntity } from '../../entities/user.entity';
 import { RegisterUserForm } from '../../model/forms/user/RegisterUserForm';
 import { UserRole, UserStatus } from '../../model/constants/user.constants';
 import { generateHashPwd, comparePwdWithHash } from '../../utils/auth.utils';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
+import { PaginationForm } from 'src/model/forms/PaginationForm';
+import { paginateResponseSchema, skipFromPage, addFilter } from 'src/utils/response-schema.utils';
+import { FilterUserDataForm } from 'src/model/forms/user/FilterUserDataForm';
 
 @Injectable()
 export class UserService {
@@ -112,4 +115,29 @@ export class UserService {
             return await this.userRepo.update({ id: user.id }, user);
         }
     }
+
+    async findAll({ take, page }: PaginationForm, userFilter: FilterUserDataForm): Promise<any> {
+        // Filters
+        const filter = addFilter({ 
+            like: ['email', 'description', 'name'],
+            equal: ['age', 'role', 'status'],
+            data: userFilter,
+        });
+
+        // Paginate
+        const skip = skipFromPage(page);
+        const [users, allResultsCount] = await this.userRepo.findAndCount({
+            where: { ...filter },
+            take,
+            skip,
+        });
+
+        return paginateResponseSchema({ data: users, allResultsCount, page });
+    }
+
+    async findUserExistenceByEmail(email: string): Promise<boolean> {
+        const user = await this.userRepo.findOne({ email });
+        return Boolean(user);
+    }
+
 }

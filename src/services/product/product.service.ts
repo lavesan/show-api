@@ -4,6 +4,8 @@ import { ProductEntity } from 'src/entities/product.entity';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
+import { PaginationForm } from 'src/model/forms/PaginationForm';
+import { skipFromPage, paginateResponseSchema } from 'src/utils/response-schema.utils';
 
 @Injectable()
 export class ProductService {
@@ -44,8 +46,14 @@ export class ProductService {
     }
 
     // TODO: Adiciona os filtros de paginação
-    async findAllFilteredPaginate(): Promise<any[]> {
-        return await this.productRepo.findAndCount();
+    async findAllFilteredPaginate({ take, page }: PaginationForm): Promise<any> {
+        const skip = skipFromPage(page);
+        const [products, allResultsCount] = await this.productRepo.findAndCount({
+            take,
+            skip,
+        });
+
+        return paginateResponseSchema({ data: products, allResultsCount, page });
     }
 
 }

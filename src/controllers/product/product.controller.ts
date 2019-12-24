@@ -1,16 +1,17 @@
-import { Controller, Get, Post, Body, Put, Delete, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Delete, Param, Query } from '@nestjs/common';
 import { ProductService } from 'src/services/product/product.service';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { UpdateResult, DeleteResult } from 'typeorm';
+import { PaginationForm } from 'src/model/forms/PaginationForm';
 
 @Controller('product')
 export class ProductController {
     constructor(private readonly productService: ProductService) {}
 
     @Get()
-    findAllFilteredPaginate() {
-        return this.productService.findAllFilteredPaginate();
+    findAllFilteredPaginate(@Query() paginationForm: PaginationForm) {
+        return this.productService.findAllFilteredPaginate(paginationForm);
     }
 
     @Post()
