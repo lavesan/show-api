@@ -27,7 +27,7 @@ export class UserBackofficeEntity {
 
     @Column({ name: 'usb_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
-    
+
     @OneToMany(table => ProductEntity, product => product.backofficeWhoCreated)
     productsCreated: ProductEntity[];
 
