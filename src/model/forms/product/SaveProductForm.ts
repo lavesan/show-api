@@ -1,18 +1,18 @@
-import { IsNotEmpty, IsNumberString, IsOptional } from 'class-validator';
+import { IsNumberString, IsOptional, IsString, IsEnum } from 'class-validator';
 import { ProductType, ProductStatus } from 'src/model/constants/product.constants';
 
 export class SaveProductForm {
 
-    @IsNotEmpty()
+    @IsString()
     name: string;
 
-    @IsNotEmpty()
+    @IsString()
     imgUrl: string;
 
-    @IsNotEmpty()
+    @IsEnum(ProductType)
     type: ProductType;
 
-    @IsNotEmpty()
+    @IsEnum(ProductStatus)
     status: ProductStatus;
 
     @IsNumberString()
@@ -22,6 +22,8 @@ export class SaveProductForm {
     @IsOptional()
     lastValueCents: string;
 
+    @IsString()
+    @IsOptional()
     description: string;
 
 }

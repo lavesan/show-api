@@ -11,6 +11,7 @@ import { CardModule } from './modules/card/card.module';
 import { OrderModule } from './modules/order/order.module';
 import { ProductModule } from './modules/product/product.module';
 import { UserBackofficeModule } from './modules/user-backoffice/user-backoffice.module';
+
 import config = require('./ormconfig');
 
 @Module({

@@ -1,19 +1,13 @@
-import { Controller, Get, Post, Body, Put, Delete, Param, Query } from '@nestjs/common';
+import { Controller, Body, Post, Put, Delete, Param } from '@nestjs/common';
 import { ProductService } from 'src/services/product/product.service';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
-import { UpdateResult, DeleteResult } from 'typeorm';
-import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { FilterProductForm } from 'src/model/forms/product/FilterProductForm';
 
-@Controller('product')
-export class ProductController {
+@Controller('backoffice/product')
+export class BackofficeProductController {
+
     constructor(private readonly productService: ProductService) {}
-
-    @Get()
-    findAllFilteredPaginate(@Query() paginationForm: PaginationForm, @Body() productFilter: FilterProductForm) {
-        return this.productService.findAllFilteredPaginate(paginationForm, productFilter);
-    }
 
     @Post()
     saveMany(@Body() body: SaveProductForm[]): Promise<any[]> {

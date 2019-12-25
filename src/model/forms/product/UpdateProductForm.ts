@@ -1,9 +1,9 @@
 import { SaveProductForm } from './SaveProductForm';
-import { IsNotEmpty } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class UpdateProductForm extends SaveProductForm {
 
-    @IsNotEmpty()
+    @IsNumber()
     id: number;
 
 }
