@@ -5,7 +5,8 @@ import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, addFilter } from 'src/utils/response-schema.utils';
+import { FilterProductForm } from 'src/model/forms/product/FilterProductForm';
 
 @Injectable()
 export class ProductService {
@@ -46,9 +47,17 @@ export class ProductService {
     }
 
     // TODO: Adiciona os filtros de paginação
-    async findAllFilteredPaginate({ take, page }: PaginationForm): Promise<any> {
+    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterProductForm): Promise<any> {
+        // Filters
+        const filter = addFilter({
+            like: ['name', 'description', 'actualValueCents'],
+            equal: ['status', 'category', 'type'],
+            data: productFilter,
+        });
+
         const skip = skipFromPage(page);
         const [products, allResultsCount] = await this.productRepo.findAndCount({
+            where: { ...filter },
             take,
             skip,
         });

@@ -4,14 +4,15 @@ import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { UpdateResult, DeleteResult } from 'typeorm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
+import { FilterProductForm } from 'src/model/forms/product/FilterProductForm';
 
 @Controller('product')
 export class ProductController {
     constructor(private readonly productService: ProductService) {}
 
     @Get()
-    findAllFilteredPaginate(@Query() paginationForm: PaginationForm) {
-        return this.productService.findAllFilteredPaginate(paginationForm);
+    findAllFilteredPaginate(@Query() paginationForm: PaginationForm, @Body() productFilter: FilterProductForm) {
+        return this.productService.findAllFilteredPaginate(paginationForm, productFilter);
     }
 
     @Post()

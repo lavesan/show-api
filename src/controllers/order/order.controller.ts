@@ -1,8 +1,11 @@
-import { Controller, Post, Body, Headers, Put } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Put, Get, Query } from '@nestjs/common';
 import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderToProductService } from 'src/services/order-to-product/order-to-product.service';
 import { OrderService } from 'src/services/order/order.service';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
+import { PaginationForm } from 'src/model/forms/PaginationForm';
+import { FilterOrderForm } from 'src/model/forms/order/FilterOrderForm';
+import { IPaginateResponseType } from 'src/utils/response-schema.utils';
 
 @Controller('order')
 export class OrderController {
@@ -19,5 +22,18 @@ export class OrderController {
     @Put()
     updateStatusOrder(@Body() body: UpdateStatusOrderForm) {
         return this.orderService.update(body);
+    }
+
+    @Get('all')
+    findAllOfClient(
+        @Query() paginationForm: PaginationForm,
+        @Body() filter: FilterOrderForm,
+        @Headers('authorization') tokenAuth: string,
+    ): Promise<IPaginateResponseType<any>> {
+        return this.orderService.findAllWithToken({
+            paginationForm,
+            tokenAuth,
+            filter,
+        });
     }
 }

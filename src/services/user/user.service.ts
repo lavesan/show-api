@@ -118,7 +118,7 @@ export class UserService {
 
     async findAll({ take, page }: PaginationForm, userFilter: FilterUserDataForm): Promise<any> {
         // Filters
-        const filter = addFilter({ 
+        const filter = addFilter({
             like: ['email', 'description', 'name'],
             equal: ['age', 'role', 'status'],
             data: userFilter,
