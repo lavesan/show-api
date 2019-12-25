@@ -35,9 +35,11 @@ export const addFilter = ({ like = [], equal = [], data }: IFieldsFilter) => {
 
     entries.forEach(([key, value]) => {
 
-        if (like.some(elem => elem === key)) {
+        if (typeof value === 'object') {
+            filter[key] = addFilter({ like, equal, data: value });
+        } else if (like.includes(key)) {
             filter[key] = Like(value);
-        } else if (equal.some(elem => elem === key)) {
+        } else if (equal.includes(key)) {
             filter[key] = value;
         }
 
