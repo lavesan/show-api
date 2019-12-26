@@ -11,6 +11,7 @@ import { CardModule } from './modules/card/card.module';
 import { OrderModule } from './modules/order/order.module';
 import { ProductModule } from './modules/product/product.module';
 import { UserBackofficeModule } from './modules/user-backoffice/user-backoffice.module';
+import { GetnetModule } from './modules/getnet/getnet.module';
 
 import config = require('./ormconfig');
 
@@ -25,6 +26,7 @@ import config = require('./ormconfig');
     OrderModule,
     ProductModule,
     UserBackofficeModule,
+    GetnetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
