@@ -8,9 +8,4 @@ enum ProductStatus {
     INACTIVE = 2,
 }
 
-// TODO: Adiciona todas as categorias de produtos
-enum ProductCategory {
-    CATEGORIA = 0,
-}
-
-export { ProductType, ProductStatus, ProductCategory }
+export { ProductType, ProductStatus }

@@ -1,4 +1,5 @@
-import { Like } from 'typeorm';
+import { Like, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Between } from 'typeorm';
+import { FilterForm } from 'src/model/forms/FilterForm';
 
 export interface IPaginateResponseType<Data> {
     data: Data[];
@@ -27,6 +28,60 @@ interface IFieldsFilter {
     like?: string[];
     equal?: string[];
     data: { [key: string]: any };
+}
+
+interface IFieldsGenerateFilter {
+    like?: string[];
+    equal?: string[];
+    datas: FilterForm[];
+}
+
+const searchType = {
+    between() {
+
+    }
+}
+
+export const generateFilter = ({ like = [], equal = [], datas }: IFieldsGenerateFilter) => {
+
+    const filter: any = {};
+
+    datas.forEach(({ field, value, type }) => {
+
+        if (type === 'lessThan') {
+
+            filter[field] = LessThan(value);
+
+        } else if (type === 'lessThanOrEqual') {
+
+            filter[field] = LessThanOrEqual(value);
+
+        } else if (type === 'moreThan') {
+
+            filter[field] = MoreThan(value);
+
+        } else if (type === 'moreThanOrEqual') {
+
+            filter[field] = MoreThanOrEqual(value);
+
+        } else if (type === 'between') {
+
+            const [value1, value2] = datas.filter(data => data.field === field).map(data => data.value);
+            filter[field] = Between(value1, value2);
+
+        } else if (like.includes(field)) {
+
+            filter[field] = Like(value);
+
+        } else if (equal.includes(field)) {
+
+            filter[field] = value;
+
+        }
+    })
+
+    return filter;
+
 }
 
 export const addFilter = ({ like = [], equal = [], data }: IFieldsFilter) => {

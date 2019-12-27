@@ -1,17 +1,19 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { ProductType, ProductStatus, ProductCategory } from 'src/model/constants/product.constants';
+import { ProductType, ProductStatus } from 'src/model/constants/product.constants';
 import { UserBackofficeEntity } from './userBackoffice.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
+import { ProductCategoryEntity } from './productCategory.entity';
 
 @Entity('pro_product')
 export class ProductEntity {
+
     @PrimaryGeneratedColumn({ name: 'pro_id' })
     id: number;
 
     @Column({ name: 'pro_name', type: 'text' })
     name: string;
 
-    @Column({ name: 'pro_img_url', type: 'integer', nullable: true })
+    @Column({ name: 'pro_img_url', type: 'text', nullable: true })
     imgUrl: string;
 
     @Column({ name: 'pro_description', type: 'text' })
@@ -22,9 +24,6 @@ export class ProductEntity {
 
     @Column({ name: 'pro_status', type: 'integer' })
     status: ProductStatus;
-
-    @Column({ name: 'pro_category', type: 'integer' })
-    category: ProductCategory;
 
     @Column({ name: 'pro_actual_value', type: 'text' })
     actualValueCents: string;
@@ -48,4 +47,8 @@ export class ProductEntity {
 
     @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.product)
     orderToProd: OrderToProductEntity[];
+
+    @ManyToOne(type => ProductCategoryEntity, productCategory => productCategory.id)
+    @JoinColumn({ name: 'pro_category_id' })
+    category: ProductCategoryEntity;
 }

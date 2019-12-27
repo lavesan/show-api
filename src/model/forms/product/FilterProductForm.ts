@@ -1,5 +1,5 @@
-import { ProductType, ProductStatus, ProductCategory } from "src/model/constants/product.constants";
-import { IsString, IsOptional, IsEnum } from "class-validator";
+import { ProductType, ProductStatus } from "src/model/constants/product.constants";
+import { IsString, IsOptional, IsEnum, IsNumber } from "class-validator";
 
 export class FilterProductForm {
 
@@ -19,9 +19,9 @@ export class FilterProductForm {
     @IsOptional()
     status: ProductStatus;
 
-    @IsEnum(ProductCategory)
+    @IsNumber()
     @IsOptional()
-    category: ProductCategory;
+    category: number;
 
     @IsString()
     @IsOptional()

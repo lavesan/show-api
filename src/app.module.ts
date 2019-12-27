@@ -12,6 +12,7 @@ import { OrderModule } from './modules/order/order.module';
 import { ProductModule } from './modules/product/product.module';
 import { UserBackofficeModule } from './modules/user-backoffice/user-backoffice.module';
 import { GetnetModule } from './modules/getnet/getnet.module';
+import { ProductCategoryModule } from './modules/product-category/product-category.module';
 
 import config = require('./ormconfig');
 
@@ -27,6 +28,7 @@ import config = require('./ormconfig');
     ProductModule,
     UserBackofficeModule,
     GetnetModule,
+    ProductCategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

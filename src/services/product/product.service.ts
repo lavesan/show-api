@@ -5,21 +5,26 @@ import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, addFilter } from 'src/utils/response-schema.utils';
-import { FilterProductForm } from 'src/model/forms/product/FilterProductForm';
+import { skipFromPage, paginateResponseSchema, generateFilter } from 'src/utils/response-schema.utils';
+import { FilterForm } from 'src/model/forms/FilterForm';
+import { ProductCategoryService } from '../product-category/product-category.service';
 
 @Injectable()
 export class ProductService {
     constructor(
         @InjectRepository(ProductEntity)
         private readonly productRepo: Repository<ProductEntity>,
+        private readonly productCategoryService: ProductCategoryService,
     ) {}
 
     // TODO: Adicionar usuário backoffice que o criou
     async saveMany(products: SaveProductForm[]): Promise<any> {
-        for (const product of products) {
+        for (const { categoryId, ...product } of products) {
+
+            const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
             const data = {
                 ...product,
+                category,
                 creationDate: new Date(),
             };
 
@@ -29,9 +34,12 @@ export class ProductService {
     }
 
     // TODO: Adicionar usuário backoffice que o alterou
-    async updateOne(product: UpdateProductForm): Promise<UpdateResult> {
+    async updateOne({ categoryId, ...product }: UpdateProductForm): Promise<UpdateResult> {
+
+        const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
         const data = {
             ...product,
+            category,
             updateDate: new Date(),
         };
 
@@ -47,12 +55,12 @@ export class ProductService {
     }
 
     // TODO: Adiciona os filtros de paginação
-    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterProductForm): Promise<any> {
+    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[]): Promise<any> {
         // Filters
-        const filter = addFilter({
+        const filter = generateFilter({
             like: ['name', 'description', 'actualValueCents'],
             equal: ['status', 'category', 'type'],
-            data: productFilter,
+            datas: productFilter,
         });
 
         const skip = skipFromPage(page);

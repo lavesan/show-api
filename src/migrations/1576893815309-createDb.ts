@@ -114,6 +114,19 @@ export class createDb1576893815309 implements MigrationInterface {
                 PRIMARY KEY (usb_id)
             );
 
+            -- Tabela de categorias
+            CREATE TABLE cat_category (
+                cat_id SERIAL,
+                cat_name TEXT NOT NULL,
+                cat_creation_date TIMESTAMP NOT NULL,
+                cat_update_date TIMESTAMP,
+                cat_subcategory_of_id INTEGER,
+                PRIMARY KEY (cat_id),
+                FOREIGN KEY (cat_subcategory_of_id) REFERENCES cat_category (cat_id)
+            );
+
+            comment on column cat_category.cat_subcategory_of_id is 'Se esta categoria for uma subcategoria, então esta coluna mostra de quem ela é';
+
             comment on column usb_user_backoffice.usb_role is 'Tipo do usuário. 0 para administrador, 1 para funcionário';
 
             CREATE TABLE pro_product (
@@ -125,14 +138,15 @@ export class createDb1576893815309 implements MigrationInterface {
                 pro_status INTEGER NOT NULL,
                 pro_actual_value TEXT NOT NULL,
                 pro_last_value TEXT,
-                pro_category INTEGER NOT NULL,
                 pro_creation_date TIMESTAMP NOT NULL,
                 pro_update_date TIMESTAMP,
                 pro_user_backoffice_who_created_id INTEGER NOT NULL,
                 pro_user_backoffice_who_updated_id INTEGER,
+                pro_category_id INTEGER NOT NULL,
                 PRIMARY KEY (pro_id),
                 FOREIGN KEY (pro_user_backoffice_who_created_id) REFERENCES usb_user_backoffice (usb_id),
-                FOREIGN KEY (pro_user_backoffice_who_updated_id) REFERENCES usb_user_backoffice (usb_id)
+                FOREIGN KEY (pro_user_backoffice_who_updated_id) REFERENCES usb_user_backoffice (usb_id),
+                FOREIGN KEY (pro_category_id) REFERENCES cat_category (cat_id)
             );
 
             comment on column pro_product.pro_type is 'Tipo do produto. 0 para Normal, 1 para Promoção';
@@ -150,19 +164,21 @@ export class createDb1576893815309 implements MigrationInterface {
                 FOREIGN KEY (orp_ord_id) REFERENCES ord_order (ord_id),
                 FOREIGN KEY (orp_pro_id) REFERENCES pro_product (pro_id)
             );
+
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<any> {
         return await queryRunner.query(`
-            DROP TABLE orp_order_product;
-            DROP TABLE pro_product;
-            DROP TABLE ord_order;
-            DROP TABLE car_card;
-            DROP TABLE adr_address;
-            DROP TABLE con_contact;
-            DROP TABLE use_user;
-            DROP TABLE usb_user_backoffice;
+            DROP TABLE IF EXISTS orp_order_product;
+            DROP TABLE IF EXISTS cat_category;
+            DROP TABLE IF EXISTS pro_product;
+            DROP TABLE IF EXISTS ord_order;
+            DROP TABLE IF EXISTS car_card;
+            DROP TABLE IF EXISTS adr_address;
+            DROP TABLE IF EXISTS con_contact;
+            DROP TABLE IF EXISTS use_user;
+            DROP TABLE IF EXISTS usb_user_backoffice;
         `);
     }
 

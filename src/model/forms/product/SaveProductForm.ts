@@ -1,4 +1,4 @@
-import { IsNumberString, IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsNumberString, IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
 import { ProductType, ProductStatus } from 'src/model/constants/product.constants';
 
 export class SaveProductForm {
@@ -14,6 +14,9 @@ export class SaveProductForm {
 
     @IsEnum(ProductStatus)
     status: ProductStatus;
+
+    @IsNumber()
+    categoryId: number;
 
     @IsNumberString()
     actualValueCents: string;
