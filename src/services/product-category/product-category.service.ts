@@ -31,17 +31,14 @@ export class ProductCategoryService {
     }
 
     async findAllCategoriesTree() {
+
         const allFathersArr = await this.findAllFathers();
+        return await this.mapAllFathers(allFathersArr);
 
-        if (allFathersArr) {
-
-            return await this.mapAllFathers(allFathersArr);
-
-        }
     }
 
     /**
-     * @description Função funcional para retornar a árvore de categorias
+     * @description Recursive function to load tree of categories
      * @param {ProductCategoryEntity[]} param0
      */
     private async mapAllFathers([father, ...fathers]: ProductCategoryEntity[]) {
@@ -56,7 +53,7 @@ export class ProductCategoryService {
             {
                 id: father.id,
                 name: father.name,
-                childrens: [...(await this.mapAllFathers(childrens))],
+                childrens: await this.mapAllFathers(childrens),
             },
             ...(await this.mapAllFathers(fathers)),
         ];
