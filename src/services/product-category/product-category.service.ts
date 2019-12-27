@@ -60,7 +60,7 @@ export class ProductCategoryService {
 
     }
 
-    private async findById(categoryId: number) {
+    async findById(categoryId: number) {
         return this.productCategoryRepo.findOne({ id: categoryId });
     }
 

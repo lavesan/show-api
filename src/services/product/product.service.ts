@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, UpdateResult, DeleteResult, In } from 'typeorm';
+
 import { ProductEntity } from 'src/entities/product.entity';
-import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
@@ -44,6 +45,7 @@ export class ProductService {
         };
 
         return await this.productRepo.update({ id: product.id }, data);
+
     }
 
     async delete(productId: number): Promise<DeleteResult> {
@@ -52,6 +54,36 @@ export class ProductService {
 
     async findById(productId: number): Promise<ProductEntity> {
         return await this.productRepo.findOne({ id: productId });
+    }
+
+    async findAllProductsByCategoryId(categoryId: number) {
+
+        const categoriesId = await this.findAllCategoriesByCategoryId(categoryId);
+
+        return this.findManyByCategoriesIds(categoriesId);
+
+    }
+
+    private async findManyByCategoriesIds(categoriesId: number[]) {
+        return await this.productRepo.find({ category: { id: In(categoriesId) } });
+    }
+
+    private async findAllCategoriesByCategoryId(categoryId: number): Promise<number[]> {
+
+        const category = await this.productCategoryService.findById(categoryId);
+
+        if (category) {
+            if (category.subCategoryId) {
+                return [
+                    categoryId,
+                    ...(await this.findAllCategoriesByCategoryId(category.subCategoryId))
+                ];
+            }
+            return [categoryId];
+        }
+
+        return [];
+
     }
 
     // TODO: Adiciona os filtros de paginação
