@@ -17,4 +17,9 @@ export class CategoryController {
         return this.productCategoryService.findProductCategoryTree(categoryId);
     }
 
+    @Get('all')
+    findCategoriesTree() {
+        return this.productCategoryService.findAllCategoriesTree();
+    }
+
 }

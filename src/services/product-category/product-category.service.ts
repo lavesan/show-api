@@ -30,8 +30,49 @@ export class ProductCategoryService {
         return this.productCategoryRepo.findOneOrFail({ id: categoryId });
     }
 
+    async findAllCategoriesTree() {
+        const allFathersArr = await this.findAllFathers();
+
+        if (allFathersArr) {
+
+            return await this.mapAllFathers(allFathersArr);
+
+        }
+    }
+
+    /**
+     * @description Função funcional para retornar a árvore de categorias
+     * @param {ProductCategoryEntity[]} param0
+     */
+    private async mapAllFathers([father, ...fathers]: ProductCategoryEntity[]) {
+
+        if (!father) {
+            return [];
+        }
+
+        const childrens = await this.findAllWithFatherId(father.id);
+
+        return [
+            {
+                id: father.id,
+                name: father.name,
+                childrens: [...(await this.mapAllFathers(childrens))],
+            },
+            ...(await this.mapAllFathers(fathers)),
+        ];
+
+    }
+
     private async findById(categoryId: number) {
         return this.productCategoryRepo.findOne({ id: categoryId });
+    }
+
+    private async findAllFathers() {
+        return this.productCategoryRepo.find({ subCategoryId: null });
+    }
+
+    private async findAllWithFatherId(findAllWithFatherId: number) {
+        return this.productCategoryRepo.find({ subCategoryId: findAllWithFatherId });
     }
 
     /**
@@ -57,9 +98,7 @@ export class ProductCategoryService {
 
         categoryTreeArr.reverse();
 
-        const dataTree = this.generateTree(categoryTreeArr);
-
-        return dataTree;
+        return this.generateTree(categoryTreeArr);
 
     }
 
@@ -72,7 +111,7 @@ export class ProductCategoryService {
         return {
             name: data1.name,
             subCategory: this.generateTree(data),
-        }
+        };
 
     }
 

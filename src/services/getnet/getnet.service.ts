@@ -3,7 +3,6 @@ import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as fs from 'fs';
 
 import { SaveCardForm } from 'src/model/forms/getnet/SaveCardForm';
-import { Observable } from 'rxjs';
 
 interface IGetnetLoginResponse {
     access_token: string;
@@ -88,6 +87,7 @@ export class GetnetService {
 
         // Tando tudo correto, retorna um objeto com 'number_token' para eu utilizar nas requisições que farei
         return this.httpService.post('/v1/tokens/card', body);
+
     }
 
     async saveCard({ brand, nameOnCard, cardNumber, expirationMonth, expirationYear, securityCode }: SaveCardForm) {
