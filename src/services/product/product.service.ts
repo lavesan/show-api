@@ -64,6 +64,10 @@ export class ProductService {
 
     }
 
+    async findAllByCategoryId(categoryId: number) {
+        return this.productRepo.find({ category: { id: categoryId } });
+    }
+
     private async findManyByCategoriesIds(categoriesId: number[]) {
         return await this.productRepo.find({ category: { id: In(categoriesId) } });
     }
@@ -73,10 +77,10 @@ export class ProductService {
         const category = await this.productCategoryService.findById(categoryId);
 
         if (category) {
-            if (category.subCategoryId) {
+            if (category.subCategoryOfId) {
                 return [
                     categoryId,
-                    ...(await this.findAllCategoriesByCategoryId(category.subCategoryId))
+                    ...(await this.findAllCategoriesByCategoryId(category.subCategoryOfId))
                 ];
             }
             return [categoryId];

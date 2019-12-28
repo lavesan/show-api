@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductCategoryEntity } from 'src/entities/productCategory.entity';
 import { Repository } from 'typeorm';
 import { SaveCategoryForm } from 'src/model/forms/product-category/SaveCategoryForm';
+import { UpdateCategoryForm } from 'src/model/forms/product-category/UpdateCategoryForm';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class ProductCategoryService {
@@ -10,16 +12,17 @@ export class ProductCategoryService {
     constructor(
         @InjectRepository(ProductCategoryEntity)
         private readonly productCategoryRepo: Repository<ProductCategoryEntity>,
+        private readonly productService: ProductService,
     ) {}
 
-    async save({ subCategoryId, ...saveCategoryForm }: SaveCategoryForm) {
-        const subCategory = subCategoryId ?
-            await this.findOneByIdOrFail(subCategoryId) :
+    async save({ subCategoryOfId, ...saveCategoryForm }: SaveCategoryForm) {
+        const subCategoryOf = subCategoryOfId ?
+            await this.findOneByIdOrFail(subCategoryOfId) :
             null;
 
         const data = {
             ...saveCategoryForm,
-            subCategoryId: subCategory ? subCategoryId : null,
+            subCategoryOfId: subCategoryOf ? subCategoryOfId : null,
             creationDate: new Date(),
         };
 
@@ -30,46 +33,64 @@ export class ProductCategoryService {
         return this.productCategoryRepo.findOneOrFail({ id: categoryId });
     }
 
+    async findById(categoryId: number) {
+        return this.productCategoryRepo.findOne({ id: categoryId });
+    }
+
+    async update({ id, ...updateCategoryForm }: UpdateCategoryForm) {
+        return this.productCategoryRepo.update({ id }, updateCategoryForm);
+    }
+
+    async deleteOneCategory(categoryId: number) {
+
+        const categories = await this.findAllWithFatherId(categoryId);
+
+        if (categories.length) {
+
+            throw new HttpException({
+                message: 'Existem subcategorias desta categoria. Exclua elas ou as altere de local.',
+                status: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+
+        }
+
+        const products = await this.productService.findAllByCategoryId(categoryId);
+
+        if (products.length) {
+
+            throw new HttpException({
+                message: 'Existem produtos com esta categoria, altere-a nos produtos ou escolha uma categoria para todos os produtos irem para ela:',
+                status: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+
+        }
+
+        return this.delete(categoryId);
+
+    }
+
+    private async delete(categoryId: number) {
+        return this.productCategoryRepo.delete({ id: categoryId });
+    }
+
+    async findAllCategoriesFiltered(name: string) {
+        const where: any = {};
+
+        if (name) {
+            where.name = name;
+        }
+
+        return this.productCategoryRepo.find({
+            select: ['name', 'id'],
+            where,
+        });
+    }
+
     async findAllCategoriesTree() {
 
         const allFathersArr = await this.findAllFathers();
         return await this.mapAllFathers(allFathersArr);
 
-    }
-
-    /**
-     * @description Recursive function to load tree of categories
-     * @param {ProductCategoryEntity[]} param0
-     */
-    private async mapAllFathers([father, ...fathers]: ProductCategoryEntity[]) {
-
-        if (!father) {
-            return [];
-        }
-
-        const childrens = await this.findAllWithFatherId(father.id);
-
-        return [
-            {
-                id: father.id,
-                name: father.name,
-                childrens: await this.mapAllFathers(childrens),
-            },
-            ...(await this.mapAllFathers(fathers)),
-        ];
-
-    }
-
-    async findById(categoryId: number) {
-        return this.productCategoryRepo.findOne({ id: categoryId });
-    }
-
-    private async findAllFathers() {
-        return this.productCategoryRepo.find({ subCategoryId: null });
-    }
-
-    private async findAllWithFatherId(findAllWithFatherId: number) {
-        return this.productCategoryRepo.find({ subCategoryId: findAllWithFatherId });
     }
 
     /**
@@ -85,8 +106,8 @@ export class ProductCategoryService {
 
             categoryTreeArr.push(category);
 
-            if (category.subCategoryId) {
-                category = await this.findById(category.subCategoryId)
+            if (category.subCategoryOfId) {
+                category = await this.findById(category.subCategoryOfId)
             } else {
                 break;
             }
@@ -109,6 +130,37 @@ export class ProductCategoryService {
             name: data1.name,
             subCategory: this.generateTree(data),
         };
+
+    }
+
+    private async findAllFathers() {
+        return this.productCategoryRepo.find({ subCategoryOfId: null });
+    }
+
+    private async findAllWithFatherId(findAllWithFatherId: number) {
+        return this.productCategoryRepo.find({ subCategoryOfId: findAllWithFatherId });
+    }
+
+    /**
+     * @description Recursive function to load tree of categories
+     * @param {ProductCategoryEntity[]} param0
+     */
+    private async mapAllFathers([father, ...fathers]: ProductCategoryEntity[]) {
+
+        if (!father) {
+            return [];
+        }
+
+        const childrens = await this.findAllWithFatherId(father.id);
+
+        return [
+            {
+                id: father.id,
+                name: father.name,
+                childrens: await this.mapAllFathers(childrens),
+            },
+            ...(await this.mapAllFathers(fathers)),
+        ];
 
     }
 

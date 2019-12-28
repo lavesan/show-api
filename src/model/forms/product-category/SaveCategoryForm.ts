@@ -7,6 +7,6 @@ export class SaveCategoryForm {
 
     @IsNumber()
     @IsOptional()
-    subCategoryId: number;
+    subCategoryOfId: number;
 
 }

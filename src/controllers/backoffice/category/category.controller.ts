@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Delete, Param } from '@nestjs/common';
 import { ProductCategoryService } from 'src/services/product-category/product-category.service';
 import { SaveCategoryForm } from 'src/model/forms/product-category/SaveCategoryForm';
 
@@ -12,12 +12,22 @@ export class CategoryController {
         return this.productCategoryService.save(saveCategoryForm);
     }
 
-    @Get()
+    @Delete(':id')
+    deleteOneCategory(@Param('id') categoryId: number) {
+        return this.productCategoryService.deleteOneCategory(categoryId);
+    }
+
+    @Get('all')
+    findAllCategories(@Query('name') name: string) {
+        return this.productCategoryService.findAllCategoriesFiltered(name);
+    }
+
+    @Get('tree')
     findCategoryTree(@Query('categoryId') categoryId: number) {
         return this.productCategoryService.findProductCategoryTree(categoryId);
     }
 
-    @Get('all')
+    @Get('tree/all')
     findCategoriesTree() {
         return this.productCategoryService.findAllCategoriesTree();
     }
