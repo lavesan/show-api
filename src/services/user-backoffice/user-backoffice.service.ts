@@ -6,8 +6,8 @@ import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUser
 import { generateHashPwd } from 'src/utils/auth.utils';
 import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { FilterUserBackofficeForm } from 'src/model/forms/user-backoffice/FilterUserBackofficeForm';
-import { addFilter, skipFromPage, paginateResponseSchema } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateFilter } from 'src/utils/response-schema.utils';
+import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()
 export class UserBackofficeService {
@@ -48,12 +48,12 @@ export class UserBackofficeService {
         return this.userBackofficeRepo.delete({ id: userBackofficeId });
     }
 
-    async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterUserBackofficeForm) {
+    async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[]) {
         // Filters
-        const filter = addFilter({
+        const filter = generateFilter({
             like: ['name', 'email'],
-            equal: ['role'],
-            data: userBackofficeFilter,
+            numbers: ['role'],
+            datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
         });
 
         const skip = skipFromPage(page);
@@ -63,7 +63,7 @@ export class UserBackofficeService {
             skip,
         });
 
-        return paginateResponseSchema({ data: products, allResultsCount, page });
+        return paginateResponseSchema({ data: products, allResultsCount, page, limit: take });
     }
 
 }

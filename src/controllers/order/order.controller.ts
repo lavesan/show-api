@@ -4,8 +4,8 @@ import { OrderToProductService } from 'src/services/order-to-product/order-to-pr
 import { OrderService } from 'src/services/order/order.service';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { FilterOrderForm } from 'src/model/forms/order/FilterOrderForm';
 import { IPaginateResponseType } from 'src/utils/response-schema.utils';
+import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Controller('order')
 export class OrderController {
@@ -27,7 +27,7 @@ export class OrderController {
     @Get('all')
     findAllOfClient(
         @Query() paginationForm: PaginationForm,
-        @Body() filter: FilterOrderForm,
+        @Body() filter: FilterForm[],
         @Headers('authorization') tokenAuth: string,
     ): Promise<IPaginateResponseType<any>> {
         return this.orderService.findAllWithToken({

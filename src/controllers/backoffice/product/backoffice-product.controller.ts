@@ -15,7 +15,7 @@ export class BackofficeProductController {
     }
 
     @Put()
-    updateOne(@Body() body: UpdateProductForm): Promise<UpdateResult> {
+    updateOne(@Body() body: UpdateProductForm) {
         return this.productService.updateOne(body);
     }
 

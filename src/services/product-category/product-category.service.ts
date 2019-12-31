@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductCategoryEntity } from 'src/entities/productCategory.entity';
 import { Repository } from 'typeorm';
@@ -12,6 +12,7 @@ export class ProductCategoryService {
     constructor(
         @InjectRepository(ProductCategoryEntity)
         private readonly productCategoryRepo: Repository<ProductCategoryEntity>,
+        @Inject(forwardRef(() => ProductService))
         private readonly productService: ProductService,
     ) {}
 
@@ -39,6 +40,29 @@ export class ProductCategoryService {
 
     async update({ id, ...updateCategoryForm }: UpdateCategoryForm) {
         return this.productCategoryRepo.update({ id }, updateCategoryForm);
+    }
+
+    async findOneWithFather(categoryId: number) {
+
+        const category = await this.findById(categoryId);
+
+        if (category) {
+
+            let father = null;
+            if (category.subCategoryOfId) {
+                father = await this.findById(category.subCategoryOfId);
+            }
+
+            return {
+                id: category.id,
+                name: category.name,
+                father: father ?
+                    { id: father.id, name: father.name } :
+                    null,
+            }
+
+        }
+
     }
 
     async deleteOneCategory(categoryId: number) {

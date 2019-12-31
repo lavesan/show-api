@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductService } from '../../services/product/product.service';
 import { ProductEntity } from '../../entities/product.entity';
@@ -10,7 +10,7 @@ import { ProductCategoryModule } from '../product-category/product-category.modu
     imports: [
       TypeOrmModule.forFeature([ProductEntity]),
       ProductModule,
-      ProductCategoryModule,
+      forwardRef(() => ProductCategoryModule),
     ],
     controllers: [ProductController, BackofficeProductController],
     providers: [ProductService],

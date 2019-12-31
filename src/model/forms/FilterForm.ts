@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
-type FilterType = 'between' | 'moreThan' | 'moreThanOrEqual' | 'lessThan' | 'lessThanOrEqual';
+type FilterType = 'between' | 'moreThan' | 'moreThanOrEqual' | 'lessThan' | 'lessThanOrEqual' | 'all';
 
 export class FilterForm {
 
@@ -9,6 +9,7 @@ export class FilterForm {
     field: string;
 
     @IsString()
+    @IsOptional()
     type: FilterType;
 
     @IsNotEmpty()

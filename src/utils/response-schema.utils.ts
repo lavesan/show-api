@@ -1,4 +1,4 @@
-import { Like, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Between } from 'typeorm';
+import { Like, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Between, Raw } from 'typeorm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 export interface IPaginateResponseType<Data> {
@@ -12,15 +12,17 @@ interface IPaginateResponseParam {
     data: any[];
     allResultsCount: number;
     page: number;
+    limit: number;
 }
 
 export const skipFromPage = (page: number) => (page - 1) * 10;
 
-export const paginateResponseSchema = ({ data, allResultsCount, page }: IPaginateResponseParam) =>
+export const paginateResponseSchema = ({ data, allResultsCount, page, limit }: IPaginateResponseParam) =>
     ({
         data,
         resultsCount: data.length,
         allResultsCount,
+        allPages: Math.floor(allResultsCount / limit) + 1,
         page,
     });
 
@@ -32,21 +34,36 @@ interface IFieldsFilter {
 
 interface IFieldsGenerateFilter {
     like?: string[];
-    equal?: string[];
+    numbers?: string[];
+    equalStrings?: string[];
     datas: FilterForm[];
 }
 
-const searchType = {
-    between() {
-
-    }
-}
-
-export const generateFilter = ({ like = [], equal = [], datas }: IFieldsGenerateFilter) => {
+export const generateFilter = ({ like = [], numbers = [], equalStrings = [], datas }: IFieldsGenerateFilter) => {
 
     const filter: any = {};
 
     datas.forEach(({ field, value, type }) => {
+
+        if (type === 'all') {
+
+            const onlyNumber = value.toString().replace(/\D/g, '');
+
+            like.forEach(name => {
+                filter[name] = Like(value);
+            });
+
+            equalStrings.forEach(name => {
+                filter[name] = value;
+            });
+
+            if (onlyNumber) {
+                numbers.forEach(name => {
+                    filter[name] = onlyNumber;
+                });
+            }
+
+        }
 
         if (type === 'lessThan') {
 
@@ -66,19 +83,27 @@ export const generateFilter = ({ like = [], equal = [], datas }: IFieldsGenerate
 
         } else if (type === 'between') {
 
+            // TODO: Adicionar um Between de datas
             const [value1, value2] = datas.filter(data => data.field === field).map(data => data.value);
             filter[field] = Between(value1, value2);
 
         } else if (like.includes(field)) {
 
-            filter[field] = Like(value);
+            filter[field] = Raw(alias => `${alias} ILIKE '%${value}%'`);
 
-        } else if (equal.includes(field)) {
+        } else if (numbers.includes(field)) {
+
+            const onlyNumber = value.toString().replace(/\D/g, '');
+            filter[field] = onlyNumber;
+
+        } else if (equalStrings.includes(field)) {
 
             filter[field] = value;
 
         }
-    })
+    });
+
+    console.log('filter: ', filter)
 
     return filter;
 

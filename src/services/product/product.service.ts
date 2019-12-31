@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult, DeleteResult, In } from 'typeorm';
 
@@ -15,6 +15,7 @@ export class ProductService {
     constructor(
         @InjectRepository(ProductEntity)
         private readonly productRepo: Repository<ProductEntity>,
+        @Inject(forwardRef(() => ProductCategoryService))
         private readonly productCategoryService: ProductCategoryService,
     ) {}
 
@@ -35,7 +36,7 @@ export class ProductService {
     }
 
     // TODO: Adicionar usuário backoffice que o alterou
-    async updateOne({ categoryId, ...product }: UpdateProductForm): Promise<UpdateResult> {
+    async updateOne({ categoryId, ...product }: UpdateProductForm) {
 
         const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
         const data = {
@@ -72,7 +73,7 @@ export class ProductService {
         return await this.productRepo.find({ category: { id: In(categoriesId) } });
     }
 
-    private async findAllCategoriesByCategoryId(categoryId: number): Promise<number[]> {
+    private async findAllCategoriesByCategoryId(categoryId: number) {
 
         const category = await this.productCategoryService.findById(categoryId);
 
@@ -91,12 +92,13 @@ export class ProductService {
     }
 
     // TODO: Adiciona os filtros de paginação
-    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[]): Promise<any> {
+    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = []): Promise<any> {
         // Filters
         const filter = generateFilter({
             like: ['name', 'description', 'actualValueCents'],
-            equal: ['status', 'category', 'type'],
-            datas: productFilter,
+            numbers: ['status', 'category', 'type'],
+            equalStrings: ['creationDate'],
+            datas: Array.isArray(productFilter) ? productFilter : [],
         });
 
         const skip = skipFromPage(page);
@@ -106,7 +108,7 @@ export class ProductService {
             skip,
         });
 
-        return paginateResponseSchema({ data: products, allResultsCount, page });
+        return paginateResponseSchema({ data: products, allResultsCount, page, limit: take });
     }
 
 }

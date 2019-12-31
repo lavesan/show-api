@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { UserEntity } from '../../entities/user.entity';
 import { RegisterUserForm } from '../../model/forms/user/RegisterUserForm';
@@ -8,8 +8,9 @@ import { UserRole, UserStatus } from '../../model/constants/user.constants';
 import { generateHashPwd, comparePwdWithHash } from '../../utils/auth.utils';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { paginateResponseSchema, skipFromPage, addFilter } from 'src/utils/response-schema.utils';
+import { paginateResponseSchema, skipFromPage, generateFilter } from 'src/utils/response-schema.utils';
 import { FilterUserDataForm } from 'src/model/forms/user/FilterUserDataForm';
+import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()
 export class UserService {
@@ -116,15 +117,13 @@ export class UserService {
         }
     }
 
-    async findAll({ take, page }: PaginationForm, userFilter: FilterUserDataForm): Promise<any> {
-        // Filters
-        const filter = addFilter({
+    async findAll({ take, page }: PaginationForm, userFilter: FilterForm[]): Promise<any> {
+        const filter = generateFilter({
             like: ['email', 'description', 'name'],
-            equal: ['age', 'role', 'status'],
-            data: userFilter,
+            numbers: ['age', 'role', 'status'],
+            datas: Array.isArray(userFilter) ? userFilter : [],
         });
 
-        // Paginate
         const skip = skipFromPage(page);
         const [users, allResultsCount] = await this.userRepo.findAndCount({
             where: { ...filter },
@@ -132,7 +131,7 @@ export class UserService {
             skip,
         });
 
-        return paginateResponseSchema({ data: users, allResultsCount, page });
+        return paginateResponseSchema({ data: users, allResultsCount, page, limit: take });
     }
 
     async findUserExistenceByEmail(email: string): Promise<boolean> {

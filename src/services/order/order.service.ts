@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { OrderStatus } from 'src/model/constants/order.constants';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { addFilter, skipFromPage, paginateResponseSchema, IPaginateResponseType } from 'src/utils/response-schema.utils';
+import { generateFilter, skipFromPage, paginateResponseSchema, IPaginateResponseType } from 'src/utils/response-schema.utils';
 import { decodeToken } from 'src/utils/auth.utils';
 
 @Injectable()
@@ -54,10 +54,16 @@ export class OrderService {
         id,
     }: any): Promise<IPaginateResponseType<any>> {
         // Filters
-        const filter = addFilter({
+        // const filter = generateFilter({
+        //     like: ['email', 'description', 'name'],
+        //     numbers: ['age', 'role', 'status'],
+        //     datas: Array.isArray(userFilter) ? userFilter : [],
+        // });
+        const filter = generateFilter({
             like: ['totalValueCents', 'totalProductValueCents', 'totalFreightValuesCents', 'changeValueCents'],
-            equal: ['type', 'status', 'getOnMarket', 'receiveDate'],
-            data: filterOpt,
+            numbers: ['type', 'status', 'getOnMarket'],
+            equalStrings: ['receiveDate'],
+            datas: Array.isArray(filterOpt) ? filterOpt : [],
         });
 
         // Paginate
@@ -68,7 +74,7 @@ export class OrderService {
             skip,
         });
 
-        return paginateResponseSchema({ data: users, allResultsCount, page });
+        return paginateResponseSchema({ data: users, allResultsCount, page, limit: take });
     }
 
     async findById(orderId: number): Promise<OrderEntity> {
