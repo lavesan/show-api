@@ -6,6 +6,7 @@ const config: ConnectionOptions = {
     port: 5432,
     username: 'postgres',
     password: 'postgres',
+    // logging: true,
     database: 'zero_veneno_1576895427276',
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
     migrations: [`${__dirname}/migrations/**/*.{ts,js}`],
