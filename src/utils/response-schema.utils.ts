@@ -1,4 +1,4 @@
-import { Like, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Between, Raw } from 'typeorm';
+import { Like, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Between, Raw, SelectQueryBuilder } from 'typeorm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 export interface IPaginateResponseType<Data> {
@@ -37,6 +37,93 @@ interface IFieldsGenerateFilter {
     numbers?: string[];
     equalStrings?: string[];
     datas: FilterForm[];
+}
+
+interface IGenerateQuerybuilder extends IFieldsGenerateFilter {
+    builder: SelectQueryBuilder<any>;
+}
+
+export const generateQueryFilter = ({
+    like = [],
+    numbers = [],
+    equalStrings = [],
+    datas, builder,
+}: IGenerateQuerybuilder): SelectQueryBuilder<any> => {
+
+    datas.forEach(({ field, value, type }) => {
+
+        if (type === 'all') {
+
+            const onlyNumber = value.toString().replace(/\D/g, '');
+
+            like.forEach(name => {
+                builder.orWhere(`${name} ILIKE '%${value}%'`);
+                // filter[name] = Like(value);
+            });
+
+            equalStrings.forEach(name => {
+                builder.orWhere(`${name} = :column`, { column: value });
+                // filter[name] = value;
+            });
+
+            if (onlyNumber) {
+                numbers.forEach(name => {
+                    builder.orWhere(`${name} = :column`, { column: onlyNumber });
+                    // filter[name] = onlyNumber;
+                });
+            }
+
+        }
+
+        if (type === 'lessThan') {
+
+            builder.where(`${field} < :column`, { column: value });
+            // filter[field] = LessThan(value);
+
+        } else if (type === 'lessThanOrEqual') {
+
+            builder.where(`${field} <= :column`, { column: value });
+            // filter[field] = LessThanOrEqual(value);
+
+        } else if (type === 'moreThan') {
+
+            builder.where(`${field} > :column`, { column: value });
+            // filter[field] = MoreThan(value);
+
+        } else if (type === 'moreThanOrEqual') {
+
+            builder.where(`${field} >= :column`, { column: value });
+            // filter[field] = MoreThanOrEqual(value);
+
+        } else if (type === 'between') {
+
+            // TODO: Adicionar um Between de datas
+            const [value1, value2] = datas.filter(data => data.field === field).map(data => data.value);
+            builder.where(`${field} >= :column`, { column: value1 });
+            builder.where(`${field} <= :column`, { column: value2 });
+            // filter[field] = Between(value1, value2);
+
+        } else if (like.includes(field)) {
+
+            builder.where(`${field} ILIKE %:column%`, { column: value });
+            // filter[field] = Raw(alias => `${alias} ILIKE '%${value}%'`);
+
+        } else if (numbers.includes(field)) {
+
+            const onlyNumber = value.toString().replace(/\D/g, '');
+            builder.where(`${field} = :column`, { column: onlyNumber });
+            // filter[field] = onlyNumber;
+
+        } else if (equalStrings.includes(field)) {
+
+            builder.where(`${field} = :column`, { column: value });
+            // filter[field] = value;
+
+        }
+    });
+
+    return builder;
+
 }
 
 export const generateFilter = ({ like = [], numbers = [], equalStrings = [], datas }: IFieldsGenerateFilter) => {
@@ -102,8 +189,6 @@ export const generateFilter = ({ like = [], numbers = [], equalStrings = [], dat
 
         }
     });
-
-    console.log('filter: ', filter)
 
     return filter;
 

@@ -8,7 +8,7 @@ import { UserRole, UserStatus } from '../../model/constants/user.constants';
 import { generateHashPwd, comparePwdWithHash } from '../../utils/auth.utils';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { paginateResponseSchema, skipFromPage, generateFilter } from 'src/utils/response-schema.utils';
+import { paginateResponseSchema, skipFromPage, generateFilter, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { FilterUserDataForm } from 'src/model/forms/user/FilterUserDataForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
@@ -118,20 +118,32 @@ export class UserService {
     }
 
     async findAll({ take, page }: PaginationForm, userFilter: FilterForm[]): Promise<any> {
-        const filter = generateFilter({
-            like: ['email', 'description', 'name'],
-            numbers: ['age', 'role', 'status'],
-            datas: Array.isArray(userFilter) ? userFilter : [],
-        });
+        // const filter = generateFilter({
+        //     like: ['email', 'description', 'name'],
+        //     numbers: ['age', 'role', 'status'],
+        //     datas: Array.isArray(userFilter) ? userFilter : [],
+        // });
 
         const skip = skipFromPage(page);
-        const [users, allResultsCount] = await this.userRepo.findAndCount({
-            where: { ...filter },
-            take,
-            skip,
-        });
+        const builder = this.userRepo.createQueryBuilder();
 
-        return paginateResponseSchema({ data: users, allResultsCount, page, limit: take });
+        const [result, count] = await generateQueryFilter({
+            like: ['use_email', 'use_description', 'use_name'],
+            numbers: ['use_age', 'use_role', 'use_status'],
+            datas: Array.isArray(userFilter) ? userFilter : [],
+            builder,
+        })
+            .skip(skip)
+            .limit(take)
+            .getManyAndCount();
+
+        // const [users, allResultsCount] = await this.userRepo.findAndCount({
+        //     where: { ...filter },
+        //     take,
+        //     skip,
+        // });
+
+        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
 
     async findUserExistenceByEmail(email: string): Promise<boolean> {
