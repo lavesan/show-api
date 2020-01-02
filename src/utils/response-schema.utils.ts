@@ -47,7 +47,8 @@ export const generateQueryFilter = ({
     like = [],
     numbers = [],
     equalStrings = [],
-    datas, builder,
+    datas,
+    builder,
 }: IGenerateQuerybuilder): SelectQueryBuilder<any> => {
 
     datas.forEach(({ field, value, type }) => {
@@ -58,18 +59,15 @@ export const generateQueryFilter = ({
 
             like.forEach(name => {
                 builder.orWhere(`${name} ILIKE '%${value}%'`);
-                // filter[name] = Like(value);
             });
 
             equalStrings.forEach(name => {
                 builder.orWhere(`${name} = :column`, { column: value });
-                // filter[name] = value;
             });
 
             if (onlyNumber) {
                 numbers.forEach(name => {
                     builder.orWhere(`${name} = :column`, { column: onlyNumber });
-                    // filter[name] = onlyNumber;
                 });
             }
 
@@ -78,46 +76,38 @@ export const generateQueryFilter = ({
         if (type === 'lessThan') {
 
             builder.where(`${field} < :column`, { column: value });
-            // filter[field] = LessThan(value);
 
         } else if (type === 'lessThanOrEqual') {
 
             builder.where(`${field} <= :column`, { column: value });
-            // filter[field] = LessThanOrEqual(value);
 
         } else if (type === 'moreThan') {
 
             builder.where(`${field} > :column`, { column: value });
-            // filter[field] = MoreThan(value);
 
         } else if (type === 'moreThanOrEqual') {
 
             builder.where(`${field} >= :column`, { column: value });
-            // filter[field] = MoreThanOrEqual(value);
 
         } else if (type === 'between') {
 
-            // TODO: Adicionar um Between de datas
-            const [value1, value2] = datas.filter(data => data.field === field).map(data => data.value);
-            builder.where(`${field} >= :column`, { column: value1 });
-            builder.where(`${field} <= :column`, { column: value2 });
-            // filter[field] = Between(value1, value2);
+            if (typeof value === 'object') {
+                builder.where(`${field} >= :column`, { column: value.from });
+                builder.where(`${field} <= :column`, { column: value.to });
+            }
 
         } else if (like.includes(field)) {
 
             builder.where(`${field} ILIKE %:column%`, { column: value });
-            // filter[field] = Raw(alias => `${alias} ILIKE '%${value}%'`);
 
         } else if (numbers.includes(field)) {
 
             const onlyNumber = value.toString().replace(/\D/g, '');
             builder.where(`${field} = :column`, { column: onlyNumber });
-            // filter[field] = onlyNumber;
 
         } else if (equalStrings.includes(field)) {
 
             builder.where(`${field} = :column`, { column: value });
-            // filter[field] = value;
 
         }
     });

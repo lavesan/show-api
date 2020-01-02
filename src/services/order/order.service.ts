@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { OrderStatus } from 'src/model/constants/order.constants';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { generateFilter, skipFromPage, paginateResponseSchema, IPaginateResponseType } from 'src/utils/response-schema.utils';
+import { generateFilter, skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { decodeToken } from 'src/utils/auth.utils';
 
 @Injectable()
@@ -53,28 +53,22 @@ export class OrderService {
         filterOpt,
         id,
     }: any): Promise<IPaginateResponseType<any>> {
-        // Filters
-        // const filter = generateFilter({
-        //     like: ['email', 'description', 'name'],
-        //     numbers: ['age', 'role', 'status'],
-        //     datas: Array.isArray(userFilter) ? userFilter : [],
-        // });
-        const filter = generateFilter({
-            like: ['totalValueCents', 'totalProductValueCents', 'totalFreightValuesCents', 'changeValueCents'],
-            numbers: ['type', 'status', 'getOnMarket'],
-            equalStrings: ['receiveDate'],
-            datas: Array.isArray(filterOpt) ? filterOpt : [],
-        });
-
-        // Paginate
         const skip = skipFromPage(page);
-        const [users, allResultsCount] = await this.orderRepo.findAndCount({
-            where: { user: { id }, ...filter },
-            take,
-            skip,
-        });
+        const builder = this.orderRepo.createQueryBuilder()
+            .where('con_use_id = :userId', { userId: id });
 
-        return paginateResponseSchema({ data: users, allResultsCount, page, limit: take });
+        const [result, count] = await generateQueryFilter({
+            like: ['ord_total_value_cents', 'ord_total_product_value_cents', 'ord_total_freight_value_cents', 'ord_change_value_cents'],
+            numbers: ['ord_type', 'ord_status', 'use_status'],
+            equalStrings: ['ord_get_on_market', 'ord_receive_date'],
+            datas: Array.isArray(filterOpt) ? filterOpt : [],
+            builder,
+        })
+            .skip(skip)
+            .limit(take)
+            .getManyAndCount();
+
+        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
 
     async findById(orderId: number): Promise<OrderEntity> {

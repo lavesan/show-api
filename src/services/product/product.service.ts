@@ -6,7 +6,7 @@ import { ProductEntity } from 'src/entities/product.entity';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateFilter } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateFilter, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ProductCategoryService } from '../product-category/product-category.service';
 
@@ -94,21 +94,33 @@ export class ProductService {
     // TODO: Adiciona os filtros de paginação
     async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = []): Promise<any> {
         // Filters
-        const filter = generateFilter({
-            like: ['name', 'description', 'actualValueCents'],
-            numbers: ['status', 'category', 'type'],
-            equalStrings: ['creationDate'],
-            datas: Array.isArray(productFilter) ? productFilter : [],
-        });
+        // const filter = generateFilter({
+        //     like: ['name', 'description', 'actualValueCents'],
+        //     numbers: ['status', 'category', 'type'],
+        //     equalStrings: ['creationDate'],
+        //     datas: Array.isArray(productFilter) ? productFilter : [],
+        // });
 
+        // const skip = skipFromPage(page);
+        // const [products, allResultsCount] = await this.productRepo.findAndCount({
+        //     where: { ...filter },
+        //     take,
+        //     skip,
+        // });
         const skip = skipFromPage(page);
-        const [products, allResultsCount] = await this.productRepo.findAndCount({
-            where: { ...filter },
-            take,
-            skip,
-        });
+        const builder = this.productRepo.createQueryBuilder();
 
-        return paginateResponseSchema({ data: products, allResultsCount, page, limit: take });
+        const [result, count] = await generateQueryFilter({
+            like: ['pro_name', 'pro_description', 'pro_actual_value', 'pro_last_value'],
+            numbers: ['pro_status', 'pro_type', 'pro_category_id'],
+            datas: Array.isArray(productFilter) ? productFilter : [],
+            builder,
+        })
+            .skip(skip)
+            .limit(take)
+            .getManyAndCount();
+
+        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
 
 }

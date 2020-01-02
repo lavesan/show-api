@@ -6,7 +6,7 @@ import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUser
 import { generateHashPwd } from 'src/utils/auth.utils';
 import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateFilter } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateFilter, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()
@@ -50,20 +50,34 @@ export class UserBackofficeService {
 
     async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[]) {
         // Filters
-        const filter = generateFilter({
-            like: ['name', 'email'],
-            numbers: ['role'],
-            datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
-        });
+        // const filter = generateFilter({
+        //     like: ['name', 'email'],
+        //     numbers: ['role'],
+        //     datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
+        // });
 
+        // const skip = skipFromPage(page);
+        // const [products, allResultsCount] = await this.userBackofficeRepo.findAndCount({
+        //     where: { ...filter },
+        //     take,
+        //     skip,
+        // });
+
+        // return paginateResponseSchema({ data: products, allResultsCount, page, limit: take });
         const skip = skipFromPage(page);
-        const [products, allResultsCount] = await this.userBackofficeRepo.findAndCount({
-            where: { ...filter },
-            take,
-            skip,
-        });
+        const builder = this.userBackofficeRepo.createQueryBuilder();
 
-        return paginateResponseSchema({ data: products, allResultsCount, page, limit: take });
+        const [result, count] = await generateQueryFilter({
+            like: ['usb_name', 'usb_email'],
+            numbers: ['usb_role'],
+            datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
+            builder,
+        })
+            .skip(skip)
+            .limit(take)
+            .getManyAndCount();
+
+        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
 
 }

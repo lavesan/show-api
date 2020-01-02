@@ -13,6 +13,6 @@ export class FilterForm {
     type: FilterType;
 
     @IsNotEmpty()
-    value: string | number | boolean;
+    value: string | number | boolean | { from: string | number, to: string | number };
 
 }

@@ -118,12 +118,6 @@ export class UserService {
     }
 
     async findAll({ take, page }: PaginationForm, userFilter: FilterForm[]): Promise<any> {
-        // const filter = generateFilter({
-        //     like: ['email', 'description', 'name'],
-        //     numbers: ['age', 'role', 'status'],
-        //     datas: Array.isArray(userFilter) ? userFilter : [],
-        // });
-
         const skip = skipFromPage(page);
         const builder = this.userRepo.createQueryBuilder();
 
@@ -136,12 +130,6 @@ export class UserService {
             .skip(skip)
             .limit(take)
             .getManyAndCount();
-
-        // const [users, allResultsCount] = await this.userRepo.findAndCount({
-        //     where: { ...filter },
-        //     take,
-        //     skip,
-        // });
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
