@@ -6,7 +6,7 @@ import { ProductEntity } from 'src/entities/product.entity';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateFilter, generateQueryFilter } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ProductCategoryService } from '../product-category/product-category.service';
 
@@ -111,8 +111,9 @@ export class ProductService {
         const builder = this.productRepo.createQueryBuilder();
 
         const [result, count] = await generateQueryFilter({
-            like: ['pro_name', 'pro_description', 'pro_actual_value', 'pro_last_value'],
+            like: ['pro_name', 'pro_description'],
             numbers: ['pro_status', 'pro_type', 'pro_category_id'],
+            valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             datas: Array.isArray(productFilter) ? productFilter : [],
             builder,
         })

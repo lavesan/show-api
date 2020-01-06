@@ -1,5 +1,6 @@
 import { Like, LessThan, LessThanOrEqual, MoreThan, MoreThanOrEqual, Between, Raw, SelectQueryBuilder } from 'typeorm';
 import { FilterForm } from 'src/model/forms/FilterForm';
+import * as moment from 'moment';
 
 export interface IPaginateResponseType<Data> {
     data: Data[];
@@ -36,6 +37,7 @@ interface IFieldsGenerateFilter {
     like?: string[];
     numbers?: string[];
     equalStrings?: string[];
+    valueCentsNumbers?: string[];
     datas: FilterForm[];
 }
 
@@ -47,6 +49,7 @@ export const generateQueryFilter = ({
     like = [],
     numbers = [],
     equalStrings = [],
+    valueCentsNumbers = [],
     datas,
     builder,
 }: IGenerateQuerybuilder): SelectQueryBuilder<any> => {
@@ -67,6 +70,10 @@ export const generateQueryFilter = ({
 
             if (onlyNumber) {
                 numbers.forEach(name => {
+                    builder.orWhere(`${name} = :column`, { column: onlyNumber });
+                });
+
+                valueCentsNumbers.forEach(name => {
                     builder.orWhere(`${name} = :column`, { column: onlyNumber });
                 });
             }
@@ -92,13 +99,27 @@ export const generateQueryFilter = ({
         } else if (type === 'between') {
 
             if (typeof value === 'object') {
-                builder.where(`${field} >= :column`, { column: value.from });
-                builder.where(`${field} <= :column`, { column: value.to });
+                if (valueCentsNumbers.includes(field)) {
+                    builder.where(`${field} >= to_char(float8 :column, 'FM999999999.00')`, { column: value.from });
+                    builder.where(`${field} <= to_char(float8 :column, 'FM999999999.00')`, { column: value.to });
+                } else {
+                    builder.where(`${field} >= :column`, { column: value.from });
+                    builder.where(`${field} <= :column`, { column: value.to });
+                }
+
             }
+
+        } else if (type === 'contains') {
+
+            builder.where(`${field} ILIKE '%${value}%'`);
+
+        } else if (type === 'equals') {
+
+            builder.where(`${field} = :value`, { value });
 
         } else if (like.includes(field)) {
 
-            builder.where(`${field} ILIKE %:column%`, { column: value });
+            builder.where(`${field} ILIKE '%${value}%'`, { column: value });
 
         } else if (numbers.includes(field)) {
 
@@ -116,92 +137,92 @@ export const generateQueryFilter = ({
 
 }
 
-export const generateFilter = ({ like = [], numbers = [], equalStrings = [], datas }: IFieldsGenerateFilter) => {
+// export const generateFilter = ({ like = [], numbers = [], equalStrings = [], datas }: IFieldsGenerateFilter) => {
 
-    const filter: any = {};
+//     const filter: any = {};
 
-    datas.forEach(({ field, value, type }) => {
+//     datas.forEach(({ field, value, type }) => {
 
-        if (type === 'all') {
+//         if (type === 'all') {
 
-            const onlyNumber = value.toString().replace(/\D/g, '');
+//             const onlyNumber = value.toString().replace(/\D/g, '');
 
-            like.forEach(name => {
-                filter[name] = Like(value);
-            });
+//             like.forEach(name => {
+//                 filter[name] = Like(value);
+//             });
 
-            equalStrings.forEach(name => {
-                filter[name] = value;
-            });
+//             equalStrings.forEach(name => {
+//                 filter[name] = value;
+//             });
 
-            if (onlyNumber) {
-                numbers.forEach(name => {
-                    filter[name] = onlyNumber;
-                });
-            }
+//             if (onlyNumber) {
+//                 numbers.forEach(name => {
+//                     filter[name] = onlyNumber;
+//                 });
+//             }
 
-        }
+//         }
 
-        if (type === 'lessThan') {
+//         if (type === 'lessThan') {
 
-            filter[field] = LessThan(value);
+//             filter[field] = LessThan(value);
 
-        } else if (type === 'lessThanOrEqual') {
+//         } else if (type === 'lessThanOrEqual') {
 
-            filter[field] = LessThanOrEqual(value);
+//             filter[field] = LessThanOrEqual(value);
 
-        } else if (type === 'moreThan') {
+//         } else if (type === 'moreThan') {
 
-            filter[field] = MoreThan(value);
+//             filter[field] = MoreThan(value);
 
-        } else if (type === 'moreThanOrEqual') {
+//         } else if (type === 'moreThanOrEqual') {
 
-            filter[field] = MoreThanOrEqual(value);
+//             filter[field] = MoreThanOrEqual(value);
 
-        } else if (type === 'between') {
+//         } else if (type === 'between') {
 
-            // TODO: Adicionar um Between de datas
-            const [value1, value2] = datas.filter(data => data.field === field).map(data => data.value);
-            filter[field] = Between(value1, value2);
+//             // TODO: Adicionar um Between de datas
+//             const [value1, value2] = datas.filter(data => data.field === field).map(data => data.value);
+//             filter[field] = Between(value1, value2);
 
-        } else if (like.includes(field)) {
+//         } else if (like.includes(field)) {
 
-            filter[field] = Raw(alias => `${alias} ILIKE '%${value}%'`);
+//             filter[field] = Raw(alias => `${alias} ILIKE '%${value}%'`);
 
-        } else if (numbers.includes(field)) {
+//         } else if (numbers.includes(field)) {
 
-            const onlyNumber = value.toString().replace(/\D/g, '');
-            filter[field] = onlyNumber;
+//             const onlyNumber = value.toString().replace(/\D/g, '');
+//             filter[field] = onlyNumber;
 
-        } else if (equalStrings.includes(field)) {
+//         } else if (equalStrings.includes(field)) {
 
-            filter[field] = value;
+//             filter[field] = value;
 
-        }
-    });
+//         }
+//     });
 
-    return filter;
+//     return filter;
 
-}
+// }
 
-export const addFilter = ({ like = [], equal = [], data }: IFieldsFilter) => {
-    const filter: any = {};
-    const entries = Object.entries(data);
+// export const addFilter = ({ like = [], equal = [], data }: IFieldsFilter) => {
+//     const filter: any = {};
+//     const entries = Object.entries(data);
 
-    entries.forEach(([key, value]) => {
+//     entries.forEach(([key, value]) => {
 
-        if (typeof value === 'object') {
-            filter[key] = addFilter({ like, equal, data: value });
-        } else if (like.includes(key)) {
-            filter[key] = Like(value);
-        } else if (equal.includes(key)) {
-            filter[key] = value;
-        }
+//         if (typeof value === 'object') {
+//             filter[key] = addFilter({ like, equal, data: value });
+//         } else if (like.includes(key)) {
+//             filter[key] = Like(value);
+//         } else if (equal.includes(key)) {
+//             filter[key] = value;
+//         }
 
-    });
+//     });
 
-    return filter;
-}
+//     return filter;
+// }
 
 export enum Code {
     OK = 1,

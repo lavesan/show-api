@@ -1,4 +1,6 @@
-import { Controller, Post, Body, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Delete, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
 import { AuthService } from '../../../services/auth/auth.service';
 import { RegisterUserForm } from '../../../model/forms/user/RegisterUserForm';
 import { LoginUserForm } from '../../../model/forms/user/LoginUserForm';
@@ -18,6 +20,7 @@ export class AuthController {
 
     // Token no header
     @Delete('logoff')
+    @UseGuards(AuthGuard('jwt'))
     logoff() {
         return this.authService.logoffUser();
     }

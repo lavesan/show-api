@@ -8,7 +8,7 @@ import { UserRole, UserStatus } from '../../model/constants/user.constants';
 import { generateHashPwd, comparePwdWithHash } from '../../utils/auth.utils';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { paginateResponseSchema, skipFromPage, generateFilter, generateQueryFilter } from 'src/utils/response-schema.utils';
+import { paginateResponseSchema, skipFromPage, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { FilterUserDataForm } from 'src/model/forms/user/FilterUserDataForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
