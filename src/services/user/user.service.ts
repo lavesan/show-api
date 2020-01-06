@@ -9,7 +9,6 @@ import { generateHashPwd, comparePwdWithHash } from '../../utils/auth.utils';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { paginateResponseSchema, skipFromPage, generateQueryFilter } from 'src/utils/response-schema.utils';
-import { FilterUserDataForm } from 'src/model/forms/user/FilterUserDataForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()
@@ -77,7 +76,7 @@ export class UserService {
         const user = await this.userRepo.findOne({
             where: { login , status: 1 },
         });
-        
+
         if (user) {
             user.updateDate = new Date();
             user.password = generateHashPwd(password);
