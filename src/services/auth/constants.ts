@@ -1,3 +1,3 @@
 export const jwtConsts = {
-    secret: 'outraChaveSecreta',
+    secret: process.env.JWT_SECRET_KEY,
 }
