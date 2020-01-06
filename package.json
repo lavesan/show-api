@@ -26,11 +26,13 @@
   },
   "dependencies": {
     "@nestjs/common": "^6.7.2",
+    "@nestjs/config": "^0.0.8",
     "@nestjs/core": "^6.7.2",
     "@nestjs/jwt": "^6.1.1",
     "@nestjs/passport": "^6.1.1",
     "@nestjs/platform-express": "^6.7.2",
     "@nestjs/typeorm": "^6.2.0",
+    "@sendgrid/mail": "^6.4.0",
     "bcrypt": "^3.0.7",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.2.3",
