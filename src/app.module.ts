@@ -1,5 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,13 +14,14 @@ import { ProductModule } from './modules/product/product.module';
 import { UserBackofficeModule } from './modules/user-backoffice/user-backoffice.module';
 import { GetnetModule } from './modules/getnet/getnet.module';
 import { ProductCategoryModule } from './modules/product-category/product-category.module';
-import { UserBackofficeController } from './controllers/backoffice/user-backoffice/user-backoffice.controller';
+import { SendgridModule } from './modules/sendgrid/sendgrid.module';
 
 import config = require('./ormconfig');
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(config),
+    ConfigModule.forRoot({ isGlobal: true, load: [config] }),
+    TypeOrmModule.forRoot(config()),
     UserModule,
     AuthModule,
     ContactModule,
@@ -30,8 +32,9 @@ import config = require('./ormconfig');
     UserBackofficeModule,
     GetnetModule,
     ProductCategoryModule,
+    SendgridModule,
   ],
-  controllers: [AppController, UserBackofficeController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
