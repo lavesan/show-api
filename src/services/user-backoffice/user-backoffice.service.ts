@@ -6,7 +6,7 @@ import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUser
 import { generateHashPwd } from 'src/utils/auth.utils';
 import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateFilter, generateQueryFilter } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()

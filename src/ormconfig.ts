@@ -1,7 +1,6 @@
 import { ConnectionOptions } from 'typeorm';
-import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 
-const config = (): any => ({
+const config = (): ConnectionOptions => ({
     type: 'postgres',
     host: process.env.POSTGRES_HOST_NAME,
     port: Number(process.env.POSTGRES_PORT),

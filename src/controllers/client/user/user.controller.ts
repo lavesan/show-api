@@ -1,4 +1,4 @@
-import { Controller, Delete, Param, Get, Query } from '@nestjs/common';
+import { Controller, Delete, Param, Get, Query, Body } from '@nestjs/common';
 import { UserService } from 'src/services/user/user.service';
 import { SendgridService } from 'src/services/sendgrid/sendgrid.service';
 
@@ -21,8 +21,8 @@ export class UserController {
     }
 
     @Get('sendgrid')
-    test() {
-        this.sendgridService.sendMail();
+    test(@Body() body) {
+        this.sendgridService.sendMail(body);
     }
 
 }

@@ -1,6 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { sign } from 'jsonwebtoken';
-import { jwtConsts } from './constants';
 import { UserService } from '../user/user.service';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
@@ -14,7 +13,7 @@ export class AuthService {
     async signPayload(payload: any) {
         // 12h - 12 horas
         // 12d - 12 dias
-        return sign(payload, jwtConsts.secret, { expiresIn: '3d' });
+        return sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '3d' });
     }
 
     async validateUser(payload): Promise<any> {

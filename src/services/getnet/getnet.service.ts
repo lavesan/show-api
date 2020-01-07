@@ -15,7 +15,8 @@ interface IGetnetLoginResponse {
 export class GetnetService {
 
     constructor(private readonly httpService: HttpService) {
-        this.httpService.axiosRef.defaults.baseURL = 'https://api-sandbox.getnet.com.br';
+        // 'https://api-sandbox.getnet.com.br'
+        this.httpService.axiosRef.defaults.baseURL = process.env.GETNET_API_URL;
         this.httpService.axiosRef.interceptors.request.use(req => this.addAuthHeader(req));
     }
 
@@ -26,14 +27,15 @@ export class GetnetService {
         const rawData: any = fs.readFileSync(this.jsonFile);
 
         if (rawData) {
-            const { token_type, access_token }: IGetnetLoginResponse = JSON.parse(rawData);
 
+            const { token_type, access_token }: IGetnetLoginResponse = JSON.parse(rawData);
             const autorization = `${token_type} ${access_token}`;
 
             req.headers = {
                 ...req.headers,
                 autorization,
             };
+
         }
 
         return req;
@@ -58,8 +60,8 @@ export class GetnetService {
      */
     private async login(): Promise<AxiosResponse<IGetnetLoginResponse>> {
 
-        const clientId = '20daae27-da67-4c17-b1fe-4f9673951459';
-        const clientSecret = 'd30e9f10-832b-4818-b8aa-2cf968b4d77b';
+        const clientId = process.env.GETNET_CLIENT_ID;
+        const clientSecret = process.env.GETNET_CLIENT_SECRET;
 
         // Transforms a String in a Base64 String
         const base64Token = btoa(`${clientId}:${clientSecret}`);
@@ -67,7 +69,7 @@ export class GetnetService {
 
         const headers = {
             autorization,
-        }
+        };
 
         return this.httpService.post('/auth/oauth/v2/token?scope=oob&grant_type=client_credentials',
             null,
@@ -83,7 +85,7 @@ export class GetnetService {
         const body = {
             card_number: cardNumber,
             customer_id: userId,
-        }
+        };
 
         // Tando tudo correto, retorna um objeto com 'number_token' para eu utilizar nas requisições que farei
         return this.httpService.post('/v1/tokens/card', body);
@@ -104,10 +106,75 @@ export class GetnetService {
             cardholder_identification: 'cpf ou cnpj do usuário',
             customer_id: 1,
             verify_card: true,
-        }
+        };
 
         return this.httpService.post('/v1/cards', body);
 
+    }
+
+    async downloadPdf(paymentId: string) {
+        return this.httpService.get(`https://api-homologacao.getnet.com.br/v1/payments/boleto/${paymentId}/pdf`);
+    }
+
+    /**
+     * @description Solicita o cancelamento de compras feitas a mais de um dia
+     */
+    async orderCancel() {
+
+        const data = {
+
+        };
+
+        return this.httpService.post('/v1/payments/cancel/request');
+    }
+
+    /**
+     * @description Cancela pagamentos feitos APENAS NO MESMO DIA
+     * @param {string} paymentId
+     */
+    async cancelPayment(paymentId: string) {
+        return this.httpService.post(`https://api-homologacao.getnet.com.br/v1/payments/credit/${paymentId}/cancel`);
+    }
+
+    /**
+     * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1debit%2Fpost
+     */
+    private async payDebit() {
+
+        const data = {
+
+        };
+
+        return this.httpService.post('/v1/payments/debit');
+    }
+
+    /**
+     * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1credit%2Fpost
+     */
+    private async payCredit() {
+
+        const data = {
+
+        };
+
+        return this.httpService.post('/v1/payments/credit');
+    }
+
+    /**
+     * @description Verifica se o cartão é válido. APENAS Mastercard e Visa
+     */
+    private async verifyCard() {
+
+        const data = {
+            number_token: "dfe05208b105578c070f806c80abd3af09e246827d29b866cf4ce16c205849977c9496cbf0d0234f42339937f327747075f68763537b90b31389e01231d4d13c",
+            brand: "Mastercard",
+            cardholder_name: "JOAO DA SILVA",
+            expiration_month: "12",
+            expiration_year: "20",
+            security_code: "123"
+        };
+
+        return this.httpService.post(`/v1/cards/verification`, data);
     }
 
 }
