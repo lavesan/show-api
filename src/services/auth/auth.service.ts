@@ -5,6 +5,8 @@ import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
 import { UserEntity } from 'src/entities/user.entity';
 import { TokenPayloadType } from 'src/model/types/user.types';
+import { decodeToken } from 'src/utils/auth.utils';
+import moment = require('moment');
 
 @Injectable()
 export class AuthService {
@@ -22,38 +24,48 @@ export class AuthService {
 
     /**
      * @description Constructs the payload data
-     * @param {UserEntity} user
+     * @param {Partial<UserEntity>} user
      */
-    private constructTokenPayload(user: UserEntity): TokenPayloadType {
+    private constructTokenPayload(user: Partial<UserEntity>): TokenPayloadType {
         return {
+            id: user.id,
             login: user.email,
             role: user.role,
-            id: user.id,
-        }
+            name: user.name,
+        };
     }
 
     async loginUser(userDTO: LoginUserForm) {
-        const user = await this.userService.loginUser(userDTO);
-        if (user) {
-            // Constructs the payload
-            const payload = this.constructTokenPayload(user);
-            const userData = {
-                name: user.name,
-                imgUrl: user.imgUrl,
-            }
 
-            const token = await this.signPayload(payload);
-            return { user: userData, token };
+        const user = await this.userService.loginUser(userDTO);
+        return this.sendJwtTokenWithUserData(user);
+
+    }
+
+    async refreshToken(tokenAuth: string) {
+
+        const tokenObj = decodeToken(tokenAuth);
+
+        const expirationDate = moment.unix(tokenObj.exp);
+        const today = moment();
+
+        if (expirationDate.isAfter(today)) {
+
+            const user = await this.userService.findActiveById(tokenObj.id);
+            return await this.sendJwtTokenWithUserData(user);
+
         }
+
         throw new HttpException({
-            status: HttpStatus.NOT_FOUND,
-            error: 'Usuário não encontrado',
-        }, HttpStatus.NOT_FOUND);
+            status: HttpStatus.UNAUTHORIZED,
+            error: 'Token expirado',
+        }, HttpStatus.UNAUTHORIZED);
+
     }
 
     // TODO: Implementar um logoff
     async logoffUser() {
-        console.log('deslogar')
+        console.log('deslogar');
     }
 
     async registerUser(userDTO: RegisterUserForm) {
@@ -64,9 +76,32 @@ export class AuthService {
             const userData = {
                 name: user.name,
                 imgUrl: user.imgUrl,
-            }
+            };
+
             const token = await this.signPayload(payload);
             return { user: userData, token };
         }
     }
+
+    private async sendJwtTokenWithUserData(user: Partial<UserEntity>) {
+
+        if (user) {
+
+            // Constructs the payload
+            const payload = this.constructTokenPayload(user);
+            const userData = {
+                name: user.name,
+                imgUrl: user.imgUrl,
+            };
+
+            const token = await this.signPayload(payload);
+            return { user: userData, token };
+        }
+        throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            error: 'Usuário não encontrado',
+        }, HttpStatus.NOT_FOUND);
+
+    }
+
 }

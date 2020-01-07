@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UserBackofficeService } from '../../services/user-backoffice/user-backoffice.service';
-import { UserBackofficeEntity } from '../../entities/userBackoffice.entity';
+import { UserBackofficeEntity } from '../../entities/user-backoffice.entity';
 import { UserBackofficeController } from 'src/controllers/backoffice/user-backoffice/user-backoffice.controller';
 
 @Module({

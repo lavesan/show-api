@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Delete, UseGuards, Headers } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { RegisterUserForm } from '../../../model/forms/user/RegisterUserForm';
 import { LoginUserForm } from '../../../model/forms/user/LoginUserForm';
 
-@Controller('client/auth')
+@Controller('auth')
 export class AuthController {
 
     constructor(
@@ -21,8 +21,14 @@ export class AuthController {
     // Token no header
     @Delete('logoff')
     @UseGuards(AuthGuard('jwt'))
-    logoff() {
+    logoff(@Headers('authorization') tokenAuth: string) {
         return this.authService.logoffUser();
+    }
+
+    @Post('refresh-token')
+    @UseGuards(AuthGuard('jwt'))
+    refreshToken(@Headers('authorization') tokenAuth: string) {
+        return this.authService.refreshToken(tokenAuth);
     }
 
     // Adiciona novo usuário

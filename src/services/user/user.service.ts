@@ -51,25 +51,39 @@ export class UserService {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
         // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
         const user = await this.userRepo.findOne({
-            where: { email: login, status: UserStatus.ACTIVE }
+            select: ['id', 'email', 'password', 'name', 'role'],
+            where: { email: login, status: UserStatus.ACTIVE },
         });
 
         if (user) {
+
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
                 return await Promise.resolve(user);
+
             } else {
+
                 throw new HttpException({
                     status: HttpStatus.NOT_ACCEPTABLE,
                     error: 'Senha incorreta',
                 }, HttpStatus.NOT_ACCEPTABLE);
+
             }
         }
+
         throw new HttpException({
             status: HttpStatus.NOT_FOUND,
             error: 'Usuário não encontrado',
         }, HttpStatus.NOT_FOUND);
+
+    }
+
+    async findActiveById(userId: number) {
+        return this.userRepo.findOne({
+            select: ['email', 'id', 'role', 'name'],
+            where: { id: userId, status: UserStatus.ACTIVE },
+        });
     }
 
     async updatePassword({ login, password }: LoginUserForm): Promise<any> {

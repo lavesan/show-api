@@ -107,12 +107,15 @@ export class createDb1576893815309 implements MigrationInterface {
                 usb_name TEXT NOT NULL,
                 usb_email TEXT NOT NULL,
                 usb_role INTEGER NOT NULL,
+                usb_status INTEGER NOT NULL,
                 usb_password TEXT NOT NULL,
                 usb_img_url TEXT,
                 usb_creation_date TIMESTAMP NOT NULL,
                 usb_update_date TIMESTAMP,
                 PRIMARY KEY (usb_id)
             );
+
+            comment on column usb_user_backoffice.usb_status is 'Status do usuário. 1 para ativo, 2 para inativo';
 
             -- Tabela de categorias
             CREATE TABLE cat_category (
@@ -171,8 +174,8 @@ export class createDb1576893815309 implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<any> {
         return await queryRunner.query(`
             DROP TABLE IF EXISTS orp_order_product;
-            DROP TABLE IF EXISTS cat_category;
             DROP TABLE IF EXISTS pro_product;
+            DROP TABLE IF EXISTS cat_category;
             DROP TABLE IF EXISTS ord_order;
             DROP TABLE IF EXISTS car_card;
             DROP TABLE IF EXISTS adr_address;

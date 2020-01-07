@@ -1,4 +1,4 @@
-import { UserBackofficeRole } from "src/model/constants/userBackoffice.constants";
+import { UserBackofficeRole } from "src/model/constants/user-backoffice.constants";
 import { IsString, IsOptional, IsEnum } from "class-validator";
 
 export class FilterUserBackofficeForm {

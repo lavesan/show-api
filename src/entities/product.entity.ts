@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { ProductType, ProductStatus } from 'src/model/constants/product.constants';
-import { UserBackofficeEntity } from './userBackoffice.entity';
+import { UserBackofficeEntity } from './user-backoffice.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
 import { ProductCategoryEntity } from './productCategory.entity';
 

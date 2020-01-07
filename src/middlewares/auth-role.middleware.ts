@@ -3,7 +3,7 @@ import { Injectable, NestMiddleware, HttpException, HttpStatus } from '@nestjs/c
 import { Request, Response } from 'express';
 import * as jwtDecode from 'jwt-decode';
 
-import { UserBackofficeRole } from 'src/model/constants/userBackoffice.constants';
+import { UserBackofficeRole } from 'src/model/constants/user-backoffice.constants';
 
 @Injectable()
 export class AdminMiddleware implements NestMiddleware {

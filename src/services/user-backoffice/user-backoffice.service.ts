@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserBackofficeEntity } from 'src/entities/userBackoffice.entity';
+import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 import { generateHashPwd } from 'src/utils/auth.utils';
