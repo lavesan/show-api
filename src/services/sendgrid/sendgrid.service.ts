@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as sgMail from '@sendgrid/mail';
 
+type MailType = 'default' | 'forgotPasswordAdmin' | 'confirmClient' | 'forgotPasswordClient';
+
 @Injectable()
 export class SendgridService {
 
@@ -11,15 +13,64 @@ export class SendgridService {
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     }
 
-    async sendMail() {
-        const msg = {
-            to: 'darkflamemaster120@gmail.com',
-            from: this.from,
-            subject: 'Sending with Twilio SendGrid is Fun',
-            text: 'and easy to do anywhere, even with Node.js',
-            html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-        };
+    async sendMail({ type = 'default', ...params }) {
+
+        const msg = this.msgHandler[type](params);
         return sgMail.send(msg);
+
     }
+
+    private msgHandler = {
+        forgotPasswordAdmin: ({ to, name }) => ({
+            to,
+            from: this.from,
+            subject: 'Zero veneno administrador',
+            text: 'Esqueci minha senha',
+            html: `
+                <h2>Olá ${name}!</h2>
+                <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor prossiga para próxima etapa clicando no botão abaixo:</p>
+                <a
+                    href="http://localhost:3001/"
+                    target="_blank"
+                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
+                    Alterar a senha
+                </a>
+            `,
+        }),
+        confirmClient: ({ to, name }) => ({
+            to,
+            from: this.from,
+            subject: 'Zero veneno loja',
+            text: 'Confirmar email',
+            html: `
+                <h2>Olá ${name}!</h2>
+                <p style="color: #aaa;">Obrigado por ter criado uma conta na zero veneno, espero que você goste dos produtos!</p>
+                <p style="color: #aaa;">Para você se tornar um usuário com todos os benefícios (ofertas, notíficias...), então confirme seu email clicando no botão abaixo!</p>
+                <a
+                    href="http://localhost:3001/"
+                    target="_blank"
+                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
+                    Confirmar e-mail
+                </a>
+            `,
+        }),
+        forgotPasswordClient: ({ to, name }) => ({
+            to,
+            from: this.from,
+            subject: 'Zero veneno loja',
+            text: 'Esqueceu a senha',
+            html: `
+                <h2>Olá ${name}!</h2>
+                <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor prossiga para próxima etapa clicando no botão abaixo:</p>
+                <a
+                    href="http://localhost:3001/"
+                    target="_blank"
+                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
+                    Alterar a senha
+                </a>
+            `,
+        }),
+        default() {},
+    };
 
 }
