@@ -43,22 +43,24 @@ export class GetnetService {
             this.addAuthHeader(req);
             return req;
         });
-        // this.httpService.axiosRef.interceptors.response.use(
-        //     res => res.data ? Promise.resolve(res.data) : Promise.resolve(res),
-        //     (err: AxiosError) => err.response ? Promise.reject(err.response.data) :  Promise.reject(err.response),
-        // );
+        this.httpService.axiosRef.interceptors.response.use(
+            res => res.data ? Promise.resolve(res.data) : Promise.resolve(res),
+            (err: AxiosError) => err.response ? Promise.reject(err.response.data) :  Promise.reject(err.response),
+        );
     }
 
     private readonly jsonFile = './src/services/getnet/getnet-data.json';
 
     private addAuthHeader(req: AxiosRequestConfig): AxiosRequestConfig {
 
-        const rawData: any = fs.readFileSync(__dirname + this.jsonFile);
+        const rawData: any = fs.readFileSync(this.jsonFile);
 
         if (rawData) {
 
             const { token_type, access_token }: IGetnetLoginResponse = JSON.parse(rawData);
             const autorization = `${token_type} ${access_token}`;
+
+            console.log('autorization: ', autorization);
 
             req.headers = {
                 ...req.headers,
@@ -118,6 +120,27 @@ export class GetnetService {
 
     }
 
+    private getAuthHeader(): Headers {
+
+        const rawData: any = fs.readFileSync(this.jsonFile);
+
+        const h = new Headers();
+
+        if (rawData) {
+
+            const { token_type, access_token }: IGetnetLoginResponse = JSON.parse(rawData);
+            const autorization = `${token_type} ${access_token}`;
+
+            h.append('Authorization', autorization);
+            h.append('Content-Type', 'application/json');
+            h.append('Accept', 'application/json, text/plain, */*');
+
+        }
+
+        return h;
+
+    }
+
     // SALVANDO CARTÃO E COLETANDO SEUS DADOS POSTERIORMENTE
 
     // 1 step - Criando um token para o cartão
@@ -127,11 +150,20 @@ export class GetnetService {
 
         const body = {
             card_number: cardNumber,
-            customer_id: userId,
+            // customer_id: userId,
         };
 
-        // Tando tudo correto, retorna um objeto com 'number_token' para eu utilizar nas requisições que farei
-        return this.httpService.post('/v1/tokens/card', body).toPromise();
+        const h = this.getAuthHeader();
+
+        const req = new Request('https://api-sandbox.getnet.com.br/v1/tokens/card', {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: h,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
 
     }
 
@@ -143,7 +175,7 @@ export class GetnetService {
 
         const body = {
             brand,
-            number_token: cardToken,
+            number_token: cardToken.number_token,
             // Número no cartão, de 16 à 19 dígitos
             card_number: '',
             cardholder_name: nameOnCard,
@@ -211,13 +243,64 @@ export class GetnetService {
     /**
      * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1credit%2Fpost
      */
-    private async payCredit() {
+    async payCredit({ card_number }) {
 
-        const data = {
+        const cardToken = await this.generateTokenCard({ cardNumber: card_number, userId: '' });
 
-        };
+        if (cardToken) {
 
-        return this.httpService.post('/v1/payments/credit');
+            const body = {
+                seller_id: process.env.GETNET_SELLER_ID,
+                amount: '1000',
+                order: {
+                    // Identificador da compra (eu seto isso)
+                    order_id: '12345',
+                },
+                customer: {
+                    // Identificador do comprador (eu setei isso)
+                    customer_id: '12345',
+                    billing_address: {},
+                },
+                device: {},
+                shippings: [
+                    {
+                    address: {},
+                    },
+                ],
+                credit: {
+                    // Se o crédito será feito com confirmação tardia
+                    delayed: false,
+                    // Se o cartão deve ser salvo para futuras compras
+                    save_card_data: false,
+                    // Tipo da transação
+                    transaction_type: 'FULL',
+                    number_installments: 1,
+                    card: {
+                        number_token: cardToken.number_token,
+                        // Nome do comprador no cartão
+                        cardholder_name: 'JOAO DA SILVA',
+                        // Mês de expiração
+                        expiration_month: '12',
+                        // Ano de expiração
+                        expiration_year: '21'
+                    },
+                },
+            };
+
+            const h = this.getAuthHeader();
+
+            const req = new Request('https://api-sandbox.getnet.com.br/v1/payments/credit', {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: h,
+                mode: 'cors',
+            });
+
+            return fetch(req)
+                .then(res => res.json());
+
+        }
+
     }
 
     /**

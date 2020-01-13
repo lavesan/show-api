@@ -28,4 +28,9 @@ export class ProductController {
         return this.getnetService.writeAuthTokenOnFile();
     }
 
+    @Post('getnet-pay-credit')
+    payCredit(): any {
+        return this.getnetService.payCredit({ card_number: '5155901222280001' });
+    }
+
 }
