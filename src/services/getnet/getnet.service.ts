@@ -33,6 +33,37 @@ interface ICardGetnetSafebox {
     status: 'active' | 'inactive';
 }
 
+interface IPayDebitResponse {
+    payment_id: string;
+    seller_id: string;
+    redirect_url: string;
+    post_data: {
+        issuer_payment_id: string;
+        payer_authentication_request: string;
+    }
+}
+
+interface IAuthenticatedDebitPayment {
+    payment_id: string;
+    seller_id: string;
+    amount: number;
+    currency: string;
+    order_id: string;
+    status: string;
+    payment_received_timestamp: string;
+    debit: {
+      authorization_code: string;
+      authorization_timestamp: string;
+      reason_code: number;
+      reason_message: string;
+      acquirer: string;
+      soft_descriptor: string;
+      brand: string;
+      terminal_nsu: string;
+      acquirer_transaction_id: string;
+    }
+  }
+
 @Injectable()
 export class GetnetService {
 
@@ -120,7 +151,7 @@ export class GetnetService {
 
     }
 
-    private getAuthHeader(): Headers {
+    private getAuthHeader({ contentType = 'application/json' } = { contentType: 'application/json' }): Headers {
 
         const rawData: any = fs.readFileSync(this.jsonFile);
 
@@ -132,7 +163,7 @@ export class GetnetService {
             const autorization = `${token_type} ${access_token}`;
 
             h.append('Authorization', autorization);
-            h.append('Content-Type', 'application/json');
+            h.append('Content-Type', contentType);
             h.append('Accept', 'application/json, text/plain, */*');
 
         }
@@ -144,7 +175,7 @@ export class GetnetService {
     // SALVANDO CARTÃO E COLETANDO SEUS DADOS POSTERIORMENTE
 
     // 1 step - Criando um token para o cartão
-    async generateTokenCard({ cardNumber, userId }): Promise<any> {
+    private async generateTokenCard({ cardNumber, userId }): Promise<any> {
         // TODO: Vou precisar pegar o ID do ecommerce de Lis e utilizar, isto é OBRIGATÓRIO quando for para produção
         // https://developers.getnet.com.br/api#tag/Tokenizacao%2Fpaths%2F~1v1~1tokens~1card%2Fpost
 
@@ -222,22 +253,122 @@ export class GetnetService {
 
     /**
      * @description Cancela pagamentos feitos APENAS NO MESMO DIA
-     * @param {string} paymentId
      */
-    async cancelPayment(paymentId: string) {
-        return this.httpService.post(`https://api-homologacao.getnet.com.br/v1/payments/credit/${paymentId}/cancel`);
+    async cancelPayment(data: any) {
+
+        const body = {
+            // Id do pagamento
+            payment_id: "5df204d2-cb7b-45a6-8075-3a354207ada7",
+            cancel_amount: 1000,
+            // Id que vou criar para esse cancelamento
+            cancel_custom_key: "MC4zNDA1NjMxMDYxMTM2NjQ3"
+        }
+        const headers = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/cancel/request`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
     }
 
     /**
-     * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1debit%2Fpost
+     * @description Verifica se o pagamento de uma cancelamento foi realmente cancelado
+     * @param {string} cancelId 
      */
-    private async payDebit() {
+    async verifyCancelPayment(cancelId: string) {
 
-        const data = {
+        const headers = this.getAuthHeader();
 
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/cancel/request?cancel_custom_key=${cancelId}`, {
+            method: 'GET',
+            headers,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
+
+    }
+
+    /**
+     * @description Completei o pagamento por débito
+     */
+    async payDebit({ card_number }): Promise<IPayDebitResponse> {
+
+        const cardToken = await this.generateTokenCard({ cardNumber: card_number, userId: '' });
+
+        if (cardToken) {
+
+            const body = {
+                seller_id: process.env.GETNET_SELLER_ID,
+                amount: '1000',
+                order: {
+                    // Identificador da compra (eu seto isso)
+                    order_id: '12345',
+                },
+                customer: {
+                    // Identificador do comprador (eu setei isso)
+                    customer_id: '12345',
+                    billing_address: {},
+                },
+                device: {},
+                shippings: [
+                    {
+                    address: {},
+                    },
+                ],
+                debit: {
+                    card: {
+                        number_token: cardToken.number_token,
+                        // Nome do comprador no cartão
+                        cardholder_name: 'JOAO DA SILVA',
+                        // Mês de expiração
+                        expiration_month: '12',
+                        // Ano de expiração
+                        expiration_year: '21'
+                    },
+                },
+            };
+
+            const h = this.getAuthHeader();
+
+            const req = new Request('https://api-sandbox.getnet.com.br/v1/payments/debit', {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: h,
+                mode: 'cors',
+            });
+
+            return fetch(req)
+                .then(res => res.json());
+
+        }
+
+    }
+
+    async authenticateDebitPayment({ payment_id }): Promise<IAuthenticatedDebitPayment> {
+
+        const headers = this.getAuthHeader();
+
+        const body = {
+            payment_id,
         };
 
-        return this.httpService.post('/v1/payments/debit');
+        const req = new Request(`https://api-sandbox.getnet.com.br/v1/payments/debit/${payment_id}/authenticated/finalize`, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
+
     }
 
     /**

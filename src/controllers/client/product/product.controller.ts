@@ -33,4 +33,9 @@ export class ProductController {
         return this.getnetService.payCredit({ card_number: '5155901222280001' });
     }
 
+    @Post('getnet-pay-debit')
+    payDebit(): any {
+        return this.getnetService.payDebit({ card_number: '5155901222280001' });
+    }
+
 }
