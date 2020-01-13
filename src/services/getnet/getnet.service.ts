@@ -1,6 +1,8 @@
 import { Injectable, HttpService } from '@nestjs/common';
-import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import * as fs from 'fs';
+import { URLSearchParams } from 'url';
+import fetch, { Request, Headers } from 'node-fetch';
 
 import { SaveCardForm } from 'src/model/forms/getnet/SaveCardForm';
 
@@ -11,20 +13,47 @@ interface IGetnetLoginResponse {
     scope: 'oob';
 }
 
+interface ISavedCardResponse {
+    card_id: string;
+    number_token: string;
+}
+
+interface ICardGetnetSafebox {
+    card_id: string;
+    last_four_digits: string;
+    expiration_month: string;
+    expiration_year: string;
+    brand: string;
+    cardholder_name: string;
+    customer_id: number;
+    number_token: string;
+    used_at: Date;
+    created_at: Date;
+    updated_at: Date;
+    status: 'active' | 'inactive';
+}
+
 @Injectable()
 export class GetnetService {
 
     constructor(private readonly httpService: HttpService) {
         // 'https://api-sandbox.getnet.com.br'
         this.httpService.axiosRef.defaults.baseURL = process.env.GETNET_API_URL;
-        this.httpService.axiosRef.interceptors.request.use(req => this.addAuthHeader(req));
+        this.httpService.axiosRef.interceptors.request.use(req => {
+            this.addAuthHeader(req);
+            return req;
+        });
+        // this.httpService.axiosRef.interceptors.response.use(
+        //     res => res.data ? Promise.resolve(res.data) : Promise.resolve(res),
+        //     (err: AxiosError) => err.response ? Promise.reject(err.response.data) :  Promise.reject(err.response),
+        // );
     }
 
-    private readonly jsonFile = 'getnet-data.json';
+    private readonly jsonFile = './src/services/getnet/getnet-data.json';
 
     private addAuthHeader(req: AxiosRequestConfig): AxiosRequestConfig {
 
-        const rawData: any = fs.readFileSync(this.jsonFile);
+        const rawData: any = fs.readFileSync(__dirname + this.jsonFile);
 
         if (rawData) {
 
@@ -42,13 +71,14 @@ export class GetnetService {
 
     }
 
+    // TODO: Adicionar JOB para escrever as credenciais no arquivo getnet-data.json sempre que expirar
     async writeAuthTokenOnFile() {
 
         const loginAuth = await this.login();
 
         if (loginAuth) {
 
-            const stringifyData = JSON.stringify(loginAuth.data);
+            const stringifyData = JSON.stringify(loginAuth);
             fs.writeFileSync(this.jsonFile, stringifyData);
 
         }
@@ -58,27 +88,40 @@ export class GetnetService {
     /**
      * @description Autentica o cliente para usar os serviços da getnet
      */
-    private async login(): Promise<AxiosResponse<IGetnetLoginResponse>> {
+    private async login(): Promise<IGetnetLoginResponse> {
 
         const clientId = process.env.GETNET_CLIENT_ID;
         const clientSecret = process.env.GETNET_CLIENT_SECRET;
 
         // Transforms a String in a Base64 String
-        const base64Token = btoa(`${clientId}:${clientSecret}`);
-        const autorization = `Basic ${base64Token}`;
+        const base64Token = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+        // btoa(`${clientId}:${clientSecret}`)
+        const autorization = `Basic  ${base64Token}`;
 
-        const headers = {
-            autorization,
-        };
+        const h = new Headers();
+        h.append('Authorization', autorization);
+        h.append('Content-Type', 'application/x-www-form-urlencoded');
 
-        return this.httpService.post('/auth/oauth/v2/token?scope=oob&grant_type=client_credentials',
-            null,
-            { headers },
-        ).toPromise();
+        const formParameters = new URLSearchParams();
+        formParameters.append('scope', 'oob');
+        formParameters.append('grant_type', 'client_credentials');
+
+        const req = new Request('https://api-sandbox.getnet.com.br/auth/oauth/v2/token', {
+            method: 'POST',
+            body: formParameters,
+            headers: h,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
 
     }
 
-    async getCardToken(cardNumber: string, userId: number): Promise<any> {
+    // SALVANDO CARTÃO E COLETANDO SEUS DADOS POSTERIORMENTE
+
+    // 1 step - Criando um token para o cartão
+    async generateTokenCard({ cardNumber, userId }): Promise<any> {
         // TODO: Vou precisar pegar o ID do ecommerce de Lis e utilizar, isto é OBRIGATÓRIO quando for para produção
         // https://developers.getnet.com.br/api#tag/Tokenizacao%2Fpaths%2F~1v1~1tokens~1card%2Fpost
 
@@ -88,28 +131,45 @@ export class GetnetService {
         };
 
         // Tando tudo correto, retorna um objeto com 'number_token' para eu utilizar nas requisições que farei
-        return this.httpService.post('/v1/tokens/card', body);
+        return this.httpService.post('/v1/tokens/card', body).toPromise();
 
     }
 
-    async saveCard({ brand, nameOnCard, cardNumber, expirationMonth, expirationYear, securityCode }: SaveCardForm) {
+    // 2 step - Salvando o cartão no cofre
+    // Response type - ISavedCardResponse
+    async saveCard({ brand, nameOnCard, cardNumber, expirationMonth, expirationYear, securityCode }: SaveCardForm): Promise<any> {
 
-        const numberToken = await this.getCardToken(cardNumber, 1);
+        const cardToken = await this.generateTokenCard({ cardNumber, userId: 1 });
 
         const body = {
             brand,
-            number_token: numberToken,
+            number_token: cardToken,
+            // Número no cartão, de 16 à 19 dígitos
+            card_number: '',
             cardholder_name: nameOnCard,
             expiration_month: expirationMonth,
             expiration_year: expirationYear,
             security_code: securityCode,
+            // Se eu quiser nota fiscal, precisa (SEM MÁSCARA)
             cardholder_identification: 'cpf ou cnpj do usuário',
+            // Eu escolho qual o ID deste usuário
             customer_id: 1,
             verify_card: true,
         };
 
-        return this.httpService.post('/v1/cards', body);
+        return this.httpService.post('/v1/cards', body).toPromise();
 
+    }
+
+    // 3 step - Coletando os dados do cartão no cofre
+    // Response type - ICardGetnetSafebox
+    async getCardData(cardId: string) {
+        return this.httpService.get(`/v1/cards/${cardId}`).toPromise();
+    }
+
+    // 4 step - Remover o cartão do cofre
+    async removeCard(cardId: string) {
+        return this.httpService.delete(`/v1/cards/${cardId}`).toPromise();
     }
 
     async downloadPdf(paymentId: string) {

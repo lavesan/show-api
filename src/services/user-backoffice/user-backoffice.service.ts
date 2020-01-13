@@ -69,7 +69,7 @@ export class UserBackofficeService {
 
         const [result, count] = await generateQueryFilter({
             like: ['usb_name', 'usb_email'],
-            numbers: ['usb_role'],
+            numbers: ['usb_role', 'usb_status'],
             datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
             builder,
         })

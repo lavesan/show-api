@@ -1497,6 +1497,11 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
+btoa-atob@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/btoa-atob/-/btoa-atob-0.1.2.tgz#3edd5902bc839d99975ab2e1ea9955a1bd0887e2"
+  integrity sha1-Pt1ZAryDnZmXWrLh6plVob0Ih+I=
+
 buffer-equal-constant-time@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/buffer-equal-constant-time/-/buffer-equal-constant-time-1.0.1.tgz#f8e71132f7ffe6e01a5c9697a4c6f3e48d5cc819"
@@ -4858,7 +4863,7 @@ node-emoji@1.10.0:
   dependencies:
     lodash.toarray "^4.4.0"
 
-node-fetch@^2.3.0:
+node-fetch@^2.3.0, node-fetch@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
   integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
