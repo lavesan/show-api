@@ -36,14 +36,14 @@ export class OrderEntity {
     @Column({ name: 'ord_receive_date', type: 'timestamp', nullable: true })
     receiveDate: Date;
 
-    @Column({ name: 'con_creation_date', type: 'timestamp', update: false })
+    @Column({ name: 'ord_creation_date', type: 'timestamp', update: false })
     creationDate: Date;
 
-    @Column({ name: 'con_update_date', type: 'timestamp', nullable: true })
+    @Column({ name: 'ord_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
 
     @ManyToOne(table => UserEntity, user => user.id)
-    @JoinColumn({ name: 'con_use_id' })
+    @JoinColumn({ name: 'ord_use_id' })
     user: UserEntity;
 
     @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order)

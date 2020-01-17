@@ -6,6 +6,7 @@ import { OrderToProductService } from 'src/services/order-to-product/order-to-pr
 import { UserModule } from '../user/user.module';
 import { ProductModule } from '../product/product.module';
 import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
+import { OrderBackofficeController } from 'src/controllers/backoffice/order-backoffice/order-backoffice.controller';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
       UserModule,
       ProductModule,
     ],
+    controllers: [OrderBackofficeController],
     providers: [OrderService, OrderToProductService],
     exports: [OrderService],
 })
