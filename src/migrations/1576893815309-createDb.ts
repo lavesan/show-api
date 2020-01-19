@@ -75,6 +75,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_id SERIAL,
                 ord_card_code VARCHAR(60),
                 ord_type INTEGER NOT NULL,
+                ord_payed BOOLEAN NOT NULL,
                 ord_status INTEGER NOT NULL,
                 ord_total_value_cents TEXT NOT NULL,
                 ord_total_product_value_cents TEXT NOT NULL,
@@ -84,6 +85,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_creation_date TIMESTAMP NOT NULL,
                 ord_update_date TIMESTAMP,
                 ord_receive_date TIMESTAMP,
+                ord_deleted_date TIMESTAMP,
+                ord_deleted_reason TEXT,
                 ord_use_id INTEGER,
                 ord_adr_id INTEGER,
                 PRIMARY KEY (ord_id),
@@ -93,13 +96,14 @@ export class createDb1576893815309 implements MigrationInterface {
 
             comment on column ord_order.ord_card_code is 'Código do cartão se a venda foi feita online';
             comment on column ord_order.ord_type is 'Tipo da venda (0 para dinheiro, 1 para crédito e 2 para débito)';
-            comment on column ord_order.ord_status is 'Status do pedido. (0 para pedido feito, 1 para Preparando, 2 para Entregando, 3 para Entregue)';
+            comment on column ord_order.ord_status is 'Status do pedido. (0 para pedido feito, 1 para Preparando, 2 para Entregando, 3 para Entregue, 4 para cancelado)';
             comment on column ord_order.ord_total_value_cents is 'Valor total da venda';
             comment on column ord_order.ord_total_product_value_cents is 'Valor total dos produtos vendidos';
             comment on column ord_order.ord_total_freight_value_cents is 'Valor total do frete';
             comment on column ord_order.ord_get_on_market is 'Se é para pegar na loja ou não';
             comment on column ord_order.ord_change_value_cents is 'Se for dinheiro, ela vai existir e vai ser o valor que ele vai ter em mãos, para levar o troco';
             comment on column ord_order.ord_receive_date is 'Data e hora de recebimento, se for feita uma entrega';
+            comment on column ord_order.ord_deleted_reason is 'Razão para o pedido ter sido removido';
 
             -- Tabela dos usuários backoffice
             CREATE TABLE usb_user_backoffice (
