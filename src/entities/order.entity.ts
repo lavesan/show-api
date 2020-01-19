@@ -5,6 +5,7 @@ import { OrderToProductEntity } from './orderToProduct.entity';
 
 @Entity('ord_order')
 export class OrderEntity {
+
     @PrimaryGeneratedColumn({ name: 'ord_id' })
     id: number;
 
@@ -26,8 +27,14 @@ export class OrderEntity {
     @Column({ name: 'ord_total_freight_value_cents', type: 'text', nullable: true })
     totalFreightValuesCents: string;
 
+    @Column({ name: 'ord_deleted_reason', type: 'text', nullable: true })
+    deletedReason: string;
+
     @Column({ name: 'ord_get_on_market', type: 'boolean' })
     getOnMarket: boolean;
+
+    @Column({ name: 'ord_payed', type: 'boolean' })
+    payed: boolean;
 
     // Troco
     @Column({ name: 'ord_change_value_cents', type: 'text', nullable: true })
@@ -42,10 +49,14 @@ export class OrderEntity {
     @Column({ name: 'ord_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
 
+    @Column({ name: 'ord_deleted_date', type: 'timestamp', nullable: true })
+    deleteDate: Date;
+
     @ManyToOne(table => UserEntity, user => user.id)
     @JoinColumn({ name: 'ord_use_id' })
     user: UserEntity;
 
     @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order)
     orderToProd: OrderToProductEntity[];
+
 }
