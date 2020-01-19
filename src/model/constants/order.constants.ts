@@ -9,6 +9,7 @@ enum OrderStatus {
     PREPARING = 1,
     SENDING = 2,
     SENDED = 3,
+    CANCELED = 4,
 }
 
 export { OrderType, OrderStatus }

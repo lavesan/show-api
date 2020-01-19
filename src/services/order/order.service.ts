@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderEntity } from 'src/entities/order.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { OrderStatus } from 'src/model/constants/order.constants';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter } from 'src/utils/response-schema.utils';
 import { decodeToken } from 'src/utils/auth.utils';
+import { DeleteOrderForm } from 'src/model/forms/order/DeleteOrderForm';
 
 @Injectable()
 export class OrderService {
@@ -38,8 +39,18 @@ export class OrderService {
 
     }
 
-    async deleteOne(orderId: number) {
-        return await this.orderRepo.delete(orderId);
+    async softDelete(order: DeleteOrderForm): Promise<UpdateResult> {
+
+        const findOrder = this.findById(order.id);
+
+        const data = {
+            ...findOrder,
+            status: OrderStatus.CANCELED,
+            deletedReason: order.reason,
+            deleteDate: new Date(),
+        };
+
+        return await this.orderRepo.update({ id: order.id }, data);
     }
 
     async findAllWithToken({ filter, paginationForm, tokenAuth }): Promise<IPaginateResponseType<any>> {
