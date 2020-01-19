@@ -1,8 +1,10 @@
-import { Controller, Body, Post, Put, Delete, Param } from '@nestjs/common';
+import { Controller, Body, Post, Put, Delete, Param, Query } from '@nestjs/common';
 import { ProductService } from 'src/services/product/product.service';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
+import { PaginationForm } from 'src/model/forms/PaginationForm';
+import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Controller('backoffice/product')
 export class BackofficeProductController {
@@ -22,5 +24,13 @@ export class BackofficeProductController {
     @Delete(':id')
     deleteOne(@Param('id') productId: number): Promise<DeleteResult> {
         return this.productService.delete(productId);
+    }
+
+    @Post('all')
+    findAllFilteredPaginated(
+        @Query() paginationForm: PaginationForm,
+        @Body() filter: FilterForm[],
+    ) {
+        return this.productService.findAllFilteredPaginate(paginationForm, filter);
     }
 }
