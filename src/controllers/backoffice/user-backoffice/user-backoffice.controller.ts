@@ -29,7 +29,7 @@ export class UserBackofficeController {
 
     @Post('reset-password-mail')
     resetPasswordMail(@Body() resetPasswordMail: ResetPasswordUserBackofficeMailForm) {
-        return this.userBackofficeService;
+        return this.userBackofficeService.resetPasswordMail(resetPasswordMail);
     }
 
     @Delete('id')
