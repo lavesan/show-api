@@ -4,6 +4,8 @@ import { FilterForm } from 'src/model/forms/FilterForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
+import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeForm';
+import { ResetPasswordUserBackofficeMailForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeMailForm';
 
 @Controller('user-backoffice')
 export class UserBackofficeController {
@@ -18,6 +20,16 @@ export class UserBackofficeController {
     @Put()
     updateOne(@Body() userBackoffice: UpdateUserBackofficeForm) {
         return this.userBackofficeService.update(userBackoffice);
+    }
+
+    @Put('reset-password')
+    resetPassword(@Body() resetPasswordForm: ResetPasswordUserBackofficeForm) {
+        return this.userBackofficeService.resetPassword(resetPasswordForm);
+    }
+
+    @Post('reset-password-mail')
+    resetPasswordMail(@Body() resetPasswordMail: ResetPasswordUserBackofficeMailForm) {
+        return this.userBackofficeService;
     }
 
     @Delete('id')

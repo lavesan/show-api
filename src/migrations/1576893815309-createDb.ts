@@ -114,6 +114,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 usb_status INTEGER NOT NULL,
                 usb_password TEXT NOT NULL,
                 usb_img_url TEXT,
+                usb_reset_token TEXT,
                 usb_creation_date TIMESTAMP NOT NULL,
                 usb_update_date TIMESTAMP,
                 PRIMARY KEY (usb_id)

@@ -20,6 +20,9 @@ export class UserBackofficeEntity {
     @Column({ name: 'usb_img_url', type: 'integer', nullable: true })
     imgUrl: string;
 
+    @Column({ name: 'usb_reset_token', type: 'text', nullable: true })
+    resetPassowrdToken: string;
+
     @Column({ name: 'usb_role', type: 'integer' })
     role: UserBackofficeRole;
 

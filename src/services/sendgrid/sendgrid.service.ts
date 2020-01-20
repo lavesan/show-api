@@ -25,7 +25,7 @@ export class SendgridService {
             to,
             from: this.from,
             subject: 'Zero veneno administrador',
-            text: 'Esqueci minha senha',
+            text: 'Esqueceu minha senha',
             html: `
                 <h2>Olá ${name}!</h2>
                 <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor prossiga para próxima etapa clicando no botão abaixo:</p>
