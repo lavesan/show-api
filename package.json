@@ -2,7 +2,7 @@
   "name": "zero-veneno-api",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "Valdery Alves Paes Júnior <valdery.jur@gmail.com> (http://valderyalves.com)",
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
