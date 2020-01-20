@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Put, Delete, Param, Query } from '@nestjs/common';
+import { Controller, Body, Post, Put, Delete, Param, Query, Get } from '@nestjs/common';
 import { ProductService } from 'src/services/product/product.service';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { DeleteResult, UpdateResult } from 'typeorm';
@@ -10,6 +10,11 @@ import { FilterForm } from 'src/model/forms/FilterForm';
 export class BackofficeProductController {
 
     constructor(private readonly productService: ProductService) {}
+
+    @Get()
+    findOne(@Query('id') productId: number) {
+        return this.productService.findById(productId);
+    }
 
     @Post()
     saveMany(@Body() body: SaveProductForm[]): Promise<any[]> {

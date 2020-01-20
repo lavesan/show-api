@@ -17,6 +17,10 @@ export class UserBackofficeService {
         private readonly userBackofficeRepo: Repository<UserBackofficeEntity>,
     ) {}
 
+    async findOneById(userId: number) {
+        return this.userBackofficeRepo.findOne(userId);
+    }
+
     /**
      * @description Apenas um administrador vai puder criar novos usuários
      */
