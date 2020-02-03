@@ -21,20 +21,15 @@ export class SendgridService {
     }
 
     private msgHandler = {
-        forgotPasswordAdmin: ({ to, name }) => ({
+        forgotPasswordAdmin: ({ to, name, password }) => ({
             to,
             from: this.from,
             subject: 'Zero veneno administrador',
-            text: 'Esqueceu minha senha',
+            text: 'Esqueci minha senha',
             html: `
                 <h2>Olá ${name}!</h2>
-                <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor prossiga para próxima etapa clicando no botão abaixo:</p>
-                <a
-                    href="http://localhost:3001/"
-                    target="_blank"
-                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
-                    Alterar a senha
-                </a>
+                <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor utilize a senha abaixo e efetue o login na sua conta:</p>
+                ${password}
             `,
         }),
         confirmClient: ({ to, name }) => ({
@@ -54,20 +49,15 @@ export class SendgridService {
                 </a>
             `,
         }),
-        forgotPasswordClient: ({ to, name }) => ({
+        forgotPasswordClient: ({ to, name, password }) => ({
             to,
             from: this.from,
             subject: 'Zero veneno loja',
-            text: 'Esqueceu a senha',
+            text: 'Esqueci a senha',
             html: `
                 <h2>Olá ${name}!</h2>
-                <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor prossiga para próxima etapa clicando no botão abaixo:</p>
-                <a
-                    href="http://localhost:3001/"
-                    target="_blank"
-                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
-                    Alterar a senha
-                </a>
+                <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor utilize a senha abaixo e efetue o login na sua conta:</p>
+                ${password}
             `,
         }),
         default() {},

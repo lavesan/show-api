@@ -9,7 +9,7 @@ import { UserRole, UserStatus } from '../../model/constants/user.constants';
 import { generateHashPwd, comparePwdWithHash } from '../../helpers/auth.helpers';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { paginateResponseSchema, skipFromPage, generateQueryFilter } from 'src/helpers/response-schema.helpers';
+import { paginateResponseSchema, skipFromPage, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()
@@ -61,7 +61,7 @@ export class UserService {
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
-                return await Promise.resolve(user);
+                return await Promise.resolve(successRes({ data: user }));
 
             } else if (comparePwdWithHash(password, user.forgotPassword)) {
 
@@ -80,7 +80,7 @@ export class UserService {
     
                     // Encontrou o usuário e a senha está correta
                     delete user.password;
-                    return await Promise.resolve(user);
+                    return await Promise.resolve(successRes({ data: user }));
                 
                 }
 

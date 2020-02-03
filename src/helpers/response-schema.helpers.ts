@@ -26,6 +26,16 @@ export const paginateResponseSchema = ({ data, allResultsCount, page, limit }: I
         page,
     });
 
+interface ISucessResParams {
+    data: any;
+    opts?: any;
+}
+
+export const successRes = ({ data, opts = {} }: ISucessResParams) => ({
+    data,
+    ...opts,
+})
+
 interface IFieldsFilter {
     like?: string[];
     equal?: string[];

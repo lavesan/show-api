@@ -8,11 +8,15 @@ import { TokenPayloadType } from 'src/model/types/user.types';
 import { decodeToken, generateHashPwd } from 'src/helpers/auth.helpers';
 import moment = require('moment');
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
+import { SendgridService } from '../sendgrid/sendgrid.service';
 
 @Injectable()
 export class AuthService {
 
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly sendgridService: SendgridService,
+    ) {}
 
     async signPayload(payload: any) {
         // 12h - 12 horas
@@ -96,9 +100,23 @@ export class AuthService {
             user.forgotPassword = generateHashPwd(generatedPwd);
             user.forgotPasswordCreation = new Date();
 
-            return await this.userService.update(user);
+            await this.userService.update(user);
+
+            this.sendgridService.sendMail({
+                type: 'forgotPasswordClient',
+                name: user.name,
+                to: user.email,
+                password: generatedPwd,
+            });
+
+            return user;
 
         }
+
+        throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            message: 'Usuário não encontrado.',
+        }, HttpStatus.NOT_FOUND)
 
     }
 
