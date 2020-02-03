@@ -1,6 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as moment from 'moment';
 
 import { UserEntity } from '../../entities/user.entity';
 import { RegisterUserForm } from '../../model/forms/user/RegisterUserForm';
@@ -30,7 +31,7 @@ export class UserService {
         return await this.userRepo.save(data);
     }
 
-    async update(user: RegisterUserForm): Promise<any> {
+    async update(user: UserEntity): Promise<any> {
         const data = {
             ...user,
             updateDate: new Date(),
@@ -51,7 +52,7 @@ export class UserService {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
         // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
         const user = await this.userRepo.findOne({
-            select: ['id', 'email', 'password', 'name', 'role'],
+            select: ['id', 'email', 'password', 'name', 'role', 'forgotPassword', 'forgotPasswordCreation'],
             where: { email: login, status: UserStatus.ACTIVE },
         });
 
@@ -61,6 +62,37 @@ export class UserService {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
                 return await Promise.resolve(user);
+
+            } else if (comparePwdWithHash(password, user.forgotPassword)) {
+
+                const fromTime = moment(user.forgotPasswordCreation);
+                const untilTime = fromTime.clone().add(2, 'hours');
+
+                const isValidTime = moment().isBetween(fromTime, untilTime);
+
+                if (isValidTime) {
+                    
+                    user.password = user.forgotPassword;
+                    user.forgotPassword = null;
+                    user.forgotPasswordCreation = null;
+    
+                    await this.update(user);
+    
+                    // Encontrou o usuário e a senha está correta
+                    delete user.password;
+                    return await Promise.resolve(user);
+                
+                }
+
+                user.forgotPassword = null;
+                user.forgotPasswordCreation = null;
+
+                await this.update(user);
+
+                throw new HttpException({
+                    status: HttpStatus.NOT_ACCEPTABLE,
+                    error: 'Tempo para alterar o password esgotado.',
+                }, HttpStatus.NOT_ACCEPTABLE);
 
             } else {
 
@@ -145,6 +177,10 @@ export class UserService {
             .getManyAndCount();
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
+    }
+
+    async findByEmail(email:string): Promise<UserEntity> {
+        return await this.userRepo.findOne({ email, status: UserStatus.ACTIVE });
     }
 
     async findUserExistenceByEmail(email: string): Promise<boolean> {

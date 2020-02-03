@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Delete, UseGuards, Headers, Request } from '@nestjs/common';
+import { Controller, Post, Body, Delete, UseGuards, Headers, Request, Put } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import * as fs from 'fs';
 
@@ -7,6 +7,7 @@ import { RegisterUserForm } from '../../../model/forms/user/RegisterUserForm';
 import { LoginUserForm } from '../../../model/forms/user/LoginUserForm';
 import { AUTH_CONSTS } from 'src/helpers/auth.helpers';
 import { AdminAuthService } from 'src/services/admin-auth/admin-auth.service';
+import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 
 interface IAppCredentials {
     CLIENT_ID: string;
@@ -58,6 +59,19 @@ export class AuthController {
     // Adiciona novo usuário
     @Post('register')
     register(@Body() body: RegisterUserForm) {
+
+        const { type } = this.platform(body);
+
+        const handlePlatform = {
+            ecommerce: (payload) => this.authService.registerUser(payload),
+            admin: (payload) => this.adminAuthService.registerUser(payload),
+        }
+        return handlePlatform[type](body);
+
+    }
+
+    @Put('forgot-password')
+    forgotPassword(@Body() body: ForgotPasswordForm) {
 
         const { type } = this.platform(body);
 

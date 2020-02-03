@@ -8,6 +8,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 use_id SERIAL,
                 use_email VARCHAR(45) NOT NULL UNIQUE,
                 use_password VARCHAR(45) NOT NULL,
+                use_forgot_password VARCHAR(45),
+                use_forgot_password_creation TIMESTAMP,
                 use_name TEXT NOT NULL,
                 use_status INTEGER NOT NULL,
                 use_img_url TEXT,

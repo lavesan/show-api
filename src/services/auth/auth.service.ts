@@ -5,8 +5,9 @@ import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
 import { UserEntity } from 'src/entities/user.entity';
 import { TokenPayloadType } from 'src/model/types/user.types';
-import { decodeToken } from 'src/helpers/auth.helpers';
+import { decodeToken, generateHashPwd } from 'src/helpers/auth.helpers';
 import moment = require('moment');
+import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 
 @Injectable()
 export class AuthService {
@@ -82,6 +83,23 @@ export class AuthService {
             const token = await this.signPayload(payload);
             return { user: userData, token };
         }
+    }
+
+    async forgotPassword({ email }: ForgotPasswordForm) {
+
+        const user = await this.userService.findByEmail(email);
+
+        if (user) {
+
+            const generatedPwd = Math.random().toString(36).slice(-8);
+
+            user.forgotPassword = generateHashPwd(generatedPwd);
+            user.forgotPasswordCreation = new Date();
+
+            return await this.userService.update(user);
+
+        }
+
     }
 
     private async sendJwtTokenWithUserData(user: Partial<UserEntity>) {

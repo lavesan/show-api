@@ -15,6 +15,12 @@ export class UserEntity {
     @Column({ name: 'use_password', type: 'text' })
     password: string;
 
+    @Column({ name: 'use_forgot_password', type: 'text', nullable: true })
+    forgotPassword: string;
+
+    @Column({ name: 'use_forgot_password_creation', type: 'timestamp', nullable: true })
+    forgotPasswordCreation: Date;
+
     @Column({ name: 'use_name', type: 'text' })
     name: string;
 
