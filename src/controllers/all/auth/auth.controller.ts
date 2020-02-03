@@ -76,7 +76,7 @@ export class AuthController {
         const { type } = this.platform(body);
 
         const handlePlatform = {
-            ecommerce: (payload) => this.authService.registerUser(payload),
+            ecommerce: (payload) => this.authService.forgotPassword(payload),
             admin: (payload) => this.adminAuthService.registerUser(payload),
         }
         return handlePlatform[type](body);

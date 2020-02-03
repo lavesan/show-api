@@ -10,6 +10,7 @@ import { TokenPayloadType } from 'src/model/types/user.types';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
+import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 
 @Injectable()
 export class AdminAuthService {
@@ -86,6 +87,37 @@ export class AdminAuthService {
             const token = await this.signPayload(payload);
             return { user: userData, token };
         }
+
+    }
+
+    async forgotPassword({ email }: ForgotPasswordForm) {
+
+        const user = await this.userBackofficeService.findByEmail(email);
+
+        if (user) {
+
+            const generatedPwd = Math.random().toString(36).slice(-8);
+
+            user.forgotPassword = generateHashPwd(generatedPwd);
+            user.forgotPasswordCreation = new Date();
+
+            await this.userService.update(user);
+
+            this.sendgridService.sendMail({
+                type: 'forgotPasswordClient',
+                name: user.name,
+                to: user.email,
+                password: generatedPwd,
+            });
+
+            return user;
+
+        }
+
+        throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            message: 'Usuário não encontrado.',
+        }, HttpStatus.NOT_FOUND)
 
     }
 

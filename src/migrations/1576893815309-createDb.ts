@@ -115,6 +115,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 usb_role INTEGER NOT NULL,
                 usb_status INTEGER NOT NULL,
                 usb_password TEXT NOT NULL,
+                usb_forgot_password VARCHAR(45),
+                usb_forgot_password_creation TIMESTAMP,
                 usb_img_url TEXT,
                 usb_reset_token TEXT,
                 usb_creation_date TIMESTAMP NOT NULL,

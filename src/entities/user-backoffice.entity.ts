@@ -17,6 +17,12 @@ export class UserBackofficeEntity {
     @Column({ name: 'usb_password', type: 'integer' })
     password: string;
 
+    @Column({ name: 'usb_forgot_password', type: 'integer' })
+    forgotPassword: string;
+
+    @Column({ name: 'usb_forgot_password_creation', type: 'timestamp' })
+    forgotPasswordCreation: Date;
+
     @Column({ name: 'usb_img_url', type: 'integer', nullable: true })
     imgUrl: string;
 
