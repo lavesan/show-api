@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AddressEntity } from 'src/entities/address.entity';
 import { Repository, DeleteResult } from 'typeorm';
 import { SaveAddressForm } from 'src/model/forms/address/SaveAddressForm';
-import { decodeToken } from 'src/utils/auth.utils';
+import { decodeToken } from 'src/helpers/auth.helpers';
 import { UpdateAddressForm } from 'src/model/forms/address/UpdateAddressForm';
 import { IUpdateAddress } from 'src/model/types/address.types';
 import { UserService } from '../user/user.service';

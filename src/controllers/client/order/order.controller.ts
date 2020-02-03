@@ -4,7 +4,7 @@ import { OrderToProductService } from 'src/services/order-to-product/order-to-pr
 import { OrderService } from 'src/services/order/order.service';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { IPaginateResponseType } from 'src/utils/response-schema.utils';
+import { IPaginateResponseType } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Controller('order')

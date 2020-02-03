@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ContactEntity } from 'src/entities/contact.entity';
 import { Repository, DeleteResult, UpdateResult } from 'typeorm';
-import { decodeToken } from 'src/utils/auth.utils';
+import { decodeToken } from 'src/helpers/auth.helpers';
 import { SaveContactForm } from 'src/model/forms/contact/SaveContactForm';
 import { UserService } from '../user/user.service';
 import { UpdateContactForm } from 'src/model/forms/contact/UpdateContactForm';

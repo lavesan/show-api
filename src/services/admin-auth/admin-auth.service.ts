@@ -1,17 +1,20 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import moment = require('moment');
+
+import { UserBackofficeService } from '../user-backoffice/user-backoffice.service';
 import { sign } from 'jsonwebtoken';
-import { UserService } from '../user/user.service';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
 import { UserEntity } from 'src/entities/user.entity';
 import { TokenPayloadType } from 'src/model/types/user.types';
 import { decodeToken } from 'src/helpers/auth.helpers';
-import moment = require('moment');
+import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
+import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 
 @Injectable()
-export class AuthService {
+export class AdminAuthService {
 
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userBackofficeService: UserBackofficeService) {}
 
     async signPayload(payload: any) {
         // 12h - 12 horas
@@ -20,14 +23,14 @@ export class AuthService {
     }
 
     async validateUser(payload): Promise<any> {
-        return await this.userService.findByPayload(payload);
+        return await this.userBackofficeService.findByPayload(payload);
     }
 
     /**
      * @description Constructs the payload data
-     * @param {Partial<UserEntity>} user
+     * @param {Partial<UserBackofficeEntity>} user
      */
-    private constructTokenPayload(user: Partial<UserEntity>): TokenPayloadType {
+    private constructTokenPayload(user: Partial<UserBackofficeEntity>): TokenPayloadType {
         return {
             id: user.id,
             login: user.email,
@@ -38,7 +41,7 @@ export class AuthService {
 
     async loginUser(userDTO: LoginUserForm) {
 
-        const user = await this.userService.loginUser(userDTO);
+        const user = await this.userBackofficeService.loginUser(userDTO);
         return this.sendJwtTokenWithUserData(user);
 
     }
@@ -52,7 +55,7 @@ export class AuthService {
 
         if (expirationDate.isAfter(today)) {
 
-            const user = await this.userService.findActiveById(tokenObj.id);
+            const user = await this.userBackofficeService.findActiveById(tokenObj.id);
             return await this.sendJwtTokenWithUserData(user);
 
         }
@@ -69,8 +72,9 @@ export class AuthService {
         console.log('deslogar');
     }
 
-    async registerUser(userDTO: RegisterUserForm) {
-        const user = await this.userService.save(userDTO);
+    async registerUser(userDTO: SaveUserBackofficeForm) {
+
+        const user = await this.userBackofficeService.save(userDTO);
 
         if (user) {
             const payload = this.constructTokenPayload(user);
@@ -82,9 +86,10 @@ export class AuthService {
             const token = await this.signPayload(payload);
             return { user: userData, token };
         }
+
     }
 
-    private async sendJwtTokenWithUserData(user: Partial<UserEntity>) {
+    private async sendJwtTokenWithUserData(user: Partial<UserBackofficeEntity>) {
 
         if (user) {
 
@@ -103,6 +108,5 @@ export class AuthService {
             error: 'Usuário não encontrado',
         }, HttpStatus.NOT_FOUND);
 
-    }
-
+    }    
 }

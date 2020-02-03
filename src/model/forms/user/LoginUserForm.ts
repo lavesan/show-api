@@ -1,10 +1,17 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsString, IsEmail } from 'class-validator';
 
 export class LoginUserForm {
 
-    @IsNotEmpty()
+    @IsEmail()
     login: string;
 
-    @IsNotEmpty()
+    @IsString()
     password: string;
+
+    @IsString()
+    CLIENT_ID: string;
+    
+    @IsString()
+    CLIENT_SECRET: string;
+
 }

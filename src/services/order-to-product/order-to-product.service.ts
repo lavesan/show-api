@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
-import { decodeToken } from 'src/utils/auth.utils';
+import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserService } from '../user/user.service';
 
 @Injectable()

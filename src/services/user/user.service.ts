@@ -5,10 +5,10 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../../entities/user.entity';
 import { RegisterUserForm } from '../../model/forms/user/RegisterUserForm';
 import { UserRole, UserStatus } from '../../model/constants/user.constants';
-import { generateHashPwd, comparePwdWithHash } from '../../utils/auth.utils';
+import { generateHashPwd, comparePwdWithHash } from '../../helpers/auth.helpers';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { paginateResponseSchema, skipFromPage, generateQueryFilter } from 'src/utils/response-schema.utils';
+import { paginateResponseSchema, skipFromPage, generateQueryFilter } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 @Injectable()

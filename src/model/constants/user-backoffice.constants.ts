@@ -3,9 +3,9 @@ enum UserBackofficeRole {
     EMPLOYEE = 1,
 }
 
-enum UserBackoffceStatus {
+enum UserBackofficeStatus {
     ACTIVE = 1,
     INACTIVE = 2,
 }
 
-export { UserBackofficeRole, UserBackoffceStatus }
+export { UserBackofficeRole, UserBackofficeStatus }

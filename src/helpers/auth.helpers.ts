@@ -25,3 +25,8 @@ export const decodeToken = (token: string): IDecodeTokenType | null => {
     }
     return null;
 }
+
+export enum AUTH_CONSTS {
+    CLIENT = 'jwt',
+    ADMIN = 'jwt-admin',
+}

@@ -3,14 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
-import { generateHashPwd, decodeToken } from 'src/utils/auth.utils';
+import { generateHashPwd, decodeToken, comparePwdWithHash } from 'src/helpers/auth.helpers';
 import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeForm';
 import { ResetPasswordUserBackofficeMailForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeMailForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
+import { UserBackofficeStatus } from 'src/model/constants/user-backoffice.constants';
 
 @Injectable()
 export class UserBackofficeService {
@@ -25,10 +26,60 @@ export class UserBackofficeService {
         return this.userBackofficeRepo.findOne(userId);
     }
 
+    async findByPayload(payload: any): Promise<any> {
+        const { login } = payload;
+        return await this.userBackofficeRepo.findOne({ email: login });
+    }
+
+    /**
+     * @description Uses bcrypt to compare the password
+     * @param {LoginUserForm} param0
+     */
+    async loginUser({ login, password }: any): Promise<UserBackofficeEntity> {
+        // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
+        // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
+        const user = await this.userBackofficeRepo.findOne({
+            select: ['id', 'email', 'password', 'name', 'role'],
+            where: { email: login, status: UserBackofficeStatus.ACTIVE },
+        });
+
+        if (user) {
+
+            if (comparePwdWithHash(password, user.password)) {
+                // Encontrou o usuário e a senha está correta
+                delete user.password;
+                return await Promise.resolve(user);
+
+            } else {
+
+                throw new HttpException({
+                    status: HttpStatus.NOT_ACCEPTABLE,
+                    error: 'Senha incorreta',
+                }, HttpStatus.NOT_ACCEPTABLE);
+
+            }
+        }
+
+        throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            error: 'Usuário não encontrado',
+        }, HttpStatus.NOT_FOUND);
+
+    }
+
+    async findActiveById(userId: number) {
+        return this.userBackofficeRepo.findOne({
+            select: ['email', 'id', 'role', 'name'],
+            where: { id: userId, status: UserBackofficeStatus.ACTIVE },
+        });
+    }
+    
+
     /**
      * @description Apenas um administrador vai puder criar novos usuários
      */
     async save({ confirmPassword, password, ...userBackofficeForm }: SaveUserBackofficeForm) {
+
         if (confirmPassword !== password) {
             throw new HttpException({
                 status: HttpStatus.NOT_ACCEPTABLE,
@@ -42,7 +93,8 @@ export class UserBackofficeService {
             creationDate: new Date(),
         };
 
-        this.userBackofficeRepo.save(data);
+        return this.userBackofficeRepo.save(data);
+
     }
 
     private async findByIdWithToken({ id, token }) {

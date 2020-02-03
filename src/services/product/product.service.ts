@@ -6,7 +6,7 @@ import { ProductEntity } from 'src/entities/product.entity';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/utils/response-schema.utils';
+import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ProductCategoryService } from '../product-category/product-category.service';
 

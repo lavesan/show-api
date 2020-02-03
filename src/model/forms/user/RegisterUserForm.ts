@@ -1,6 +1,6 @@
 import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean } from 'class-validator';
 import { UserRole } from '../../../model/constants/user.constants';
-import { emailRegex } from '../../../utils/validate.utils';
+import { emailRegex } from '../../../helpers/validate.helpers';
 
 export class RegisterUserForm {
 
@@ -28,5 +28,11 @@ export class RegisterUserForm {
 
     @IsBoolean()
     termOfContract: boolean;
+
+    @IsString()
+    CLIENT_ID: string;
+    
+    @IsString()
+    CLIENT_SECRET: string;
 
 }

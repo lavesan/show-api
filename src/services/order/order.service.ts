@@ -5,8 +5,8 @@ import { Repository, UpdateResult } from 'typeorm';
 import { OrderStatus } from 'src/model/constants/order.constants';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter } from 'src/utils/response-schema.utils';
-import { decodeToken } from 'src/utils/auth.utils';
+import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter } from 'src/helpers/response-schema.helpers';
+import { decodeToken } from 'src/helpers/auth.helpers';
 import { DeleteOrderForm } from 'src/model/forms/order/DeleteOrderForm';
 
 @Injectable()
