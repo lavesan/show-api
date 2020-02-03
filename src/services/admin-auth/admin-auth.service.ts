@@ -19,7 +19,7 @@ export class AdminAuthService {
     async signPayload(payload: any) {
         // 12h - 12 horas
         // 12d - 12 dias
-        return sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '3d' });
+        return sign(payload, process.env.JWT_ADMIN_SECRET_KEY, { expiresIn: '3d' });
     }
 
     async validateUser(payload): Promise<any> {
