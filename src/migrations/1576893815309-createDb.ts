@@ -112,7 +112,6 @@ export class createDb1576893815309 implements MigrationInterface {
             CREATE TABLE usb_user_backoffice (
                 usb_id SERIAL,
                 usb_name TEXT NOT NULL,
-                usb_email_confirmed BOOLEAN,
                 usb_email TEXT NOT NULL,
                 usb_role INTEGER NOT NULL,
                 usb_status INTEGER NOT NULL,
