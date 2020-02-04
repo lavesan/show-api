@@ -1,5 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { sign } from 'jsonwebtoken';
+
 import { UserService } from '../user/user.service';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
@@ -85,6 +86,7 @@ export class AuthService {
                 type: MailType.CONFIRM_MAIL_CLIENT,
                 name: user.name,
                 to: user.email,
+                id: user.id,
             });
 
             const payload = this.constructTokenPayload(user);

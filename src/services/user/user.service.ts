@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import * as moment from 'moment';
 
 import { UserEntity } from '../../entities/user.entity';
@@ -11,6 +11,7 @@ import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { paginateResponseSchema, skipFromPage, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
+import { ConfirmEmailForm } from 'src/model/forms/user/ConfirmEmailForm';
 
 @Injectable()
 export class UserService {
@@ -32,12 +33,12 @@ export class UserService {
         return await this.userRepo.save(data);
     }
 
-    async update(user: UserEntity): Promise<any> {
+    async update(user: Partial<UserEntity>): Promise<UpdateResult> {
         const data = {
             ...user,
             updateDate: new Date(),
         }
-        return await this.userRepo.update({ email: user.email }, data);
+        return await this.userRepo.update({ id: user.id }, data);
     }
 
     async findByPayload(payload: any): Promise<any> {
@@ -187,6 +188,17 @@ export class UserService {
     async findUserExistenceByEmail(email: string): Promise<boolean> {
         const user = await this.userRepo.findOne({ email });
         return Boolean(user);
+    }
+
+    async confirmEmail(body: ConfirmEmailForm) {
+
+        const data = {
+            ...body,
+            emailConfirmed: true,
+        }
+
+        return await this.update(data);
+
     }
 
 }

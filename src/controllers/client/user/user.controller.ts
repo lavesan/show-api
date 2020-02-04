@@ -1,14 +1,11 @@
-import { Controller, Delete, Param, Get, Query, Body } from '@nestjs/common';
+import { Controller, Delete, Param, Get, Query, Body, Put } from '@nestjs/common';
 import { UserService } from 'src/services/user/user.service';
-import { SendgridService } from 'src/services/sendgrid/sendgrid.service';
+import { ConfirmEmailForm } from 'src/model/forms/user/ConfirmEmailForm';
 
 @Controller('client/user')
 export class UserController {
 
-    constructor(
-        private readonly userService: UserService,
-        private readonly sendgridService: SendgridService,
-    ) {}
+    constructor(private readonly userService: UserService) {}
 
     @Delete(':id')
     softDelete(@Param('id') userId: number) {
@@ -20,9 +17,9 @@ export class UserController {
         return this.userService.findUserExistenceByEmail(email);
     }
 
-    @Get('sendgrid')
-    test(@Body() body) {
-        this.sendgridService.sendMail(body);
+    @Put('confirm-email')
+    confirmEmail(@Body() body: ConfirmEmailForm) {
+        return this.userService.confirmEmail(body);
     }
 
 }

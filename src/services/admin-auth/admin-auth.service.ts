@@ -1,11 +1,9 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { sign } from 'jsonwebtoken';
 import moment = require('moment');
 
 import { UserBackofficeService } from '../user-backoffice/user-backoffice.service';
-import { sign } from 'jsonwebtoken';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
-import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
-import { UserEntity } from 'src/entities/user.entity';
 import { TokenPayloadType } from 'src/model/types/user.types';
 import { decodeToken, generateHashPwd } from 'src/helpers/auth.helpers';
 import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
@@ -83,12 +81,6 @@ export class AdminAuthService {
         const user = await this.userBackofficeService.save(userDTO);
 
         if (user) {
-
-            this.sendgridService.sendMail({
-                type: MailType.CONFIRM_MAIL_ADMIN,
-                name: user.name,
-                to: user.email,
-            });
             
             const payload = this.constructTokenPayload(user);
             const userData = {
