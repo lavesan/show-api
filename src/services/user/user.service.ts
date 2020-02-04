@@ -61,7 +61,7 @@ export class UserService {
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
-                return await Promise.resolve(successRes({ data: user }));
+                return successRes({ data: user });
 
             } else if (comparePwdWithHash(password, user.forgotPassword)) {
 
@@ -71,7 +71,7 @@ export class UserService {
                 const isValidTime = moment().isBetween(fromTime, untilTime);
 
                 if (isValidTime) {
-                    
+
                     user.password = user.forgotPassword;
                     user.forgotPassword = null;
                     user.forgotPasswordCreation = null;

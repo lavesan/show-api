@@ -1,12 +1,13 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
+import * as moment from 'moment';
+
+import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 import { generateHashPwd, decodeToken, comparePwdWithHash } from 'src/helpers/auth.helpers';
-import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/helpers/response-schema.helpers';
+import { skipFromPage, paginateResponseSchema, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeForm';
 import { ResetPasswordUserBackofficeMailForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeMailForm';
@@ -39,7 +40,7 @@ export class UserBackofficeService {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
         // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
         const user = await this.userBackofficeRepo.findOne({
-            select: ['id', 'email', 'password', 'name', 'role'],
+            select: ['id', 'email', 'password', 'name', 'role', 'forgotPassword', 'forgotPasswordCreation'],
             where: { email: login, status: UserBackofficeStatus.ACTIVE },
         });
 
@@ -48,7 +49,38 @@ export class UserBackofficeService {
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
-                return await Promise.resolve(user);
+                return successRes({ data: user });
+
+            } else if (comparePwdWithHash(password, user.forgotPassword)) {
+
+                const fromTime = moment(user.forgotPasswordCreation);
+                const untilTime = fromTime.clone().add(2, 'hours');
+
+                const isValidTime = moment().isBetween(fromTime, untilTime);
+
+                if (isValidTime) {
+
+                    user.password = user.forgotPassword;
+                    user.forgotPassword = null;
+                    user.forgotPasswordCreation = null;
+
+                    await this.update(user);
+
+                    // Encontrou o usuário e a senha está correta
+                    delete user.password;
+                    return await Promise.resolve(successRes({ data: user }));
+
+                }
+
+                user.forgotPassword = null;
+                user.forgotPasswordCreation = null;
+
+                await this.update(user);
+
+                throw new HttpException({
+                    status: HttpStatus.NOT_ACCEPTABLE,
+                    error: 'Tempo para alterar o password esgotado.',
+                }, HttpStatus.NOT_ACCEPTABLE);
 
             } else {
 
@@ -101,7 +133,7 @@ export class UserBackofficeService {
         return this.userBackofficeRepo.findOne({ id, resetPassowrdToken: token });
     }
 
-    async update({ id, ...updateUserBackofficeForm }: UpdateUserBackofficeForm): Promise<UpdateResult> {
+    async update({ id, ...updateUserBackofficeForm }: UserBackofficeEntity): Promise<UpdateResult> {
         return this.userBackofficeRepo.update({ id }, updateUserBackofficeForm);
     }
 
@@ -174,7 +206,7 @@ export class UserBackofficeService {
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
 
-    private async findByEmail(email: string): Promise<UserBackofficeEntity> {
+    async findByEmail(email: string): Promise<UserBackofficeEntity> {
         return this.userBackofficeRepo.findOne({ email });
     }
 

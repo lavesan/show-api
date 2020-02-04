@@ -7,15 +7,19 @@ import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
 import { UserEntity } from 'src/entities/user.entity';
 import { TokenPayloadType } from 'src/model/types/user.types';
-import { decodeToken } from 'src/helpers/auth.helpers';
+import { decodeToken, generateHashPwd } from 'src/helpers/auth.helpers';
 import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
+import { SendgridService } from '../sendgrid/sendgrid.service';
 
 @Injectable()
 export class AdminAuthService {
 
-    constructor(private readonly userBackofficeService: UserBackofficeService) {}
+    constructor(
+        private readonly userBackofficeService: UserBackofficeService,
+        private readonly sendgridService: SendgridService,
+    ) {}
 
     async signPayload(payload: any) {
         // 12h - 12 horas
@@ -101,10 +105,10 @@ export class AdminAuthService {
             user.forgotPassword = generateHashPwd(generatedPwd);
             user.forgotPasswordCreation = new Date();
 
-            await this.userService.update(user);
+            await this.userBackofficeService.update(user);
 
             this.sendgridService.sendMail({
-                type: 'forgotPasswordClient',
+                type: 'forgotPasswordAdmin',
                 name: user.name,
                 to: user.email,
                 password: generatedPwd,

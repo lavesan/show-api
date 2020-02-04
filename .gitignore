@@ -35,4 +35,4 @@ lerna-debug.log*
 
 # Env data
 /.env
-/app-credentials.json
+src/app-credentials.json
