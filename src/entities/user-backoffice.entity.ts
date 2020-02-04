@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { UserBackofficeRole, UserBackoffceStatus } from '../model/constants/user-backoffice.constants';
+import { UserBackofficeRole, UserBackofficeStatus } from '../model/constants/user-backoffice.constants';
 import { ProductEntity } from './product.entity';
 
 @Entity('usb_user_backoffice')
@@ -33,7 +33,7 @@ export class UserBackofficeEntity {
     role: UserBackofficeRole;
 
     @Column({ name: 'usb_status', type: 'integer' })
-    status: UserBackoffceStatus;
+    status: UserBackofficeStatus;
 
     @Column({ name: 'usb_creation_date', type: 'timestamp', update: false })
     creationDate: Date;
