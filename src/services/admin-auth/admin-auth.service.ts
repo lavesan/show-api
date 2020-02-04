@@ -12,6 +12,7 @@ import { UserBackofficeEntity } from 'src/entities/user-backoffice.entity';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
+import { MailType } from 'src/model/constants/sendgrid.constants';
 
 @Injectable()
 export class AdminAuthService {
@@ -82,6 +83,13 @@ export class AdminAuthService {
         const user = await this.userBackofficeService.save(userDTO);
 
         if (user) {
+
+            this.sendgridService.sendMail({
+                type: MailType.CONFIRM_MAIL_ADMIN,
+                name: user.name,
+                to: user.email,
+            });
+            
             const payload = this.constructTokenPayload(user);
             const userData = {
                 name: user.name,
@@ -90,6 +98,7 @@ export class AdminAuthService {
 
             const token = await this.signPayload(payload);
             return { user: userData, token };
+
         }
 
     }
@@ -108,7 +117,7 @@ export class AdminAuthService {
             await this.userBackofficeService.update(user);
 
             this.sendgridService.sendMail({
-                type: 'forgotPasswordAdmin',
+                type: MailType.FORGOT_PWD_ADMIN,
                 name: user.name,
                 to: user.email,
                 password: generatedPwd,

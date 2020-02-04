@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as sgMail from '@sendgrid/mail';
 
-type MailType = 'default' | 'forgotPasswordAdmin' | 'confirmClient' | 'forgotPasswordClient';
+type MailType = 'default' | 'forgotPasswordAdmin' | 'confirmClient' | 'forgotPasswordClient' | 'confirmAdmin';
 
 @Injectable()
 export class SendgridService {
@@ -39,7 +39,24 @@ export class SendgridService {
             text: 'Confirmar email',
             html: `
                 <h2>Olá ${name}!</h2>
-                <p style="color: #aaa;">Obrigado por ter criado uma conta na zero veneno, espero que você goste dos produtos!</p>
+                <p style="color: #aaa;">Obrigado por ter criado uma conta na zero veneno, espero que você goste dos nossos produtos!</p>
+                <p style="color: #aaa;">Para você se tornar um usuário com todos os benefícios (ofertas, notíficias...), então confirme seu email clicando no botão abaixo!</p>
+                <a
+                    href="http://localhost:3001/"
+                    target="_blank"
+                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
+                    Confirmar e-mail
+                </a>
+            `,
+        }),
+        confirmAdmin: ({ to, name }) => ({
+            to,
+            from: this.from,
+            subject: 'Zero veneno loja',
+            text: 'Confirmar email',
+            html: `
+                <h2>Olá ${name}!</h2>
+                <p style="color: #aaa;">Obrigado por ter criado uma conta na zero veneno, espero que você goste dos nossos produtos!</p>
                 <p style="color: #aaa;">Para você se tornar um usuário com todos os benefícios (ofertas, notíficias...), então confirme seu email clicando no botão abaixo!</p>
                 <a
                     href="http://localhost:3001/"

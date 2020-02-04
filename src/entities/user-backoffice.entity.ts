@@ -14,6 +14,9 @@ export class UserBackofficeEntity {
     @Column({ name: 'usb_email', type: 'text' })
     email: string;
 
+    @Column({ name: 'usb_email_confirmed', type: 'boolean' })
+    emailConfirmed: boolean;
+
     @Column({ name: 'usb_password', type: 'integer' })
     password: string;
 

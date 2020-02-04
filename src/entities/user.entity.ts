@@ -12,6 +12,9 @@ export class UserEntity {
     @Column({ name: 'use_email', type: 'text', unique: true })
     email: string;
 
+    @Column({ name: 'use_email_confirmed', type: 'boolean' })
+    emailConfirmed: boolean;
+
     @Column({ name: 'use_password', type: 'text' })
     password: string;
 

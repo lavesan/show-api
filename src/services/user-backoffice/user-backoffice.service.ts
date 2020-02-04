@@ -121,6 +121,8 @@ export class UserBackofficeService {
 
         const data = {
             ...userBackofficeForm,
+            emailConfirmed: false,
+            status: UserBackofficeStatus.ACTIVE,
             password: generateHashPwd(password),
             creationDate: new Date(),
         };
@@ -208,29 +210,6 @@ export class UserBackofficeService {
 
     async findByEmail(email: string): Promise<UserBackofficeEntity> {
         return this.userBackofficeRepo.findOne({ email });
-    }
-
-    async resetPasswordMail({ email }: ResetPasswordUserBackofficeMailForm) {
-
-        const user = await this.findByEmail(email);
-
-        if (user) {
-
-            // TODO: Atualizar com o e-mail do cara e pa
-
-            return this.sendgridService.sendMail({
-                type: 'forgotPasswordAdmin',
-                to: user.email, 
-                name: user.name,
-            });
-
-        }
-
-        throw new HttpException({
-            status: HttpStatus.NOT_FOUND,
-            message: 'Usuário não encontrado',
-        }, HttpStatus.NOT_FOUND);
-
     }
 
 }

@@ -9,6 +9,7 @@ import { decodeToken, generateHashPwd } from 'src/helpers/auth.helpers';
 import moment = require('moment');
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
+import { MailType } from 'src/model/constants/sendgrid.constants';
 
 @Injectable()
 export class AuthService {
@@ -75,9 +76,17 @@ export class AuthService {
     }
 
     async registerUser(userDTO: RegisterUserForm) {
+
         const user = await this.userService.save(userDTO);
 
         if (user) {
+
+            this.sendgridService.sendMail({
+                type: MailType.CONFIRM_MAIL_CLIENT,
+                name: user.name,
+                to: user.email,
+            });
+
             const payload = this.constructTokenPayload(user);
             const userData = {
                 name: user.name,
@@ -87,6 +96,7 @@ export class AuthService {
             const token = await this.signPayload(payload);
             return { user: userData, token };
         }
+
     }
 
     async forgotPassword({ email }: ForgotPasswordForm) {
@@ -103,7 +113,7 @@ export class AuthService {
             await this.userService.update(user);
 
             this.sendgridService.sendMail({
-                type: 'forgotPasswordClient',
+                type: MailType.FORGOT_PWD_CLIENT,
                 name: user.name,
                 to: user.email,
                 password: generatedPwd,

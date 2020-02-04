@@ -19,10 +19,11 @@ export class UserService {
         private readonly userRepo: Repository<UserEntity>,
     ) {}
 
-    async save(user: RegisterUserForm): Promise<any> {
+    async save(user: RegisterUserForm): Promise<UserEntity> {
         // TODO: Salvar a role em um local separado para Lis setá-la no backoffice
         const data = {
             ...user,
+            emailConfirmed: false,
             status: UserStatus.ACTIVE,
             role: UserRole.NENHUM,
             creationDate: new Date(),
