@@ -29,10 +29,4 @@ export class RegisterUserForm {
     @IsBoolean()
     termOfContract: boolean;
 
-    @IsString()
-    CLIENT_ID: string;
-    
-    @IsString()
-    CLIENT_SECRET: string;
-
 }

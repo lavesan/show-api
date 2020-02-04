@@ -139,6 +139,7 @@ export class AdminAuthService {
 
             const token = await this.signPayload(payload);
             return { user: userData, token };
+
         }
         throw new HttpException({
             status: HttpStatus.NOT_FOUND,

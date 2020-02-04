@@ -8,6 +8,7 @@ import { LoginUserForm } from '../../../model/forms/user/LoginUserForm';
 import { AUTH_CONSTS } from 'src/helpers/auth.helpers';
 import { AdminAuthService } from 'src/services/admin-auth/admin-auth.service';
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
+import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 
 interface IAppCredentials {
     CLIENT_ID: string;
@@ -15,7 +16,7 @@ interface IAppCredentials {
     type: string;
 }
 
-@Controller('auth')
+@Controller('oauth/auth')
 export class AuthController {
 
     appCredentials: IAppCredentials[];
@@ -29,7 +30,7 @@ export class AuthController {
     }
 
     // Retorna token do usuário
-    @Post('login')
+    @Post()
     logIn(@Body() body: LoginUserForm) {
 
         const { type } = this.platform(body);
@@ -50,37 +51,37 @@ export class AuthController {
         return this.authService.logoffUser();
     }
 
-    @Post('refresh-token')
-    @UseGuards(AuthGuard([AUTH_CONSTS.ADMIN, AUTH_CONSTS.CLIENT]))
-    refreshToken(@Headers('authorization') tokenAuth: string) {
+    @Post('user/refresh-token')
+    @UseGuards(AuthGuard(AUTH_CONSTS.CLIENT))
+    userRefreshToken(@Headers('authorization') tokenAuth: string) {
         return this.authService.refreshToken(tokenAuth);
     }
 
-    // Adiciona novo usuário
-    @Post('register')
-    register(@Body() body: RegisterUserForm) {
-
-        const { type } = this.platform(body);
-
-        const handlePlatform = {
-            ecommerce: (payload) => this.authService.registerUser(payload),
-            admin: (payload) => this.adminAuthService.registerUser(payload),
-        }
-        return handlePlatform[type](body);
-
+    @Post('user-backoffice/refresh-token')
+    @UseGuards(AuthGuard(AUTH_CONSTS.ADMIN))
+    adminRefreshToken(@Headers('authorization') tokenAuth: string) {
+        return this.adminAuthService.refreshToken(tokenAuth);
     }
 
-    @Put('forgot-password')
-    forgotPassword(@Body() body: ForgotPasswordForm) {
+    // Adiciona novo usuário
+    @Post('user/register')
+    registerUser(@Body() body: RegisterUserForm) {
+        return this.authService.registerUser(body);
+    }
 
-        const { type } = this.platform(body);
+    @Post('user-backoffice/register')
+    registerAdmin(@Body() body: SaveUserBackofficeForm) {
+        return this.adminAuthService.registerUser(body);
+    }
 
-        const handlePlatform = {
-            ecommerce: (payload) => this.authService.forgotPassword(payload),
-            admin: (payload) => this.adminAuthService.forgotPassword(payload),
-        }
-        return handlePlatform[type](body);
+    @Put('user/forgot-password')
+    userForgotPassword(@Body() body: ForgotPasswordForm) {
+        return this.authService.forgotPassword(body);
+    }
 
+    @Put('user-backoffice/forgot-password')
+    adminForgotPassword(@Body() body: ForgotPasswordForm) {
+        return this.adminAuthService.forgotPassword(body);
     }
 
     private platform(body) {

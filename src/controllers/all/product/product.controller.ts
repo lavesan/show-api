@@ -4,7 +4,7 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { GetnetService } from 'src/services/getnet/getnet.service';
 
-@Controller('client/product')
+@Controller('product')
 export class ProductController {
 
     constructor(
@@ -17,25 +17,9 @@ export class ProductController {
         return this.productService.findAllFilteredPaginate(paginationForm, productFilter);
     }
 
-    @Get()
+    @Get('category/tree')
     findCategoryTree(@Query('categoryId') categoryId: number) {
         return this.productService.findAllProductsByCategoryId(categoryId);
-    }
-
-    //TODO: Remover TODAS as requisições abaixo
-    @Post('getnet-login')
-    loginGetnet(): any {
-        return this.getnetService.writeAuthTokenOnFile();
-    }
-
-    @Post('getnet-pay-credit')
-    payCredit(): any {
-        return this.getnetService.payCredit({ card_number: '5155901222280001' });
-    }
-
-    @Post('getnet-pay-debit')
-    payDebit(): any {
-        return this.getnetService.payDebit({ card_number: '5155901222280001' });
     }
 
 }

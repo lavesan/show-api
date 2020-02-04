@@ -38,9 +38,4 @@ export class CategoryController {
         return this.productCategoryService.findProductCategoryTree(categoryId);
     }
 
-    @Get('tree/all')
-    async findCategoriesTree() {
-        return this.productCategoryService.findAllCategoriesTree();
-    }
-
 }

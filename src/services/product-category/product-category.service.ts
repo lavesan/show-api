@@ -122,6 +122,7 @@ export class ProductCategoryService {
      * @param {number} categoryId
      */
     async findProductCategoryTree(categoryId: number) {
+
         let category = await this.findById(categoryId);
 
         const categoryTreeArr = [];
