@@ -6,8 +6,9 @@ import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderFo
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { IPaginateResponseType } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
+import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 
-@Controller('order')
+@Controller('client/order')
 export class OrderController {
     constructor(
         private readonly orderToProductService: OrderToProductService,
@@ -19,9 +20,9 @@ export class OrderController {
         return this.orderToProductService.save(body, token);
     }
 
-    @Put()
-    updateStatusOrder(@Body() body: UpdateStatusOrderForm) {
-        return this.orderService.update(body);
+    @Put('cancel')
+    cancelOrder(@Body() body: CancelOrderForm) {
+        return this.orderService.clientCancelOrder(body);
     }
 
     @Get('all')

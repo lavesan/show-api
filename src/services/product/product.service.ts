@@ -20,19 +20,17 @@ export class ProductService {
     ) {}
 
     // TODO: Adicionar usuário backoffice que o criou
-    async saveMany(products: SaveProductForm[]): Promise<any> {
-        for (const { categoryId, ...product } of products) {
+    async saveOne({ categoryId, ...product }: SaveProductForm): Promise<any> {
 
-            const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
-            const data = {
-                ...product,
-                category,
-                creationDate: new Date(),
-            };
+        const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
+        const data = {
+            ...product,
+            category,
+            creationDate: new Date(),
+        };
 
-            await this.productRepo.save(data);
-        }
-        return { code: 1, message: 'Produtos salvos' };
+        return await this.productRepo.save(data);
+
     }
 
     // TODO: Adicionar usuário backoffice que o alterou

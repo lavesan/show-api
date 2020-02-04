@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { OrderType, OrderStatus } from '../model/constants/order.constants';
+import { OrderType, OrderStatus, OrderUserWhoDeleted } from '../model/constants/order.constants';
 import { UserEntity } from './user.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
 
@@ -29,6 +29,9 @@ export class OrderEntity {
 
     @Column({ name: 'ord_deleted_reason', type: 'text', nullable: true })
     deletedReason: string;
+
+    @Column({ name: 'ord_user_type_who_deleted', type: 'integer', nullable: true })
+    userTypeWhoDeleted: OrderUserWhoDeleted;
 
     @Column({ name: 'ord_get_on_market', type: 'boolean' })
     getOnMarket: boolean;

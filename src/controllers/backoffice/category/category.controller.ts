@@ -23,19 +23,16 @@ export class CategoryController {
         return this.productCategoryService.deleteOneCategory(categoryId);
     }
 
-    @Get()
-    findOneWithFather(@Query('categoryId') categoryId: number) {
-        return this.productCategoryService.findOneWithFather(categoryId);
-    }
+    // TODO: Se as requisições abaixo não forem necessárias, eu deletarei
 
-    @Get('all')
-    findAllCategories(@Query('name') name: string) {
-        return this.productCategoryService.findAllCategoriesFiltered(name);
-    }
+    // @Get()
+    // findOneWithFather(@Query('categoryId') categoryId: number) {
+    //     return this.productCategoryService.findOneWithFather(categoryId);
+    // }
 
-    @Get('tree')
-    findCategoryTree(@Query('categoryId') categoryId: number) {
-        return this.productCategoryService.findProductCategoryTree(categoryId);
-    }
+    // @Get('all')
+    // findAllCategories(@Query('name') name: string) {
+    //     return this.productCategoryService.findAllCategoriesFiltered(name);
+    // }
 
 }

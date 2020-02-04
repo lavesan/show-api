@@ -16,6 +16,7 @@ import { GetnetModule } from './modules/getnet/getnet.module';
 import { ProductCategoryModule } from './modules/product-category/product-category.module';
 import { SendgridModule } from './modules/sendgrid/sendgrid.module';
 import { CategoryController } from './controllers/all/category/category.controller';
+import { UserController } from './controllers/all/user/user.controller';
 
 import config = require('./ormconfig');
 
@@ -35,7 +36,7 @@ import config = require('./ormconfig');
     ProductCategoryModule,
     SendgridModule,
   ],
-  controllers: [AppController, CategoryController],
+  controllers: [AppController, CategoryController, UserController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {

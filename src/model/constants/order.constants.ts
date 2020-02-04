@@ -12,4 +12,9 @@ enum OrderStatus {
     CANCELED = 4,
 }
 
-export { OrderType, OrderStatus }
+enum OrderUserWhoDeleted {
+    BACKOFFICE = 0,
+    CLIENT = 1,
+}
+
+export { OrderType, OrderStatus, OrderUserWhoDeleted }

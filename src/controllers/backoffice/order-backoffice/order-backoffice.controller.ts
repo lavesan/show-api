@@ -1,11 +1,11 @@
-import { Controller, Post, Query, Body, Headers, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Query, Body, Put } from '@nestjs/common';
 import { OrderService } from 'src/services/order/order.service';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
-import { DeleteOrderForm } from 'src/model/forms/order/DeleteOrderForm';
+import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 
-@Controller('backoffice/order-backoffice')
+@Controller('backoffice/order')
 export class OrderBackofficeController {
 
     constructor(private readonly orderService: OrderService) {}
@@ -27,8 +27,8 @@ export class OrderBackofficeController {
         return this.orderService.update(body);
     }
 
-    @Put('delete')
-    deleteOne(@Body() body: DeleteOrderForm) {
+    @Put('cancel')
+    deleteOne(@Body() body: CancelOrderForm) {
         return this.orderService.softDelete(body);
     }
 

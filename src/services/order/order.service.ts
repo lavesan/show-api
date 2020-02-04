@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderEntity } from 'src/entities/order.entity';
 import { Repository, UpdateResult } from 'typeorm';
-import { OrderStatus } from 'src/model/constants/order.constants';
+
+import { OrderEntity } from 'src/entities/order.entity';
+import { OrderStatus, OrderUserWhoDeleted } from 'src/model/constants/order.constants';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter } from 'src/helpers/response-schema.helpers';
+import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter, failRes, Code } from 'src/helpers/response-schema.helpers';
 import { decodeToken } from 'src/helpers/auth.helpers';
-import { DeleteOrderForm } from 'src/model/forms/order/DeleteOrderForm';
+import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 
 @Injectable()
 export class OrderService {
@@ -26,7 +27,7 @@ export class OrderService {
         return await this.orderRepo.save(data);
     }
 
-    async update({ orderId, orderStatus }: UpdateStatusOrderForm) {
+    async update({ orderId, orderStatus }: UpdateStatusOrderForm): Promise<UpdateResult> {
 
         const order = await this.findById(orderId);
         const data = {
@@ -39,18 +40,20 @@ export class OrderService {
 
     }
 
-    async softDelete(order: DeleteOrderForm): Promise<UpdateResult> {
+    async softDelete(order: CancelOrderForm): Promise<UpdateResult> {
 
-        const findOrder = this.findById(order.id);
+        const findOrder = this.findById(order.orderId);
 
         const data = {
             ...findOrder,
             status: OrderStatus.CANCELED,
             deletedReason: order.reason,
+            userTypeWhoDeleted: OrderUserWhoDeleted.BACKOFFICE,
             deleteDate: new Date(),
         };
 
-        return await this.orderRepo.update({ id: order.id }, data);
+        return await this.orderRepo.update({ id: order.orderId }, data);
+
     }
 
     async findAllWithToken({ filter, paginationForm, tokenAuth }): Promise<IPaginateResponseType<any>> {
@@ -67,6 +70,33 @@ export class OrderService {
 
     }
 
+    async clientCancelOrder({ orderId, reason }: CancelOrderForm): Promise<UpdateResult | any> {
+
+        const order = await this.orderRepo.findOne({ id: orderId });
+
+        if (order.status !== OrderStatus.SENDED && order.status !== OrderStatus.SENDING) {
+            
+            const data = {
+                ...order,
+                status: OrderStatus.CANCELED,
+                deletedReason: reason,
+                userTypeWhoDeleted: OrderUserWhoDeleted.CLIENT,
+                deleteDate: new Date(),
+            }
+
+            return this.orderRepo.update({ id: orderId }, data);
+
+        } else {
+            
+            return failRes({
+                code: Code.NOT_AUTHORIZED,
+                message: 'Só é possível cancelar um pedido até antes de ele estar sendo enviado',
+            })
+
+        }
+
+    }
+
     async findAllFilteredPaginated({
         paginationForm: { page, take },
         filterOpt,
@@ -74,7 +104,7 @@ export class OrderService {
     }: any): Promise<IPaginateResponseType<any>> {
 
         const skip = skipFromPage(page);
-        const builder = this.orderRepo.createQueryBuilder();
+        const builder = this.orderRepo.createQueryBuilder('order');
 
         // Vindo do ecommerce, o usuário só verá os SEUS pedidos
         if (id) {
@@ -90,6 +120,7 @@ export class OrderService {
         })
             .skip(skip)
             .limit(take)
+            .orderBy('order.creationDate', 'DESC')
             .getManyAndCount();
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });

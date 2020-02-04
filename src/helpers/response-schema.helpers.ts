@@ -36,6 +36,13 @@ export const successRes = ({ data, opts = {} }: ISucessResParams) => ({
     ...opts,
 })
 
+interface IFailResParams {
+    code: number;
+    message: string;
+}
+
+export const failRes = ({ code, message }: IFailResParams) => ({ code, message });
+
 interface IFieldsFilter {
     like?: string[];
     equal?: string[];
@@ -237,4 +244,5 @@ export enum Code {
     OK = 1,
     NOT_FOUND = 2,
     SELL_ERROR = 3,
+    NOT_AUTHORIZED = 4,
 }

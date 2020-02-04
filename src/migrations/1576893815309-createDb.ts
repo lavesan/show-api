@@ -90,6 +90,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_receive_date TIMESTAMP,
                 ord_deleted_date TIMESTAMP,
                 ord_deleted_reason TEXT,
+                ord_user_type_who_deleted INTEGER,
                 ord_use_id INTEGER,
                 ord_adr_id INTEGER,
                 PRIMARY KEY (ord_id),
@@ -107,6 +108,7 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column ord_order.ord_change_value_cents is 'Se for dinheiro, ela vai existir e vai ser o valor que ele vai ter em mãos, para levar o troco';
             comment on column ord_order.ord_receive_date is 'Data e hora de recebimento, se for feita uma entrega';
             comment on column ord_order.ord_deleted_reason is 'Razão para o pedido ter sido removido';
+            comment on column ord_order.ord_user_type_who_deleted is 'Tipo do usuário que deletou o pedido. 0 para backoffice e 1 para cliente do ecommerce';
 
             -- Tabela dos usuários backoffice
             CREATE TABLE usb_user_backoffice (

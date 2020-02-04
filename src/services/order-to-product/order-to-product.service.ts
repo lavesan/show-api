@@ -24,6 +24,7 @@ export class OrderToProductService {
      * @param {string} token If there's a token, use this to save the user
      */
     async save({ products, ...body }: SaveOrderForm, token: string) {
+
         const tokenObj = decodeToken(token);
 
         // If the token exists, the user is vinculated with the order
@@ -54,6 +55,7 @@ export class OrderToProductService {
                 .values(insertValues)
                 .execute();
         }
+
     }
 
     async findAllProductFromOrder(orderId: number) {

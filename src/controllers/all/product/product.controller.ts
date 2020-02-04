@@ -12,12 +12,17 @@ export class ProductController {
         private readonly getnetService: GetnetService,
     ) {}
 
-    @Get('all')
+    @Get()
+    findOne(@Query('id') productId: number) {
+        return this.productService.findById(productId);
+    }
+
+    @Post('all')
     findAllFilteredPaginate(@Query() paginationForm: PaginationForm, @Body() productFilter: FilterForm[]) {
         return this.productService.findAllFilteredPaginate(paginationForm, productFilter);
     }
 
-    @Get('category/tree')
+    @Get('tree')
     findCategoryTree(@Query('categoryId') categoryId: number) {
         return this.productService.findAllProductsByCategoryId(categoryId);
     }

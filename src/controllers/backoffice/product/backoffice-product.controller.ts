@@ -11,14 +11,9 @@ export class BackofficeProductController {
 
     constructor(private readonly productService: ProductService) {}
 
-    @Get()
-    findOne(@Query('id') productId: number) {
-        return this.productService.findById(productId);
-    }
-
     @Post()
-    saveMany(@Body() body: SaveProductForm[]): Promise<any[]> {
-        return this.productService.saveMany(body);
+    saveMany(@Body() body: SaveProductForm): Promise<any[]> {
+        return this.productService.saveOne(body);
     }
 
     @Put()
@@ -31,11 +26,4 @@ export class BackofficeProductController {
         return this.productService.delete(productId);
     }
 
-    @Post('all')
-    findAllFilteredPaginated(
-        @Query() paginationForm: PaginationForm,
-        @Body() filter: FilterForm[],
-    ) {
-        return this.productService.findAllFilteredPaginate(paginationForm, filter);
-    }
 }
