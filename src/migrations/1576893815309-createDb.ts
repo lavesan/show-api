@@ -7,6 +7,7 @@ export class createDb1576893815309 implements MigrationInterface {
             CREATE TABLE use_user (
                 use_id SERIAL,
                 use_email VARCHAR(45) NOT NULL UNIQUE,
+                use_email_confirmed BOOLEAN,
                 use_password VARCHAR(45) NOT NULL,
                 use_forgot_password VARCHAR(45),
                 use_forgot_password_creation TIMESTAMP,
@@ -111,6 +112,7 @@ export class createDb1576893815309 implements MigrationInterface {
             CREATE TABLE usb_user_backoffice (
                 usb_id SERIAL,
                 usb_name TEXT NOT NULL,
+                usb_email_confirmed BOOLEAN,
                 usb_email TEXT NOT NULL,
                 usb_role INTEGER NOT NULL,
                 usb_status INTEGER NOT NULL,
