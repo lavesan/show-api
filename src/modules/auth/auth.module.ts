@@ -8,6 +8,7 @@ import { JwtStrategy } from 'src/services/auth/jwt.strategy';
 import { UserBackofficeModule } from '../user-backoffice/user-backoffice.module';
 import { AdminAuthService } from 'src/services/admin-auth/admin-auth.service';
 import { JwtAdminStrategy } from 'src/services/admin-auth/jwt-admin.strategy';
+import { SendgridModule } from '../sendgrid/sendgrid.module';
 
 @Module({
     controllers: [AuthController],
@@ -15,6 +16,7 @@ import { JwtAdminStrategy } from 'src/services/admin-auth/jwt-admin.strategy';
         UserModule,
         UserBackofficeModule,
         PassportModule,
+        SendgridModule,
     ],
     providers: [
         AuthService,

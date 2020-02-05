@@ -27,11 +27,6 @@ export class UserBackofficeController {
         return this.userBackofficeService.resetPassword(resetPasswordForm);
     }
 
-    @Post('reset-password-mail')
-    resetPasswordMail(@Body() resetPasswordMail: ResetPasswordUserBackofficeMailForm) {
-        return this.userBackofficeService.resetPasswordMail(resetPasswordMail);
-    }
-
     @Delete('id')
     deleteOne(@Param('id') userId: number) {
         return this.userBackofficeService.delete(userId);

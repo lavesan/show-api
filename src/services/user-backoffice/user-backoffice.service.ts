@@ -10,8 +10,6 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, paginateResponseSchema, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeForm';
-import { ResetPasswordUserBackofficeMailForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeMailForm';
-import { SendgridService } from '../sendgrid/sendgrid.service';
 import { UserBackofficeStatus } from 'src/model/constants/user-backoffice.constants';
 
 @Injectable()
@@ -20,7 +18,6 @@ export class UserBackofficeService {
     constructor(
         @InjectRepository(UserBackofficeEntity)
         private readonly userBackofficeRepo: Repository<UserBackofficeEntity>,
-        private readonly sendgridService: SendgridService,
     ) {}
 
     async findOneById(userId: number) {
@@ -135,7 +132,7 @@ export class UserBackofficeService {
         return this.userBackofficeRepo.findOne({ id, resetPassowrdToken: token });
     }
 
-    async update({ id, ...updateUserBackofficeForm }: UserBackofficeEntity): Promise<UpdateResult> {
+    async update({ id, ...updateUserBackofficeForm }: Partial<UserBackofficeEntity>): Promise<UpdateResult> {
         return this.userBackofficeRepo.update({ id }, updateUserBackofficeForm);
     }
 
