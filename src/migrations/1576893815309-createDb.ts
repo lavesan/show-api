@@ -180,6 +180,21 @@ export class createDb1576893815309 implements MigrationInterface {
                 FOREIGN KEY (orp_pro_id) REFERENCES pro_product (pro_id)
             );
 
+            -- Tabela para linkar os comentários
+            CREATE TABLE com_comment (
+                com_id SERIAL,
+                com_brief_comment VARCHAR(200) NOT NULL,
+                com_active_place BOOLEAN NOT NULL,
+                com_creation_date TIMESTAMP NOT NULL,
+                com_update_date TIMESTAMP,
+                com_orp_id INTEGER,
+                com_use_id INTEGER NOT NULL,
+                PRIMARY KEY (com_id),
+                FOREIGN KEY (com_orp_id) REFERENCES orp_order_product (orp_id)
+                FOREIGN KEY (com_use_id) REFERENCES use_user (use_id)
+            );
+            comment on column com_comment.com_active_place is 'O valor dele definirá em qual posição ele ficará na listagem de comentários';
+
         `);
     }
 
