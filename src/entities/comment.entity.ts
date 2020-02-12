@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { OrderEntity } from './order.entity';
+import { ProductEntity } from './product.entity';
 
 @Entity('com_comment')
 export class CommentEntity {
@@ -11,8 +11,11 @@ export class CommentEntity {
     @Column({ name: 'com_brief_comment', type: 'varchar' })
     briefComment: string;
 
-    @Column({ name: 'com_active_place', type: 'boolean', nullable: true })
-    activePlane: boolean;
+    @Column({ name: 'com_active_place', type: 'integer', nullable: true })
+    activePlace: number;
+
+    @Column({ name: 'com_stars', type: 'integer', nullable: true })
+    stars: number;
 
     @Column({ name: 'com_creation_date', type: 'timestamp', update: false })
     creationDate: Date;
@@ -20,9 +23,9 @@ export class CommentEntity {
     @Column({ name: 'com_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
 
-    @ManyToOne(table => OrderEntity, order => order.id)
-    @JoinColumn({ name: 'com_orp_id' })
-    order: OrderEntity;
+    @ManyToOne(table => ProductEntity, product => product.id)
+    @JoinColumn({ name: 'com_pro_id' })
+    product: ProductEntity;
 
     @ManyToOne(table => UserEntity, user => user.id)
     @JoinColumn({ name: 'com_use_id' })
