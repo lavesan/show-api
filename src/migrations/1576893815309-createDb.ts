@@ -191,7 +191,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 com_pro_id INTEGER,
                 com_use_id INTEGER NOT NULL,
                 PRIMARY KEY (com_id),
-                FOREIGN KEY (com_pro_id) REFERENCES pro_product (pro_id)
+                FOREIGN KEY (com_pro_id) REFERENCES pro_product (pro_id),
                 FOREIGN KEY (com_use_id) REFERENCES use_user (use_id)
             );
             comment on column com_comment.com_active_place is 'O valor dele definirá em qual posição ele ficará na listagem de comentários';
@@ -202,6 +202,7 @@ export class createDb1576893815309 implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<any> {
         return await queryRunner.query(`
             DROP TABLE IF EXISTS orp_order_product;
+            DROP TABLE IF EXISTS com_comment;
             DROP TABLE IF EXISTS pro_product;
             DROP TABLE IF EXISTS cat_category;
             DROP TABLE IF EXISTS ord_order;
