@@ -4,7 +4,7 @@ import { SaveCategoryForm } from 'src/model/forms/product-category/SaveCategoryF
 import { UpdateCategoryForm } from 'src/model/forms/product-category/UpdateCategoryForm';
 
 @Controller('backoffice/category')
-export class CategoryController {
+export class CategoryBackofficeController {
 
     constructor(private readonly productCategoryService: ProductCategoryService) {}
 
