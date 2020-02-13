@@ -81,7 +81,7 @@ export class AdminAuthService {
         const user = await this.userBackofficeService.save(userDTO);
 
         if (user) {
-            
+
             const payload = this.constructTokenPayload(user);
             const userData = {
                 name: user.name,
