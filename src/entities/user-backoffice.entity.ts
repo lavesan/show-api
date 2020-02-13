@@ -14,16 +14,16 @@ export class UserBackofficeEntity {
     @Column({ name: 'usb_email', type: 'text' })
     email: string;
 
-    @Column({ name: 'usb_password', type: 'integer' })
+    @Column({ name: 'usb_password', type: 'text' })
     password: string;
 
-    @Column({ name: 'usb_forgot_password', type: 'integer' })
+    @Column({ name: 'usb_forgot_password', type: 'integer', nullable: true })
     forgotPassword: string;
 
-    @Column({ name: 'usb_forgot_password_creation', type: 'timestamp' })
+    @Column({ name: 'usb_forgot_password_creation', type: 'timestamp', nullable: true })
     forgotPasswordCreation: Date;
 
-    @Column({ name: 'usb_img_url', type: 'integer', nullable: true })
+    @Column({ name: 'usb_img_url', type: 'text', nullable: true })
     imgUrl: string;
 
     @Column({ name: 'usb_reset_token', type: 'text', nullable: true })
