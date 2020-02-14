@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Query, Delete, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Delete, Param, Put } from '@nestjs/common';
 import { ProductCategoryService } from 'src/services/product-category/product-category.service';
 import { SaveCategoryForm } from 'src/model/forms/product-category/SaveCategoryForm';
 import { UpdateCategoryForm } from 'src/model/forms/product-category/UpdateCategoryForm';

@@ -18,6 +18,8 @@ import { SendgridModule } from './modules/sendgrid/sendgrid.module';
 import { CommentModule } from './modules/comment/comment.module';
 
 import config = require('./ormconfig');
+import { AdminMiddleware } from './middlewares/admin-auth-role.middleware';
+import { EcommerceMiddleware } from './middlewares/ecommerce-auth-role.middleware';
 
 @Module({
   imports: [
@@ -41,8 +43,11 @@ import config = require('./ormconfig');
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // consumer
-    //   .apply(RoleMiddleware)
-    //   .forRoutes('est-to-watter');
+    consumer
+      .apply(AdminMiddleware)
+      .forRoutes('backoffice');
+    consumer
+      .apply(EcommerceMiddleware)
+      .forRoutes('client');
   }
 }
