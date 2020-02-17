@@ -29,7 +29,9 @@ export const decodeToken = (token: string): IDecodeTokenType | null => {
 }
 
 export const validateToken = ({ secretKey, req, next }) => {
-    const token = req.headers.authorization;
+    const bearerTokenString: string = req.headers.authorization;
+    const tokenReg = /[^ ]+$/
+    const token = bearerTokenString.match(tokenReg).toString();
     // Assim eu verifico se o usuário tem a role necessária
     // const { role } = jwtDecode(req.headers.authorization);
 

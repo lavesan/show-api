@@ -18,9 +18,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
         const user = await this.authService.validateUser(payload);
 
-        console.log('Chave secreta: ', process.env.JWT_ADMIN_SECRET_KEY);
-        console.log('Do cliente');
-
         if (!user) {
             return done(
                 new HttpException(

@@ -91,8 +91,6 @@ export class GetnetService {
             const { token_type, access_token }: IGetnetLoginResponse = JSON.parse(rawData);
             const autorization = `${token_type} ${access_token}`;
 
-            console.log('autorization: ', autorization);
-
             req.headers = {
                 ...req.headers,
                 autorization,

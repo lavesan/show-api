@@ -137,8 +137,6 @@ export class AdminAuthService {
                 imgUrl: user.imgUrl,
             };
 
-            console.log('env man: ', process.env.JWT_ADMIN_SECRET_KEY);
-
             const token = await this.signPayload(payload);
             return { user: userData, token };
 

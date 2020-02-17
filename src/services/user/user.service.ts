@@ -178,10 +178,12 @@ export class UserService {
             .limit(take)
             .getManyAndCount();
 
-        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
+        const resultsWithoutPassword = result.map(({ password, ...body }) => body);
+
+        return paginateResponseSchema({ data: resultsWithoutPassword, allResultsCount: count, page, limit: take });
     }
 
-    async findByEmail(email:string): Promise<UserEntity> {
+    async findByEmail(email: string): Promise<UserEntity> {
         return await this.userRepo.findOne({ email, status: UserStatus.ACTIVE });
     }
 
