@@ -9,8 +9,4 @@ export class ChangeCommentForm {
     @MaxLength(200)
     briefComment: string;
 
-    @Max(5)
-    @IsNumber()
-    stars: number;
-
 }

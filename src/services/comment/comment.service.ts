@@ -18,10 +18,9 @@ export class CommentService {
         private readonly commentRepo: Repository<CommentEntity>,
     ) {}
 
-    saveOne({ productId, userId, briefComment, stars }: SaveCommentForm) {
+    saveOne({ productId, userId, briefComment }: SaveCommentForm) {
 
         const data = {
-            stars,
             briefComment,
             user: { id:  userId },
             product: { id:  productId },
@@ -33,13 +32,13 @@ export class CommentService {
 
     }
 
-    updateComment({ briefComment, stars, commentId }: ChangeCommentForm): Promise<UpdateResult> {
+    updateComment({ briefComment, commentId }: ChangeCommentForm): Promise<UpdateResult> {
 
         const data = {
-            stars,
             briefComment,
             updateDate: new Date(),
-        }
+        };
+
         return this.commentRepo.update({ id: commentId }, data);
 
     }
@@ -50,6 +49,7 @@ export class CommentService {
             activePlace,
             updateDate: new Date(),
         };
+        console.log('data: ', data);
         return this.commentRepo.update({ id: commentId }, data);
 
     }

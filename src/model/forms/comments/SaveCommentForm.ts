@@ -9,10 +9,6 @@ export class SaveCommentForm {
     @MaxLength(200)
     briefComment: string;
 
-    @Max(5)
-    @IsNumber()
-    stars: number;
-
     @IsNumber()
     @IsOptional()
     productId: number;

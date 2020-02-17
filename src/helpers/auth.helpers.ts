@@ -29,7 +29,18 @@ export const decodeToken = (token: string): IDecodeTokenType | null => {
 }
 
 export const validateToken = ({ secretKey, req, next }) => {
+
     const bearerTokenString: string = req.headers.authorization;
+
+    if (!bearerTokenString) {
+
+        throw new HttpException({
+            status: HttpStatus.FORBIDDEN,
+            error: 'Token de autorização inválido',
+        }, HttpStatus.FORBIDDEN);
+
+    }
+
     const tokenReg = /[^ ]+$/
     const token = bearerTokenString.match(tokenReg).toString();
     // Assim eu verifico se o usuário tem a role necessária
