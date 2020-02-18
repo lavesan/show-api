@@ -159,7 +159,14 @@ export class ProductCategoryService {
     }
 
     private async findAllFathers() {
-        return this.productCategoryRepo.find({ subCategoryOfId: null });
+        return this.productCategoryRepo.find({
+            where: {
+                subCategoryOfId: null,
+            },
+            order: {
+                id: 'ASC',
+            }
+        });
     }
 
     private async findAllWithFatherId(findAllWithFatherId: number) {
