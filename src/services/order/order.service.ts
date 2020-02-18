@@ -124,6 +124,7 @@ export class OrderService {
             .getManyAndCount();
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
+
     }
 
     async findById(orderId: number): Promise<OrderEntity> {

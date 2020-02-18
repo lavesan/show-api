@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { UserRole } from 'src/model/constants/user.constants';
+import { ProductComboStatus } from 'src/model/constants/product-combo.constants';
 
 @Entity('pcb_product_combo')
 export class ProductComboEntity {
@@ -16,6 +17,9 @@ export class ProductComboEntity {
     @Column({ name: 'pcb_title', type: 'varchar' })
     title: string;
 
+    @Column({ name: 'pcb_status', type: 'integer' })
+    status: ProductComboStatus;
+
     @Column('integer', {
         name: 'pcb_products_ids',
         array: true,
@@ -23,7 +27,7 @@ export class ProductComboEntity {
     productsIds: number[];
 
     @Column('integer', {
-        name: 'pcb_products_ids',
+        name: 'pcb_users_roles_will_appear',
         array: true,
     })
     userWithRolesToShow: UserRole[];

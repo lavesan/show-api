@@ -12,6 +12,7 @@ import { ProductCategoryService } from '../product-category/product-category.ser
 
 @Injectable()
 export class ProductService {
+
     constructor(
         @InjectRepository(ProductEntity)
         private readonly productRepo: Repository<ProductEntity>,
@@ -49,6 +50,10 @@ export class ProductService {
 
     async delete(productId: number): Promise<DeleteResult> {
         return await this.productRepo.delete({ id: productId });
+    }
+
+    async findManyByIds(ids: number[]): Promise<ProductEntity[]> {
+        return await this.productRepo.find({ id: In(ids) });
     }
 
     async findById(productId: number): Promise<ProductEntity> {

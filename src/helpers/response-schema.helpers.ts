@@ -54,6 +54,7 @@ interface IFieldsGenerateFilter {
     numbers?: string[];
     equalStrings?: string[];
     valueCentsNumbers?: string[];
+    inValues?: string[];
     datas: FilterForm[];
 }
 
@@ -66,6 +67,7 @@ export const generateQueryFilter = ({
     numbers = [],
     equalStrings = [],
     valueCentsNumbers = [],
+    inValues = [],
     datas,
     builder,
 }: IGenerateQuerybuilder): SelectQueryBuilder<any> => {
@@ -131,7 +133,11 @@ export const generateQueryFilter = ({
 
         } else if (type === 'equals') {
 
-            builder.where(`${field} = :value`, { value });
+            if (inValues.includes(field)) {
+                builder.where(`${field} IN :value`, { value });
+            } else {
+                builder.where(`${field} = :value`, { value });
+            }
 
         } else if (like.includes(field)) {
 
