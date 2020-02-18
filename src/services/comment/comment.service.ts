@@ -1,4 +1,3 @@
-import { Not } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from 'src/entities/comment.entity';
@@ -9,6 +8,7 @@ import { ChangeCommentForm } from 'src/model/forms/comments/ChangeCommentForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, generateQueryFilter, paginateResponseSchema } from 'src/helpers/response-schema.helpers';
+import { removePwd } from 'src/helpers/user.helpers';
 
 @Injectable()
 export class CommentService {
@@ -56,7 +56,13 @@ export class CommentService {
 
     async findActivesOrdered() {
 
-        const comments = await this.commentRepo.find({ activePlace: Not(null) });
+        let comments = await this.commentRepo.find();
+
+        comments = comments.filter(({ activePlace }) => activePlace);
+        comments = comments.map(comment => ({
+            ...comment,
+            user: comment.user ? removePwd(comment.user) : comment.user,
+        }))
 
         const compare = (a: CommentEntity, b: CommentEntity) => {
             if (a.activePlace < b.activePlace) {
@@ -72,6 +78,7 @@ export class CommentService {
         const sortedComments = comments.sort(compare);
 
         return sortedComments;
+
     }
 
     async findAllFilteredAndPaginated({ take, page }: PaginationForm, userFilter: FilterForm[]): Promise<any> {

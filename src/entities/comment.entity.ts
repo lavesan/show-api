@@ -27,7 +27,7 @@ export class CommentEntity {
     @JoinColumn({ name: 'com_pro_id' })
     product: ProductEntity;
 
-    @ManyToOne(table => UserEntity, user => user.id)
+    @ManyToOne(table => UserEntity, user => user.id, { eager: true })
     @JoinColumn({ name: 'com_use_id' })
     user: UserEntity;
 
