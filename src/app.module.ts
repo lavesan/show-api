@@ -20,6 +20,7 @@ import { CommentModule } from './modules/comment/comment.module';
 import config = require('./ormconfig');
 import { AdminMiddleware } from './middlewares/admin-auth-role.middleware';
 import { EcommerceMiddleware } from './middlewares/ecommerce-auth-role.middleware';
+import { ProductComboModule } from './modules/product-combo/product-combo.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { EcommerceMiddleware } from './middlewares/ecommerce-auth-role.middlewar
     ProductCategoryModule,
     SendgridModule,
     CommentModule,
+    ProductComboModule,
   ],
   controllers: [AppController],
   providers: [AppService],
