@@ -16,6 +16,9 @@ export class ProductEntity {
     @Column({ name: 'pro_img_url', type: 'text', nullable: true })
     imgUrl: string;
 
+    @Column({ name: 'pro_quant_prefix', type: 'varchar' })
+    quantityPrefix: string;
+
     @Column({ name: 'pro_description', type: 'text' })
     description: string;
 

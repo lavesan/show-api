@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { OrderType, OrderStatus, OrderUserWhoDeleted } from '../model/constants/order.constants';
 import { UserEntity } from './user.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
+import { ScheduledTimeEntity } from './scheduled-time.entity';
 
 @Entity('ord_order')
 export class OrderEntity {
@@ -43,9 +44,6 @@ export class OrderEntity {
     @Column({ name: 'ord_change_value_cents', type: 'text', nullable: true })
     changeValueCents: string;
 
-    @Column({ name: 'ord_receive_date', type: 'timestamp', nullable: true })
-    receiveDate: Date;
-
     @Column({ name: 'ord_creation_date', type: 'timestamp', update: false })
     creationDate: Date;
 
@@ -61,5 +59,9 @@ export class OrderEntity {
 
     @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order)
     orderToProd: OrderToProductEntity[];
+
+    @OneToOne(table => ScheduledTimeEntity, scheduledTime => scheduledTime.id)
+    @JoinColumn({ name: 'ord_tim_id' })
+    order: ScheduledTimeEntity;
 
 }
