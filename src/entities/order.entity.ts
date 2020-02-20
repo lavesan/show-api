@@ -62,6 +62,6 @@ export class OrderEntity {
 
     @OneToOne(table => ScheduledTimeEntity, scheduledTime => scheduledTime.id)
     @JoinColumn({ name: 'ord_tim_id' })
-    order: ScheduledTimeEntity;
+    scheduledTime: ScheduledTimeEntity;
 
 }

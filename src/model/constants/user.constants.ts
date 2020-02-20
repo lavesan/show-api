@@ -11,4 +11,9 @@ enum UserStatus {
     INACTIVE = 2,
 }
 
-export { UserRole, UserStatus };
+enum UserGender {
+    MASCULINE = 1,
+    FEMININE = 2,
+}
+
+export { UserRole, UserStatus, UserGender };

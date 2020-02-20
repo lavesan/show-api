@@ -9,12 +9,15 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter, failRes, Code } from 'src/helpers/response-schema.helpers';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
+import { SendgridService } from '../sendgrid/sendgrid.service';
+import { MailType } from 'src/model/constants/sendgrid.constants';
 
 @Injectable()
 export class OrderService {
     constructor(
         @InjectRepository(OrderEntity)
         private readonly orderRepo: Repository<OrderEntity>,
+        private readonly sendgridService: SendgridService,
     ) {}
 
     async save(order: Partial<OrderEntity>) {
@@ -22,6 +25,19 @@ export class OrderService {
             ...order,
             status: OrderStatus.MADE,
             creationDate: new Date(),
+        };
+
+        if (order.user) {
+            this.sendgridService.sendMail({
+                type: MailType.NEW_ORDER,
+                to: order.user.email,
+                name: order.user.name,
+                date: order.scheduledTime?.date,
+                time: order.scheduledTime?.time,
+                totalValue: order.totalValueCents,
+                changeValue: order.changeValueCents,
+                orderId: order.id,
+            });
         }
 
         return await this.orderRepo.save(data);

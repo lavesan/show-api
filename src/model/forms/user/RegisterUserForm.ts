@@ -1,5 +1,5 @@
 import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean } from 'class-validator';
-import { UserRole } from '../../../model/constants/user.constants';
+import { UserRole, UserGender } from '../../../model/constants/user.constants';
 import { emailRegex } from '../../../helpers/validate.helpers';
 
 export class RegisterUserForm {
@@ -16,8 +16,20 @@ export class RegisterUserForm {
     @IsString()
     imgUrl: string;
 
+    @IsEnum(UserGender)
+    gender: UserGender;
+
     @IsNumber()
     age: number;
+
+    @IsNumber()
+    cats: number;
+
+    @IsNumber()
+    dogs: number;
+
+    @IsNumber()
+    childrens: number;
 
     @IsEnum(UserRole)
     role: UserRole;

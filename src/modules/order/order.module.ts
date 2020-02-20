@@ -9,6 +9,7 @@ import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
 import { OrderBackofficeController } from 'src/controllers/backoffice/order-backoffice/order-backoffice.controller';
 import { ScheduledTimeModule } from '../scheduled-time/scheduled-time.module';
 import { OrderController } from 'src/controllers/all/order/order.controller';
+import { SendgridModule } from '../sendgrid/sendgrid.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { OrderController } from 'src/controllers/all/order/order.controller';
       UserModule,
       ProductModule,
       ScheduledTimeModule,
+      SendgridModule,
     ],
     controllers: [OrderBackofficeController, OrderController],
     providers: [OrderService, OrderToProductService],

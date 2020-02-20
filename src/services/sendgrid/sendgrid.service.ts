@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as sgMail from '@sendgrid/mail';
+import { numberStringToReal } from 'src/helpers/calc.helpers';
 
 @Injectable()
 export class SendgridService {
@@ -56,6 +57,29 @@ export class SendgridService {
                 <h2>Olá ${name}!</h2>
                 <p style="color: #aaa;">Se foi você que esqueceu a senha, por favor utilize a senha abaixo e efetue o login na sua conta:</p>
                 ${password}
+            `,
+        }),
+        newOrder: ({ to, name, date, time, orderId, changeValue, totalValue }) => ({
+            to,
+            from: this.from,
+            subject: 'Zero veneno loja',
+            text: 'Pedido feito com sucesso!',
+            html: `
+                <h2>Seu pedido foi feito com sucesso, ${name}!</h2>
+                <div>
+                    <p>Valor do pedido: ${numberStringToReal(totalValue)}</p>
+                    ${changeValue ? `<p>Levar troco para: ${numberStringToReal(changeValue)}</p>` : ''}
+                </div>
+                ${date ? `
+                    <p>Entregaremos assim que possível, no dia <b>${date}</b> perto do horário de <b>${time}</b></p>
+                ` : ''}
+                <p>Se você quiser acompanhar seu pedido, é só clicar no botão abaixo!</p>
+                <a
+                    href="http://localhost:3001/pedidos/${orderId}"
+                    target="_blank"
+                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
+                    Acompanhar pedido
+                </a>
             `,
         }),
         default() {},

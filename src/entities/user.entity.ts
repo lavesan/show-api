@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { UserRole, UserStatus } from '../model/constants/user.constants';
+import { UserRole, UserStatus, UserGender } from '../model/constants/user.constants';
 import { AddressEntity } from './address.entity';
 import { CardEntity } from './card.entity';
 import { OrderEntity } from './order.entity';
@@ -29,6 +29,15 @@ export class UserEntity {
 
     @Column({ name: 'use_status', type: 'integer' })
     status: UserStatus;
+
+    @Column({ name: 'use_gender', type: 'integer' })
+    gender: UserGender;
+
+    @Column({ name: 'use_animals', type: 'integer' })
+    animalsQuantity: number;
+
+    @Column({ name: 'use_childrens', type: 'integer' })
+    childrensQuantity: number;
 
     @Column({ name: 'use_img_url', type: 'text', nullable: true })
     imgUrl: string;

@@ -22,11 +22,13 @@ import { AdminMiddleware } from './middlewares/admin-auth-role.middleware';
 import { EcommerceMiddleware } from './middlewares/ecommerce-auth-role.middleware';
 import { ProductComboModule } from './modules/product-combo/product-combo.module';
 import { ScheduledTimeModule } from './modules/scheduled-time/scheduled-time.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
     TypeOrmModule.forRoot(config()),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     ContactModule,

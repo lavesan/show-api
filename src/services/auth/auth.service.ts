@@ -97,6 +97,7 @@ export class AuthService {
 
             const token = await this.signPayload(payload);
             return { user: userData, token };
+
         }
 
     }
