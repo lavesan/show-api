@@ -2,13 +2,12 @@ import { Controller, Post, Body, Headers, Put, Get, Query } from '@nestjs/common
 import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderToProductService } from 'src/services/order-to-product/order-to-product.service';
 import { OrderService } from 'src/services/order/order.service';
-import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { IPaginateResponseType } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 
-@Controller('client/order')
+@Controller('order')
 export class OrderController {
     constructor(
         private readonly orderToProductService: OrderToProductService,

@@ -7,6 +7,8 @@ import { UserModule } from '../user/user.module';
 import { ProductModule } from '../product/product.module';
 import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
 import { OrderBackofficeController } from 'src/controllers/backoffice/order-backoffice/order-backoffice.controller';
+import { ScheduledTimeModule } from '../scheduled-time/scheduled-time.module';
+import { OrderController } from 'src/controllers/all/order/order.controller';
 
 @Module({
     imports: [
@@ -14,9 +16,9 @@ import { OrderBackofficeController } from 'src/controllers/backoffice/order-back
       OrderModule,
       UserModule,
       ProductModule,
+      ScheduledTimeModule,
     ],
-    controllers: [OrderBackofficeController],
+    controllers: [OrderBackofficeController, OrderController],
     providers: [OrderService, OrderToProductService],
-    exports: [OrderService],
 })
 export class OrderModule {}

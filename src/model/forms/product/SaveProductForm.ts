@@ -15,6 +15,9 @@ export class SaveProductForm {
     @IsEnum(ProductStatus)
     status: ProductStatus;
 
+    @IsString()
+    quantityPrefix: string;
+
     @IsNumber()
     categoryId: number;
 

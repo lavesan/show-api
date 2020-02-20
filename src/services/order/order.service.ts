@@ -113,7 +113,7 @@ export class OrderService {
 
         const [result, count] = await generateQueryFilter({
             numbers: ['ord_type', 'ord_status'],
-            equalStrings: ['ord_get_on_market', 'ord_receive_date'],
+            equalStrings: ['ord_get_on_market'],
             valueCentsNumbers: ['ord_total_value_cents', 'ord_total_product_value_cents', 'ord_total_freight_value_cents', 'ord_change_value_cents'],
             datas: Array.isArray(filterOpt) ? filterOpt : [],
             builder,

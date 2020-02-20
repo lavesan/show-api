@@ -1,7 +1,7 @@
 import { OrderType } from 'src/model/constants/order.constants';
 import { ProductInfoForm } from '../product/ProductInfoForm';
-import { IsEnum, IsNumberString, IsOptional, IsString, IsBoolean, IsDate, IsArray } from 'class-validator';
-import { UserEntity } from 'src/entities/user.entity';
+import { IsEnum, IsNumberString, IsOptional, IsString, IsBoolean, IsArray, IsObject } from 'class-validator';
+import { SaveScheduledTimeForm } from '../scheduled-time/SaveScheduledTimeForm';
 
 export class SaveOrderForm {
 
@@ -11,12 +11,6 @@ export class SaveOrderForm {
 
     @IsEnum(OrderType)
     type: OrderType;
-
-    @IsNumberString()
-    totalValueCents: string;
-
-    @IsNumberString()
-    totalProductValueCents: string;
 
     @IsNumberString()
     totalFreightValuesCents: string;
@@ -29,12 +23,14 @@ export class SaveOrderForm {
     @IsOptional()
     getOnMarket: boolean;
 
-    @IsDate()
-    receiveDate: Date;
-
     @IsArray()
     products: ProductInfoForm[];
 
-    user: UserEntity;
+    @IsObject()
+    @IsOptional()
+    receiveDate: SaveScheduledTimeForm;
+
+    @IsBoolean()
+    payed: boolean;
 
 }

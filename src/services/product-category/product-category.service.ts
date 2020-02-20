@@ -17,9 +17,17 @@ export class ProductCategoryService {
     ) {}
 
     async save({ subCategoryOfId, ...saveCategoryForm }: SaveCategoryForm) {
+
         const subCategoryOf = subCategoryOfId ?
-            await this.findOneByIdOrFail(subCategoryOfId) :
+            await this.findById(subCategoryOfId) :
             null;
+
+        if (subCategoryOf && !subCategoryOf) {
+            throw new HttpException({
+                code: HttpStatus.NOT_FOUND,
+                message: 'Subcategoria não encontrada',
+            }, HttpStatus.NOT_FOUND);
+        };
 
         const data = {
             ...saveCategoryForm,
@@ -28,6 +36,7 @@ export class ProductCategoryService {
         };
 
         return await this.productCategoryRepo.save(data);
+
     }
 
     async findOneByIdOrFail(categoryId: number) {

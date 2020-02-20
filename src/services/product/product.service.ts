@@ -1,6 +1,6 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult, DeleteResult, In } from 'typeorm';
+import { Repository, DeleteResult, In } from 'typeorm';
 
 import { ProductEntity } from 'src/entities/product.entity';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
@@ -23,14 +23,22 @@ export class ProductService {
     // TODO: Adicionar usuário backoffice que o criou
     async saveOne({ categoryId, ...product }: SaveProductForm): Promise<any> {
 
-        const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
-        const data = {
-            ...product,
-            category,
-            creationDate: new Date(),
-        };
+        const category = await this.productCategoryService.findById(categoryId);
 
-        return await this.productRepo.save(data);
+        if (category) {
+            const data = {
+                ...product,
+                category,
+                creationDate: new Date(),
+            };
+
+            return await this.productRepo.save(data);
+        }
+
+        throw new HttpException({
+            code: HttpStatus.NOT_FOUND,
+            message: 'Categoria não encontrada',
+        }, HttpStatus.NOT_FOUND);
 
     }
 
