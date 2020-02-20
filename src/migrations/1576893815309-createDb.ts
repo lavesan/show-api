@@ -74,6 +74,26 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column car_card.car_brand is 'Bandeira do cartão';
             comment on column car_card.car_getnet_id is 'Id para coletar token, deletar cartões e atualizar cartão do cofre da getnet';
 
+            CREATE TABLE tim_scheduled_time (
+                tim_id SERIAL,
+                tim_date DATE NOT NULL,
+                tim_time TIME NOT NULL,
+                PRIMARY KEY (tim_id)
+            );
+
+            CREATE TABLE pcb_product_combo (
+                pcb_id SERIAL,
+                pcb_title VARCHAR(15) NOT NULL,
+                pcb_description TEXT,
+                pcb_value_cents TEXT,
+                pcb_status INTEGER NOT NULL,
+                pcb_products_ids INTEGER[] NOT NULL,
+                pcb_users_roles_will_appear INTEGER[],
+                pcb_creation_date TIMESTAMP NOT NULL,
+                pcb_update_date TIMESTAMP,
+                PRIMARY KEY (pcb_id)
+            );
+
             CREATE TABLE ord_order (
                 ord_id SERIAL,
                 ord_card_code VARCHAR(60),
@@ -87,15 +107,16 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_change_value_cents TEXT,
                 ord_creation_date TIMESTAMP NOT NULL,
                 ord_update_date TIMESTAMP,
-                ord_receive_date TIMESTAMP,
                 ord_deleted_date TIMESTAMP,
                 ord_deleted_reason TEXT,
                 ord_user_type_who_deleted INTEGER,
                 ord_use_id INTEGER,
                 ord_adr_id INTEGER,
+                ord_tim_id INTEGER,
                 PRIMARY KEY (ord_id),
                 FOREIGN KEY (ord_use_id) REFERENCES use_user (use_id),
-                FOREIGN KEY (ord_adr_id) REFERENCES adr_address (adr_id)
+                FOREIGN KEY (ord_adr_id) REFERENCES adr_address (adr_id),
+                FOREIGN KEY (ord_tim_id) REFERENCES tim_scheduled_time (tim_id)
             );
 
             comment on column ord_order.ord_card_code is 'Código do cartão se a venda foi feita online';
@@ -106,7 +127,6 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column ord_order.ord_total_freight_value_cents is 'Valor total do frete';
             comment on column ord_order.ord_get_on_market is 'Se é para pegar na loja ou não';
             comment on column ord_order.ord_change_value_cents is 'Se for dinheiro, ela vai existir e vai ser o valor que ele vai ter em mãos, para levar o troco';
-            comment on column ord_order.ord_receive_date is 'Data e hora de recebimento, se for feita uma entrega';
             comment on column ord_order.ord_deleted_reason is 'Razão para o pedido ter sido removido';
             comment on column ord_order.ord_user_type_who_deleted is 'Tipo do usuário que deletou o pedido. 0 para backoffice e 1 para cliente do ecommerce';
 
@@ -148,6 +168,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 pro_id SERIAL,
                 pro_name TEXT NOT NULL,
                 pro_img_url TEXT,
+                pro_quant_prefix VARCHAR(10) NOT NULL,
                 pro_description TEXT NOT NULL,
                 pro_type INTEGER NOT NULL,
                 pro_status INTEGER NOT NULL,
@@ -168,16 +189,19 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column pro_product.pro_status is 'Status do produto. 0 para ATIVO, 1 para INATIVO';
             comment on column pro_product.pro_actual_value is 'O valor atual que o produto está sendo vendido';
             comment on column pro_product.pro_last_value is 'O valor anterior que o produto estava sendo vendido, antes de uma promoção ou seja la o que for';
+            comment on column pro_product.pro_quant_prefix is 'Préfixo da quantidade do produto (kg, x...)';
 
             -- Tabela para linkar as ordens com os produtos
             CREATE TABLE orp_order_product (
                 orp_id SERIAL,
                 orp_quantity FLOAT8 NOT NULL,
                 orp_ord_id INTEGER NOT NULL,
-                orp_pro_id INTEGER NOT NULL,
+                orp_pro_id INTEGER,
+                orp_pcb_id INTEGER,
                 PRIMARY KEY (orp_id),
                 FOREIGN KEY (orp_ord_id) REFERENCES ord_order (ord_id),
-                FOREIGN KEY (orp_pro_id) REFERENCES pro_product (pro_id)
+                FOREIGN KEY (orp_pro_id) REFERENCES pro_product (pro_id),
+                FOREIGN KEY (orp_pcb_id) REFERENCES pcb_product_combo (pcb_id)
             );
 
             -- Tabela para linkar os comentários
@@ -205,7 +229,9 @@ export class createDb1576893815309 implements MigrationInterface {
             DROP TABLE IF EXISTS com_comment;
             DROP TABLE IF EXISTS pro_product;
             DROP TABLE IF EXISTS cat_category;
-            DROP TABLE IF EXISTS ord_order;
+            DROP TABLE IF EXISTS ord_order CASCADE;
+            DROP TABLE IF EXISTS tim_scheduled_time;
+            DROP TABLE IF EXISTS pcb_product_combo;
             DROP TABLE IF EXISTS car_card;
             DROP TABLE IF EXISTS adr_address;
             DROP TABLE IF EXISTS con_contact;
