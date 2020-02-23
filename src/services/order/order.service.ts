@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
+import * as moment from 'moment';
 
 import { OrderEntity } from 'src/entities/order.entity';
 import { OrderStatus, OrderUserWhoDeleted } from 'src/model/constants/order.constants';
@@ -12,35 +13,51 @@ import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
 
+class IUserMailData {
+    email: '';
+    name: '';
+}
+
 @Injectable()
 export class OrderService {
+
     constructor(
         @InjectRepository(OrderEntity)
         private readonly orderRepo: Repository<OrderEntity>,
         private readonly sendgridService: SendgridService,
     ) {}
 
+    time = {
+        open: '08:00',
+        close: '18:00',
+    };
+
     async save(order: Partial<OrderEntity>) {
+
         const data = {
             ...order,
             status: OrderStatus.MADE,
             creationDate: new Date(),
         };
 
-        if (order.user) {
+        if (order.user && order.user instanceof IUserMailData) {
             this.sendgridService.sendMail({
                 type: MailType.NEW_ORDER,
                 to: order.user.email,
                 name: order.user.name,
-                date: order.scheduledTime?.date,
-                time: order.scheduledTime?.time,
+                date: order.receiveDate,
+                time: order.receiveTime,
                 totalValue: order.totalValueCents,
                 changeValue: order.changeValueCents,
                 orderId: order.id,
             });
         }
 
-        return await this.orderRepo.save(data);
+        return await this.orderRepo.save(data)
+            .catch(err => {
+                console.log('name: ', err);
+            });
+
     }
 
     async update({ orderId, orderStatus }: UpdateStatusOrderForm): Promise<UpdateResult> {
@@ -91,7 +108,7 @@ export class OrderService {
         const order = await this.orderRepo.findOne({ id: orderId });
 
         if (order.status !== OrderStatus.SENDED && order.status !== OrderStatus.SENDING) {
-            
+
             const data = {
                 ...order,
                 status: OrderStatus.CANCELED,
@@ -103,7 +120,7 @@ export class OrderService {
             return this.orderRepo.update({ id: orderId }, data);
 
         } else {
-            
+
             return failRes({
                 code: Code.NOT_AUTHORIZED,
                 message: 'Só é possível cancelar um pedido até antes de ele estar sendo enviado',
@@ -146,4 +163,38 @@ export class OrderService {
     async findById(orderId: number): Promise<OrderEntity> {
         return await this.orderRepo.findOne({ id: orderId });
     }
+
+    async findActiveDates(dateInString: string) {
+
+        const date = moment(dateInString, 'DD/MM/YYYY').toDate();
+
+        const scheduledDates = await this.orderRepo.find({ receiveDate: date });
+        const compareDate = moment(this.time.open, 'HH:mm');
+        const close = moment(this.time.close, 'HH:mm');
+
+        const activeTimes = [];
+
+        while (compareDate.isSameOrBefore(close)) {
+
+            const comparedTime = compareDate.format('HH:mm');
+            const timeIsFree = !scheduledDates.some(order => {
+                const scheduledDate = moment(order.receiveTime, 'HH:mm:ss').format('HH:mm');
+                return scheduledDate === comparedTime;
+            });
+
+            if (timeIsFree) {
+                activeTimes.push({ time: compareDate.format('HH:mm') });
+            }
+
+            compareDate.add(30, 'minutes');
+
+        };
+
+        return {
+            date: dateInString,
+            activeTimes,
+        };
+
+    }
+
 }

@@ -28,7 +28,7 @@ export class SaveOrderForm {
 
     @IsObject()
     @IsOptional()
-    receiveDate: SaveScheduledTimeForm;
+    receive: SaveScheduledTimeForm;
 
     @IsBoolean()
     payed: boolean;

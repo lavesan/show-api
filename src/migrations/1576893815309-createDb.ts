@@ -79,13 +79,6 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column car_card.car_brand is 'Bandeira do cartão';
             comment on column car_card.car_getnet_id is 'Id para coletar token, deletar cartões e atualizar cartão do cofre da getnet';
 
-            CREATE TABLE tim_scheduled_time (
-                tim_id SERIAL,
-                tim_date DATE NOT NULL,
-                tim_time TIME NOT NULL,
-                PRIMARY KEY (tim_id)
-            );
-
             CREATE TABLE pcb_product_combo (
                 pcb_id SERIAL,
                 pcb_title VARCHAR(15) NOT NULL,
@@ -108,6 +101,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_total_value_cents TEXT NOT NULL,
                 ord_total_product_value_cents TEXT NOT NULL,
                 ord_total_freight_value_cents TEXT,
+                ord_receive_date DATE,
+                ord_receive_time TIME,
                 ord_get_on_market BOOLEAN,
                 ord_change_value_cents TEXT,
                 ord_creation_date TIMESTAMP NOT NULL,
@@ -117,11 +112,9 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_user_type_who_deleted INTEGER,
                 ord_use_id INTEGER,
                 ord_adr_id INTEGER,
-                ord_tim_id INTEGER,
                 PRIMARY KEY (ord_id),
                 FOREIGN KEY (ord_use_id) REFERENCES use_user (use_id),
-                FOREIGN KEY (ord_adr_id) REFERENCES adr_address (adr_id),
-                FOREIGN KEY (ord_tim_id) REFERENCES tim_scheduled_time (tim_id)
+                FOREIGN KEY (ord_adr_id) REFERENCES adr_address (adr_id)
             );
 
             comment on column ord_order.ord_card_code is 'Código do cartão se a venda foi feita online';
@@ -234,8 +227,7 @@ export class createDb1576893815309 implements MigrationInterface {
             DROP TABLE IF EXISTS com_comment;
             DROP TABLE IF EXISTS pro_product;
             DROP TABLE IF EXISTS cat_category;
-            DROP TABLE IF EXISTS ord_order CASCADE;
-            DROP TABLE IF EXISTS tim_scheduled_time;
+            DROP TABLE IF EXISTS ord_order;
             DROP TABLE IF EXISTS pcb_product_combo;
             DROP TABLE IF EXISTS car_card;
             DROP TABLE IF EXISTS adr_address;

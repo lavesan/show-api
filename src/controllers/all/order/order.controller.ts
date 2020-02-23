@@ -9,6 +9,7 @@ import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 
 @Controller('order')
 export class OrderController {
+
     constructor(
         private readonly orderToProductService: OrderToProductService,
         private readonly orderService: OrderService,
@@ -36,4 +37,10 @@ export class OrderController {
             filter,
         });
     }
+
+    @Get('active')
+    getFreeForScheduleDates(@Query('date') date: string) {
+        return this.orderService.findActiveDates(date);
+    }
+
 }

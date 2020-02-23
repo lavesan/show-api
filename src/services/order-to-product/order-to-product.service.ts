@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
 import { Repository } from 'typeorm';
+import * as moment from 'moment';
+
+import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
 import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserService } from '../user/user.service';
-import { ScheduledTimeService } from 'src/service/scheduled-time/scheduled-time.service';
 import { onlyNumberStringToFloatNumber, floatNumberToOnlyNumberString } from 'src/helpers/calc.helpers';
 
 @Injectable()
@@ -18,7 +19,6 @@ export class OrderToProductService {
         private readonly orderService: OrderService,
         private readonly productService: ProductService,
         private readonly userService: UserService,
-        private readonly scheduledTimeService: ScheduledTimeService,
     ) {}
 
     /**
@@ -28,7 +28,7 @@ export class OrderToProductService {
      */
     async save({ products, ...body }: SaveOrderForm, token: string) {
 
-        const { receiveDate, ...orderBody } = body;
+        const { receive, ...orderBody } = body;
 
         const tokenObj = decodeToken(token);
 
@@ -68,23 +68,19 @@ export class OrderToProductService {
         data.totalValueCents = floatNumberToOnlyNumberString(data.totalValueCents);
         data.totalProductValueCents = floatNumberToOnlyNumberString(data.totalProductValueCents);
 
-        // Saves the order
-        const order = await this.orderService.save(data);
+        if (receive) {
 
-        // totalValueCents: string;
-        // totalProductValueCents: string;
+            const fullDate = moment(`${receive.date} ${receive.time}`, 'DD/MM/YYYY HH:mm');
 
-        // Saves the time as scheduled, so it won't be selected by another user
-        if (receiveDate) {
-
-            const receiveData = {
-                ...receiveDate,
-                orderId: order.id,
-            };
-
-            await this.scheduledTimeService.saveOne(receiveData);
+            data.receiveDate = fullDate.toDate();
+            data.receiveTime = fullDate.toDate();
 
         }
+
+        console.log('data: ', data);
+
+        // Saves the order
+        const order = await this.orderService.save(data);
 
         if (order) {
 
