@@ -77,8 +77,6 @@ export class OrderToProductService {
 
         }
 
-        console.log('data: ', data);
-
         // Saves the order
         const order = await this.orderService.save(data);
 

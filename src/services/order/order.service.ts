@@ -12,11 +12,7 @@ import { decodeToken } from 'src/helpers/auth.helpers';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
-
-class IUserMailData {
-    email: '';
-    name: '';
-}
+import { UserMailData } from 'src/model/constants/user.constants';
 
 @Injectable()
 export class OrderService {
@@ -40,7 +36,7 @@ export class OrderService {
             creationDate: new Date(),
         };
 
-        if (order.user && order.user instanceof IUserMailData) {
+        if (order.user && order.user instanceof UserMailData) {
             this.sendgridService.sendMail({
                 type: MailType.NEW_ORDER,
                 to: order.user.email,
@@ -51,12 +47,11 @@ export class OrderService {
                 changeValue: order.changeValueCents,
                 orderId: order.id,
             });
+        } else {
+            delete data.user;
         }
 
         return await this.orderRepo.save(data)
-            .catch(err => {
-                console.log('name: ', err);
-            });
 
     }
 
