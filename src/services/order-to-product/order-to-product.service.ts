@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as moment from 'moment';
@@ -10,6 +10,9 @@ import { ProductService } from '../product/product.service';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserService } from '../user/user.service';
 import { onlyNumberStringToFloatNumber, floatNumberToOnlyNumberString } from 'src/helpers/calc.helpers';
+import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
+import { GetnetService } from '../getnet/getnet.service';
+import { OrderType } from 'src/model/constants/order.constants';
 
 @Injectable()
 export class OrderToProductService {
@@ -19,6 +22,7 @@ export class OrderToProductService {
         private readonly orderService: OrderService,
         private readonly productService: ProductService,
         private readonly userService: UserService,
+        private readonly getnetService: GetnetService,
     ) {}
 
     /**
@@ -26,7 +30,7 @@ export class OrderToProductService {
      * @param {SaveOrderForm} param0
      * @param {string} token If there's a token, use this to save the user
      */
-    async save({ products, ...body }: SaveOrderForm, token: string) {
+    async save({ products, card, ...body }: SaveOrderForm, token: string) {
 
         const { receive, ...orderBody } = body;
 
@@ -36,15 +40,13 @@ export class OrderToProductService {
             ...orderBody,
             totalValueCents: 0,
             totalProductValueCents: 0,
-            user: {},
+            user: null,
         };
 
         // If the token exists, the user is vinculated with the order
         if (tokenObj) {
-
             const user = await this.userService.findById(tokenObj.id);
             data.user = user;
-
         }
 
         const productsIds = products.map(product => product.id);
@@ -70,11 +72,31 @@ export class OrderToProductService {
 
         if (receive) {
 
+            const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive);
+            if (scheduleIsTaken) {
+                throw new HttpException({
+                    code: HttpStatus.NOT_ACCEPTABLE,
+                    message: 'Este horário já está agendado, por favor escolha outro',
+                }, HttpStatus.NOT_ACCEPTABLE);
+            }
+
             const fullDate = moment(`${receive.date} ${receive.time}`, 'DD/MM/YYYY HH:mm');
 
             data.receiveDate = fullDate.toDate();
             data.receiveTime = fullDate.toDate();
 
+        }
+
+        if (OrderType.CREDIT) {
+            await this.getnetService.payCredit({ card, amount: onlyNumberStringToFloatNumber(data.totalValueCents), user: data.user })
+                .then(res => {
+                    console.log('deu certo: ', res);
+                })
+                .catch(err => {
+                    console.log('Deu pau vei: ', err);
+                });
+        } else if (OrderType.DEBIT) {
+            // await this.getnetService.payDebit();
         }
 
         // Saves the order
@@ -116,4 +138,5 @@ export class OrderToProductService {
             }));
         }
     }
+
 }

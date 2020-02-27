@@ -1,8 +1,3 @@
-class UserMailData {
-    email: '';
-    name: '';
-}
-
 enum UserRole {
     NENHUM = 0,
     MAE = 1,
@@ -21,4 +16,4 @@ enum UserGender {
     FEMININE = 2,
 }
 
-export { UserRole, UserStatus, UserGender, UserMailData };
+export { UserRole, UserStatus, UserGender };

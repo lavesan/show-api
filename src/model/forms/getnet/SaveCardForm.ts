@@ -1,9 +1,10 @@
-import { IsString, Length, MinLength, MaxLength } from "class-validator";
+import { IsString, Length, MinLength, MaxLength, IsEnum } from "class-validator";
+import { CardBrand } from "src/model/constants/getnet.constants";
 
 export class SaveCardForm {
 
-    @IsString()
-    brand: 'Mastercard' | 'Visa' | 'Amex' | 'Elo' | 'Hipercard';
+    @IsEnum(CardBrand)
+    brand: CardBrand;
 
     @IsString()
     nameOnCard: string;

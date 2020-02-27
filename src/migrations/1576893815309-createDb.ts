@@ -8,6 +8,8 @@ export class createDb1576893815309 implements MigrationInterface {
                 use_id SERIAL,
                 use_email VARCHAR(45) NOT NULL UNIQUE,
                 use_email_confirmed BOOLEAN,
+                use_legal_document VARCHAR(14),
+                use_legal_document_type VARCHAR(5),
                 use_password VARCHAR(45) NOT NULL,
                 use_forgot_password VARCHAR(45),
                 use_forgot_password_creation TIMESTAMP,
@@ -103,6 +105,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_total_freight_value_cents TEXT,
                 ord_receive_date DATE,
                 ord_receive_time TIME,
+                ord_payment_id TEXT,
                 ord_get_on_market BOOLEAN,
                 ord_change_value_cents TEXT,
                 ord_creation_date TIMESTAMP NOT NULL,
@@ -227,7 +230,7 @@ export class createDb1576893815309 implements MigrationInterface {
             DROP TABLE IF EXISTS com_comment;
             DROP TABLE IF EXISTS pro_product;
             DROP TABLE IF EXISTS cat_category;
-            DROP TABLE IF EXISTS ord_order;
+            DROP TABLE IF EXISTS ord_order CASCADE;
             DROP TABLE IF EXISTS pcb_product_combo;
             DROP TABLE IF EXISTS car_card;
             DROP TABLE IF EXISTS adr_address;

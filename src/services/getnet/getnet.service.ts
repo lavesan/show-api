@@ -1,10 +1,14 @@
-import { Injectable, HttpService } from '@nestjs/common';
+import { Injectable, HttpService, HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import * as fs from 'fs';
 import { URLSearchParams } from 'url';
 import fetch, { Request, Headers } from 'node-fetch';
 
 import { SaveCardForm } from 'src/model/forms/getnet/SaveCardForm';
+import { CardBrand } from 'src/model/constants/getnet.constants';
+import { getnetOrderId } from 'src/helpers/getnet.helpers';
+import { UserEntity } from 'src/entities/user.entity';
+import { OrderEntity } from 'src/entities/order.entity';
 
 interface IGetnetLoginResponse {
     access_token: string;
@@ -63,6 +67,12 @@ interface IAuthenticatedDebitPayment {
       acquirer_transaction_id: string;
     }
   }
+
+interface IPayCredit {
+    card: SaveCardForm;
+    amount: number;
+    user: UserEntity | null;
+}
 
 @Injectable()
 export class GetnetService {
@@ -137,7 +147,7 @@ export class GetnetService {
         formParameters.append('scope', 'oob');
         formParameters.append('grant_type', 'client_credentials');
 
-        const req = new Request('https://api-sandbox.getnet.com.br/auth/oauth/v2/token', {
+        const req = new Request(`${process.env.GETNET_API_URL}/auth/oauth/v2/token`, {
             method: 'POST',
             body: formParameters,
             headers: h,
@@ -161,6 +171,7 @@ export class GetnetService {
             const autorization = `${token_type} ${access_token}`;
 
             h.append('Authorization', autorization);
+            h.append('seller_id', process.env.GETNET_SELLER_ID);
             h.append('Content-Type', contentType);
             h.append('Accept', 'application/json, text/plain, */*');
 
@@ -184,7 +195,7 @@ export class GetnetService {
 
         const h = this.getAuthHeader();
 
-        const req = new Request('https://api-sandbox.getnet.com.br/v1/tokens/card', {
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/tokens/card`, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: h,
@@ -240,33 +251,25 @@ export class GetnetService {
     /**
      * @description Solicita o cancelamento de compras feitas a mais de um dia
      */
-    async orderCancel() {
+    // async orderCancel() {
 
-        const data = {
+    //     const data = {
 
-        };
+    //     };
 
-        return this.httpService.post('/v1/payments/cancel/request');
-    }
+    //     return this.httpService.post('/v1/payments/cancel/request');
+    // }
 
     /**
      * @description Cancela pagamentos feitos APENAS NO MESMO DIA
      */
-    async cancelPayment(data: any) {
+    async cancelPayment(order: OrderEntity) {
 
-        const body = {
-            // Id do pagamento
-            payment_id: "5df204d2-cb7b-45a6-8075-3a354207ada7",
-            cancel_amount: 1000,
-            // Id que vou criar para esse cancelamento
-            cancel_custom_key: "MC4zNDA1NjMxMDYxMTM2NjQ3"
-        }
         const headers = this.getAuthHeader();
 
-        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/cancel/request`, {
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit/${order.getnetPaymentId}/cancel`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(body),
             mode: 'cors',
         });
 
@@ -372,30 +375,58 @@ export class GetnetService {
     /**
      * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1credit%2Fpost
      */
-    async payCredit({ card_number }) {
+    async payCredit({ card, amount, user }: IPayCredit) {
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card_number, userId: '' });
+        const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: '' });
+
+        if ([CardBrand.MASTERCARD, CardBrand.VISA].includes(card.brand)) {
+
+            await this.verifyCard({ ...card, cardToken })
+                .catch(err => {
+                    console.log('error: ', err);
+                    throw new HttpException({
+                        code: HttpStatus.NOT_ACCEPTABLE,
+                        message: 'Infelizmente este cartão não passou na validação.',
+                    }, HttpStatus.NOT_ACCEPTABLE);
+                });
+
+        }
+
+        let customerData = {};
+
+        if (user) {
+            customerData = {
+                name: user.name,
+                email: user.email,
+                first_name: '',
+                last_name: '',
+                // phone_number: user,
+                document_number: user.legalDocument,
+                document_type: user.legalDocumentType,
+            }
+        }
 
         if (cardToken) {
 
             const body = {
                 seller_id: process.env.GETNET_SELLER_ID,
-                amount: '1000',
+                amount,
                 order: {
                     // Identificador da compra (eu seto isso)
-                    order_id: '12345',
+                    order_id: getnetOrderId(12345),
                 },
                 customer: {
                     // Identificador do comprador (eu setei isso)
                     customer_id: '12345',
                     billing_address: {},
+                    ...customerData,
                 },
                 device: {},
-                shippings: [
-                    {
-                    address: {},
-                    },
-                ],
+                // shippings: [
+                //     {
+                //     address: {},
+                //     },
+                // ],
                 credit: {
                     // Se o crédito será feito com confirmação tardia
                     delayed: false,
@@ -407,46 +438,81 @@ export class GetnetService {
                     card: {
                         number_token: cardToken.number_token,
                         // Nome do comprador no cartão
-                        cardholder_name: 'JOAO DA SILVA',
+                        cardholder_name: card.nameOnCard,
                         // Mês de expiração
-                        expiration_month: '12',
+                        expiration_month: card.expirationMonth,
                         // Ano de expiração
-                        expiration_year: '21'
+                        expiration_year: card.expirationYear,
                     },
                 },
             };
 
             const h = this.getAuthHeader();
 
-            const req = new Request('https://api-sandbox.getnet.com.br/v1/payments/credit', {
+            const req = new Request(`${process.env.GETNET_API_URL}https://api-sandbox.getnet.com.br/v1/payments/credit`, {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: h,
                 mode: 'cors',
             });
 
-            return fetch(req)
-                .then(res => res.json());
+            const response = await fetch(req)
+                .then(res => res.json())
+                .catch(err => {
+                    console.log('error: ', err);
+                    throw new HttpException({
+                        code: HttpStatus.NOT_ACCEPTABLE,
+                        message: 'Falha ao finalizar o pagamento. Por favor, cheque seus dados e tente novamente.',
+                    }, HttpStatus.NOT_ACCEPTABLE);
+                });
+
+            return this.finishCreditPayment(response.payment_id);
 
         }
 
     }
 
     /**
-     * @description Verifica se o cartão é válido. APENAS Mastercard e Visa
+     * @description Verifica se o cartão é válido. APENAS bandeiras: Mastercard e Visa
      */
-    private async verifyCard() {
+    private async verifyCard(card: SaveCardForm | any) {
 
-        const data = {
-            number_token: "dfe05208b105578c070f806c80abd3af09e246827d29b866cf4ce16c205849977c9496cbf0d0234f42339937f327747075f68763537b90b31389e01231d4d13c",
-            brand: "Mastercard",
-            cardholder_name: "JOAO DA SILVA",
-            expiration_month: "12",
-            expiration_year: "20",
-            security_code: "123"
+        const body = {
+            number_token: card.cardToken,
+            brand: card.brand,
+            cardholder_name: card.nameOnCard,
+            expiration_month: card.expirationMonth,
+            expiration_year: card.expirationYear,
+            security_code: card.securityCode,
         };
 
-        return this.httpService.post(`/v1/cards/verification`, data);
+        const h = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/cards/verification`, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: h,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
+
+    }
+
+    private async finishCreditPayment(paymentId: string) {
+
+        const h = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit/${paymentId}/authenticated/finalize`, {
+            method: 'POST',
+            headers: h,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
+
     }
 
 }

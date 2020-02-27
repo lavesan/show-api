@@ -12,7 +12,7 @@ import { decodeToken } from 'src/helpers/auth.helpers';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
-import { UserMailData } from 'src/model/constants/user.constants';
+import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
 
 @Injectable()
 export class OrderService {
@@ -36,7 +36,7 @@ export class OrderService {
             creationDate: new Date(),
         };
 
-        if (order.user && order.user instanceof UserMailData) {
+        if (order.user) {
             this.sendgridService.sendMail({
                 type: MailType.NEW_ORDER,
                 to: order.user.email,
@@ -161,9 +161,7 @@ export class OrderService {
 
     async findActiveDates(dateInString: string) {
 
-        const date = moment(dateInString, 'DD/MM/YYYY').toDate();
-
-        const scheduledDates = await this.orderRepo.find({ receiveDate: date });
+        const scheduledDates = await this.orderRepo.find({ receiveDate: dateInString });
         const compareDate = moment(this.time.open, 'HH:mm');
         const close = moment(this.time.close, 'HH:mm');
 
@@ -190,6 +188,10 @@ export class OrderService {
             activeTimes,
         };
 
+    }
+
+    async findOneBydateAndTime({ date, time }: SaveScheduledTimeForm): Promise<undefined | OrderEntity> {
+        return await this.orderRepo.findOne({ receiveDate: date, receiveTime: time });
     }
 
 }

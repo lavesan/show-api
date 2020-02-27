@@ -2,12 +2,9 @@ import { OrderType } from 'src/model/constants/order.constants';
 import { ProductInfoForm } from '../product/ProductInfoForm';
 import { IsEnum, IsNumberString, IsOptional, IsString, IsBoolean, IsArray, IsObject } from 'class-validator';
 import { SaveScheduledTimeForm } from '../scheduled-time/SaveScheduledTimeForm';
+import { SaveCardForm } from '../getnet/SaveCardForm';
 
 export class SaveOrderForm {
-
-    @IsString()
-    @IsOptional()
-    cardCode: string;
 
     @IsEnum(OrderType)
     type: OrderType;
@@ -32,5 +29,9 @@ export class SaveOrderForm {
 
     @IsBoolean()
     payed: boolean;
+
+    @IsObject()
+    @IsOptional()
+    card: SaveCardForm;
 
 }

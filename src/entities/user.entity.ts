@@ -6,6 +6,7 @@ import { OrderEntity } from './order.entity';
 
 @Entity('use_user')
 export class UserEntity {
+
     @PrimaryGeneratedColumn({ name: 'use_id' })
     id: number;
 
@@ -23,6 +24,13 @@ export class UserEntity {
 
     @Column({ name: 'use_forgot_password_creation', type: 'timestamp', nullable: true })
     forgotPasswordCreation: Date;
+
+    /** @description CPF or CNPJ */
+    @Column({ name: 'use_legal_document', type: 'varchar', nullable: true })
+    legalDocument: string;
+
+    @Column({ name: 'use_legal_document_type', type: 'varchar', nullable: true })
+    legalDocumentType: string;
 
     @Column({ name: 'use_name', type: 'text' })
     name: string;
@@ -68,4 +76,5 @@ export class UserEntity {
 
     @OneToMany(table => CardEntity, card => card.user)
     cards: CardEntity[];
+
 }

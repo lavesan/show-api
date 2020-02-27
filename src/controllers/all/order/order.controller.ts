@@ -38,7 +38,7 @@ export class OrderController {
         });
     }
 
-    @Get('active')
+    @Get('active-schedule')
     getFreeForScheduleDates(@Query('date') date: string) {
         return this.orderService.findActiveDates(date);
     }

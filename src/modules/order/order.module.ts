@@ -9,6 +9,7 @@ import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
 import { OrderBackofficeController } from 'src/controllers/backoffice/order-backoffice/order-backoffice.controller';
 import { OrderController } from 'src/controllers/all/order/order.controller';
 import { SendgridModule } from '../sendgrid/sendgrid.module';
+import { GetnetModule } from '../getnet/getnet.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { SendgridModule } from '../sendgrid/sendgrid.module';
       UserModule,
       ProductModule,
       SendgridModule,
+      GetnetModule,
     ],
     controllers: [OrderBackofficeController, OrderController],
     providers: [OrderService, OrderToProductService],

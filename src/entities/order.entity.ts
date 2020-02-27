@@ -39,6 +39,9 @@ export class OrderEntity {
     @Column({ name: 'ord_payed', type: 'boolean' })
     payed: boolean;
 
+    @Column({ name: 'ord_payment_id', type: 'text', nullable: true })
+    getnetPaymentId: boolean;
+
     // Troco
     @Column({ name: 'ord_change_value_cents', type: 'text', nullable: true })
     changeValueCents: string;
