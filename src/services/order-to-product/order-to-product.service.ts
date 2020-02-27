@@ -30,7 +30,7 @@ export class OrderToProductService {
      * @param {SaveOrderForm} param0
      * @param {string} token If there's a token, use this to save the user
      */
-    async save({ products, card, ...body }: SaveOrderForm, token: string) {
+    async save({ products, card, ...body }: SaveOrderForm, token: string): Promise<any> {
 
         const { receive, ...orderBody } = body;
 
@@ -88,15 +88,39 @@ export class OrderToProductService {
         }
 
         if (OrderType.CREDIT) {
-            await this.getnetService.payCredit({ card, amount: onlyNumberStringToFloatNumber(data.totalValueCents), user: data.user })
+            await this.getnetService.payCredit({
+                card,
+                amount: onlyNumberStringToFloatNumber(data.totalValueCents),
+                user: data.user,
+            })
                 .then(res => {
-                    console.log('deu certo: ', res);
+                    data.payed = true;
+                    console.log('resposta crédito: ', res);
                 })
                 .catch(err => {
-                    console.log('Deu pau vei: ', err);
+                    console.log('erro no crédito: ', err);
+                    throw new HttpException({
+                        code: HttpStatus.NOT_ACCEPTABLE,
+                        message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
+                    }, HttpStatus.NOT_ACCEPTABLE);
                 });
         } else if (OrderType.DEBIT) {
-            // await this.getnetService.payDebit();
+            await this.getnetService.payDebitFirstStep({
+                card,
+                amount: onlyNumberStringToFloatNumber(data.totalValueCents),
+                user: data.user,
+            })
+                .then(res => {
+                    data.payed = false;
+                    console.log('resposta débito: ', res);
+                })
+                .catch(err => {
+                    console.log('erro no débito: ', err);
+                    throw new HttpException({
+                        code: HttpStatus.NOT_ACCEPTABLE,
+                        message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
+                    }, HttpStatus.NOT_ACCEPTABLE);
+                });
         }
 
         // Saves the order
@@ -120,6 +144,16 @@ export class OrderToProductService {
                 .execute();
 
         }
+
+    }
+
+    async finalizeDebitPayment(body: any) {
+
+        return this.getnetService.finishDebitPayment(body)
+            .catch(err => {
+                console.log('deu pau vei: ', err);
+            });
+
 
     }
 

@@ -6,7 +6,7 @@ import fetch, { Request, Headers } from 'node-fetch';
 
 import { SaveCardForm } from 'src/model/forms/getnet/SaveCardForm';
 import { CardBrand } from 'src/model/constants/getnet.constants';
-import { getnetOrderId } from 'src/helpers/getnet.helpers';
+import { getnetOrderId, getnetUserId } from 'src/helpers/getnet.helpers';
 import { UserEntity } from 'src/entities/user.entity';
 import { OrderEntity } from 'src/entities/order.entity';
 
@@ -297,25 +297,54 @@ export class GetnetService {
     }
 
     /**
-     * @description Completei o pagamento por débito
+     * @description Primeiro passo do pagamento em débito
      */
-    async payDebit({ card_number }): Promise<IPayDebitResponse> {
+    async payDebitFirstStep({ card, amount, user }: IPayCredit): Promise<IPayDebitResponse> {
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card_number, userId: '' });
+        const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: getnetUserId(user.id) });
+
+        if ([CardBrand.MASTERCARD, CardBrand.VISA].includes(card.brand)) {
+
+            await this.verifyCard({ ...card, cardToken })
+                .catch(err => {
+                    console.log('error: ', err);
+                    throw new HttpException({
+                        code: HttpStatus.NOT_ACCEPTABLE,
+                        message: 'Infelizmente este cartão não passou na validação.',
+                    }, HttpStatus.NOT_ACCEPTABLE);
+                });
+
+        }
+
+        let customerData = {};
+
+        if (user) {
+            customerData = {
+                name: user.name,
+                email: user.email,
+                first_name: '',
+                last_name: '',
+                // phone_number: user,
+                document_number: user.legalDocument,
+                document_type: user.legalDocumentType,
+            }
+        }
 
         if (cardToken) {
 
             const body = {
                 seller_id: process.env.GETNET_SELLER_ID,
-                amount: '1000',
+                amount,
+                currency: 'BRL',
                 order: {
                     // Identificador da compra (eu seto isso)
-                    order_id: '12345',
+                    order_id: getnetOrderId(12345),
                 },
                 customer: {
                     // Identificador do comprador (eu setei isso)
-                    customer_id: '12345',
+                    customer_id: getnetUserId(user.id),
                     billing_address: {},
+                    ...customerData,
                 },
                 device: {},
                 shippings: [
@@ -327,18 +356,18 @@ export class GetnetService {
                     card: {
                         number_token: cardToken.number_token,
                         // Nome do comprador no cartão
-                        cardholder_name: 'JOAO DA SILVA',
+                        cardholder_name: card.nameOnCard,
                         // Mês de expiração
-                        expiration_month: '12',
+                        expiration_month: card.expirationMonth,
                         // Ano de expiração
-                        expiration_year: '21'
+                        expiration_year: card.expirationYear,
                     },
                 },
             };
 
             const h = this.getAuthHeader();
 
-            const req = new Request('https://api-sandbox.getnet.com.br/v1/payments/debit', {
+            const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/debit`, {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: h,
@@ -377,7 +406,7 @@ export class GetnetService {
      */
     async payCredit({ card, amount, user }: IPayCredit) {
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: '' });
+        const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: getnetUserId(user.id) });
 
         if ([CardBrand.MASTERCARD, CardBrand.VISA].includes(card.brand)) {
 
@@ -411,6 +440,7 @@ export class GetnetService {
             const body = {
                 seller_id: process.env.GETNET_SELLER_ID,
                 amount,
+                currency: 'BRL',
                 order: {
                     // Identificador da compra (eu seto isso)
                     order_id: getnetOrderId(12345),
@@ -449,7 +479,7 @@ export class GetnetService {
 
             const h = this.getAuthHeader();
 
-            const req = new Request(`${process.env.GETNET_API_URL}https://api-sandbox.getnet.com.br/v1/payments/credit`, {
+            const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit`, {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: h,
@@ -491,6 +521,23 @@ export class GetnetService {
         const req = new Request(`${process.env.GETNET_API_URL}/v1/cards/verification`, {
             method: 'POST',
             body: JSON.stringify(body),
+            headers: h,
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json());
+
+    }
+
+    async finishDebitPayment(body: any) {
+
+        console.log('body: ', body);
+
+        const h = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/debit/${body.paymentId}/authenticated/finalize`, {
+            method: 'POST',
             headers: h,
             mode: 'cors',
         });

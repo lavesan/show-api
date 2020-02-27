@@ -22,6 +22,7 @@ import { AdminMiddleware } from './middlewares/admin-auth-role.middleware';
 import { EcommerceMiddleware } from './middlewares/ecommerce-auth-role.middleware';
 import { ProductComboModule } from './modules/product-combo/product-combo.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     SendgridModule,
     CommentModule,
     ProductComboModule,
+    ScheduleTasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

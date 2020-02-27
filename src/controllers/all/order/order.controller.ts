@@ -20,6 +20,18 @@ export class OrderController {
         return this.orderToProductService.save(body, token);
     }
 
+    // Route to the bank sends the sell status when it's finished, if that's ok, i save as OK
+    @Post('finalize-debit')
+    finalizeDebitPayment(@Body() body: any) {
+        return this.orderToProductService.finalizeDebitPayment(body);
+    }
+
+    // Route to the cliente to check if the payment is done
+    @Get('payment/check-debit')
+    checkDebit(@Query('id') id: number | string) {
+        console.log('id: ', id);
+    }
+
     @Put('cancel')
     cancelOrder(@Body() body: CancelOrderForm) {
         return this.orderService.clientCancelOrder(body);
