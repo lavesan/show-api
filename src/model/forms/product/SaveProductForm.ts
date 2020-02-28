@@ -19,6 +19,10 @@ export class SaveProductForm {
     quantityPrefix: string;
 
     @IsNumber()
+    @IsOptional()
+    quantityOnStock: number;
+
+    @IsNumber()
     categoryId: number;
 
     @IsNumberString()

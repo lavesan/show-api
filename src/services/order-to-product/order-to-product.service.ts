@@ -12,7 +12,7 @@ import { UserService } from '../user/user.service';
 import { onlyNumberStringToFloatNumber, floatNumberToOnlyNumberString } from 'src/helpers/calc.helpers';
 import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
 import { GetnetService } from '../getnet/getnet.service';
-import { OrderType } from 'src/model/constants/order.constants';
+import { OrderType, OrderStatus } from 'src/model/constants/order.constants';
 
 @Injectable()
 export class OrderToProductService {
@@ -149,11 +149,13 @@ export class OrderToProductService {
 
     async finalizeDebitPayment(body: any) {
 
-        return this.getnetService.finishDebitPayment(body)
-            .catch(err => {
-                console.log('deu pau vei: ', err);
-            });
+        console.log('body: ', body);
+        // return this.getnetService.finishDebitPayment(body)
+        //     .catch(err => {
+        //         console.log('deu pau vei: ', err);
+        //     });
 
+        // await this.orderService.update({ orderStatus: OrderStatus.MADE, orderId: 1 });
 
     }
 
@@ -171,6 +173,10 @@ export class OrderToProductService {
                 },
             }));
         }
+    }
+
+    async checkDebit(id: number) {
+        return this.orderService.checkDebitOrder(id);
     }
 
 }

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult } from 'typeorm';
+import { Repository, UpdateResult, In } from 'typeorm';
 import * as moment from 'moment';
 
 import { OrderEntity } from 'src/entities/order.entity';
-import { OrderStatus, OrderUserWhoDeleted } from 'src/model/constants/order.constants';
+import { OrderStatus, OrderUserWhoDeleted, OrderType } from 'src/model/constants/order.constants';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, paginateResponseSchema, IPaginateResponseType, generateQueryFilter, failRes, Code } from 'src/helpers/response-schema.helpers';
@@ -32,7 +32,7 @@ export class OrderService {
 
         const data = {
             ...order,
-            status: OrderStatus.MADE,
+            status: order.type === OrderType.DEBIT ? OrderStatus.WAITING_APPROVAL : OrderStatus.MADE,
             creationDate: new Date(),
         };
 
@@ -191,7 +191,32 @@ export class OrderService {
     }
 
     async findOneBydateAndTime({ date, time }: SaveScheduledTimeForm): Promise<undefined | OrderEntity> {
-        return await this.orderRepo.findOne({ receiveDate: date, receiveTime: time });
+        return await this.orderRepo.findOne({
+            status: In([
+                OrderStatus.MADE,
+                OrderStatus.PREPARING,
+                OrderStatus.SENDED,
+                OrderStatus.SENDING,
+                OrderStatus.DONE,
+                OrderStatus.WAITING_APPROVAL,
+            ]),
+            receiveDate: date,
+            receiveTime: time,
+        });
+    }
+
+    async checkDebitOrder(id: number) {
+        return (await this.orderRepo.findOne({
+            id,
+            type: OrderType.DEBIT,
+            status: In([
+                OrderStatus.MADE,
+                OrderStatus.PREPARING,
+                OrderStatus.SENDED,
+                OrderStatus.SENDING,
+                OrderStatus.DONE,
+            ]),
+        }));
     }
 
 }

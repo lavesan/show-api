@@ -21,7 +21,7 @@ export class ProductService {
     ) {}
 
     // TODO: Adicionar usuário backoffice que o criou
-    async saveOne({ categoryId, ...product }: SaveProductForm): Promise<any> {
+    async saveOne({ categoryId, quantityOnStock = 0, ...product }: SaveProductForm): Promise<any> {
 
         const category = await this.productCategoryService.findById(categoryId);
 
@@ -29,6 +29,7 @@ export class ProductService {
             const data = {
                 ...product,
                 category,
+                quantityOnStock,
                 creationDate: new Date(),
             };
 

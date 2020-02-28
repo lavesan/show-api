@@ -28,8 +28,8 @@ export class OrderController {
 
     // Route to the cliente to check if the payment is done
     @Get('payment/check-debit')
-    checkDebit(@Query('id') id: number | string) {
-        console.log('id: ', id);
+    checkDebit(@Query('id') id: number) {
+        return this.orderToProductService.checkDebit(id);
     }
 
     @Put('cancel')
