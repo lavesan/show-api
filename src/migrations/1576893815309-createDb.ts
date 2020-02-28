@@ -170,6 +170,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 pro_name TEXT NOT NULL,
                 pro_img_url TEXT,
                 pro_quant_prefix VARCHAR(10) NOT NULL,
+                pro_quantity_on_stock FLOAT8 NOT NULL,
                 pro_description TEXT NOT NULL,
                 pro_type INTEGER NOT NULL,
                 pro_status INTEGER NOT NULL,
