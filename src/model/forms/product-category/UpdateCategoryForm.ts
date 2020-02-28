@@ -1,15 +1,9 @@
-import { IsString, IsOptional, IsNumber } from "class-validator";
+import { IsNumber } from "class-validator";
+import { SaveCategoryForm } from "./SaveCategoryForm";
 
-export class UpdateCategoryForm {
+export class UpdateCategoryForm extends SaveCategoryForm {
 
     @IsNumber()
     id: number;
-
-    @IsString()
-    name: string;
-
-    @IsNumber()
-    @IsOptional()
-    subCategoryOfId: number;
 
 }

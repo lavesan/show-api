@@ -9,4 +9,8 @@ export class SaveCategoryForm {
     @IsOptional()
     subCategoryOfId: number;
 
+    @IsString()
+    @IsOptional()
+    description: string;
+
 }

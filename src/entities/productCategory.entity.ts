@@ -6,8 +6,11 @@ export class ProductCategoryEntity {
     @PrimaryGeneratedColumn({ name: 'cat_id' })
     id: number;
 
-    @Column({ name: 'cat_name', type: 'text', nullable: true })
+    @Column({ name: 'cat_name', type: 'text' })
     name: string;
+
+    @Column({ name: 'cat_description', type: 'text', nullable: true })
+    description: string;
 
     @Column({ name: 'cat_creation_date', type: 'timestamp', update: false })
     creationDate: Date;

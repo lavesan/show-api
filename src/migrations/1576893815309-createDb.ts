@@ -154,6 +154,7 @@ export class createDb1576893815309 implements MigrationInterface {
             CREATE TABLE cat_category (
                 cat_id SERIAL,
                 cat_name TEXT NOT NULL,
+                cat_description TEXT,
                 cat_creation_date TIMESTAMP NOT NULL,
                 cat_update_date TIMESTAMP,
                 cat_subcategory_of_id INTEGER,
