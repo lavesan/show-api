@@ -28,7 +28,7 @@ export class CommentService {
             throw new HttpException({
                 code: HttpStatus.NOT_FOUND,
                 message: 'Usuário não encontrado',
-            }, HttpStatus.NOT_FOUND)
+            }, HttpStatus.NOT_FOUND);
         }
 
         const data = {
@@ -37,7 +37,7 @@ export class CommentService {
             product: { id:  productId },
             creationDate: new Date(),
             activePlane: null,
-        }
+        };
 
         return this.commentRepo.save(data);
 
@@ -60,7 +60,6 @@ export class CommentService {
             activePlace,
             updateDate: new Date(),
         };
-        console.log('data: ', data);
         return this.commentRepo.update({ id: commentId }, data);
 
     }
@@ -96,7 +95,7 @@ export class CommentService {
 
         const skip = skipFromPage(page);
         const builder = this.commentRepo.createQueryBuilder('comment')
-            .innerJoin('comment.user', 'user');
+            .leftJoin('comment.user', 'user')
 
         const [result, count] = await generateQueryFilter({
             like: ['com_brief_comment', 'user.use_name'],
