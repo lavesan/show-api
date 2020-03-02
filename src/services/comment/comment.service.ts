@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from 'src/entities/comment.entity';
 import { Repository, UpdateResult } from 'typeorm';
@@ -9,6 +9,7 @@ import { FilterForm } from 'src/model/forms/FilterForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, generateQueryFilter, paginateResponseSchema } from 'src/helpers/response-schema.helpers';
 import { removePwd } from 'src/helpers/user.helpers';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class CommentService {
@@ -16,9 +17,19 @@ export class CommentService {
     constructor(
         @InjectRepository(CommentEntity)
         private readonly commentRepo: Repository<CommentEntity>,
+        private readonly userService: UserService,
     ) {}
 
-    saveOne({ productId, userId, briefComment }: SaveCommentForm) {
+    async saveOne({ productId, userId, briefComment }: SaveCommentForm) {
+
+        const user = await this.userService.findById(userId);
+
+        if (!user) {
+            throw new HttpException({
+                code: HttpStatus.NOT_FOUND,
+                message: 'Usuário não encontrado',
+            }, HttpStatus.NOT_FOUND)
+        }
 
         const data = {
             briefComment,
@@ -84,17 +95,18 @@ export class CommentService {
     async findAllFilteredAndPaginated({ take, page }: PaginationForm, userFilter: FilterForm[]): Promise<any> {
 
         const skip = skipFromPage(page);
-        const builder = this.commentRepo.createQueryBuilder();
+        const builder = this.commentRepo.createQueryBuilder('comment')
+            .innerJoin('comment.user', 'user');
 
         const [result, count] = await generateQueryFilter({
-            like: ['com_brief_comment'],
+            like: ['com_brief_comment', 'user.use_name'],
             numbers: ['com_active_place'],
-            equalStrings: ['com_stars'],
             datas: Array.isArray(userFilter) ? userFilter : [],
             builder,
         })
             .skip(skip)
             .limit(take)
+            .orderBy('com_active_place', 'ASC')
             .getManyAndCount();
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });

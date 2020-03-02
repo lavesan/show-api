@@ -23,13 +23,10 @@ export class RegisterUserForm {
     age: number;
 
     @IsNumber()
-    cats: number;
+    animalsQuantity: number;
 
     @IsNumber()
-    dogs: number;
-
-    @IsNumber()
-    childrens: number;
+    childrensQuantity: number;
 
     @IsEnum(UserRole)
     role: UserRole;

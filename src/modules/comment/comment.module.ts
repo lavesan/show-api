@@ -5,11 +5,13 @@ import { CommentBackofficeController } from 'src/controllers/backoffice/comment-
 import { CommentClientController } from 'src/controllers/client/comment-client/comment-client.controller';
 import { CommentEntity } from 'src/entities/comment.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CommentEntity]),
     CommentModule,
+    UserModule,
   ],
   controllers: [
     CommentController,

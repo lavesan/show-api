@@ -1,4 +1,4 @@
-import { IsNumber } from "class-validator";
+import { IsNumber, IsOptional } from "class-validator";
 
 export class ActiveCommentForm {
 
@@ -6,6 +6,7 @@ export class ActiveCommentForm {
     commentId: number;
 
     @IsNumber()
+    @IsOptional()
     activePlace: number;
 
 }

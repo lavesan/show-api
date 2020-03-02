@@ -211,7 +211,7 @@ export class createDb1576893815309 implements MigrationInterface {
             CREATE TABLE com_comment (
                 com_id SERIAL,
                 com_brief_comment VARCHAR(200) NOT NULL,
-                com_stars INTEGER NOT NULL,
+                com_stars INTEGER,
                 com_active_place INTEGER,
                 com_creation_date TIMESTAMP NOT NULL,
                 com_update_date TIMESTAMP,

@@ -9,7 +9,7 @@ export class CommentBackofficeController {
 
     constructor(private readonly commentService: CommentService) {}
 
-    @Put('activate')
+    @Put()
     activatePosition(@Body() body: ActiveCommentForm) {
         return this.commentService.activatePosition(body);
     }
