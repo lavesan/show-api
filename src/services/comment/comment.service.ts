@@ -95,10 +95,10 @@ export class CommentService {
 
         const skip = skipFromPage(page);
         const builder = this.commentRepo.createQueryBuilder('comment')
-            .leftJoin('comment.user', 'user')
+            .leftJoinAndSelect('comment.user', 'user')
 
         const [result, count] = await generateQueryFilter({
-            like: ['com_brief_comment', 'user.use_name'],
+            like: ['com_brief_comment', 'user.name'],
             numbers: ['com_active_place'],
             datas: Array.isArray(userFilter) ? userFilter : [],
             builder,
