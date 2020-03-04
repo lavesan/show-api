@@ -100,6 +100,7 @@ export class CommentService {
         const [result, count] = await generateQueryFilter({
             like: ['com_brief_comment', 'user.name'],
             numbers: ['com_active_place'],
+            dates: ['com_creation_date'],
             datas: Array.isArray(userFilter) ? userFilter : [],
             builder,
         })

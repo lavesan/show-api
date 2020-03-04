@@ -1,4 +1,6 @@
 import { SelectQueryBuilder } from 'typeorm';
+import * as moment from 'moment';
+
 import { FilterForm } from 'src/model/forms/FilterForm';
 
 export interface IPaginateResponseType<Data> {
@@ -54,6 +56,7 @@ interface IFieldsGenerateFilter {
     numbers?: string[];
     equalStrings?: string[];
     valueCentsNumbers?: string[];
+    dates?: Array<string|Date>;
     inValues?: string[];
     datas: FilterForm[];
 }
@@ -67,6 +70,7 @@ export const generateQueryFilter = ({
     numbers = [],
     equalStrings = [],
     valueCentsNumbers = [],
+    dates = [],
     inValues = [],
     datas,
     builder,
@@ -100,19 +104,59 @@ export const generateQueryFilter = ({
 
         if (type === 'lessThan') {
 
-            builder.where(`${field} < :column`, { column: value });
+            if (dates.includes(field)) {
+
+                // @ts-ignore
+                const momentDate = moment(value);
+
+                const startDay = momentDate.startOf('day').toDate();
+                builder.where(`${field} < :column`, { column: startDay });
+
+            } else {
+                builder.where(`${field} < :column`, { column: value });
+            }
 
         } else if (type === 'lessThanOrEqual') {
 
-            builder.where(`${field} <= :column`, { column: value });
+            if (dates.includes(field)) {
+
+                // @ts-ignore
+                const momentDate = moment(value);
+
+                const endDay = momentDate.endOf('day').toDate();
+                builder.where(`${field} <= :column`, { column: endDay });
+
+            } else {
+                builder.where(`${field} <= :column`, { column: value });
+            }
 
         } else if (type === 'moreThan') {
 
-            builder.where(`${field} > :column`, { column: value });
+            if (dates.includes(field)) {
+
+                // @ts-ignore
+                const momentDate = moment(value);
+
+                const endDay = momentDate.endOf('day').toDate();
+                builder.where(`${field} > :column`, { column: endDay });
+
+            } else {
+                builder.where(`${field} > :column`, { column: value });
+            }
 
         } else if (type === 'moreThanOrEqual') {
 
-            builder.where(`${field} >= :column`, { column: value });
+            if (dates.includes(field)) {
+
+                // @ts-ignore
+                const momentDate = moment(value);
+
+                const startDay = momentDate.startOf('day').toDate();
+                builder.where(`${field} <= :column`, { column: startDay });
+
+            } else {
+                builder.where(`${field} >= :column`, { column: value });
+            }
 
         } else if (type === 'between') {
 
@@ -120,6 +164,18 @@ export const generateQueryFilter = ({
                 if (valueCentsNumbers.includes(field)) {
                     builder.where(`${field} >= to_char(float8 :column, 'FM999999999.00')`, { column: value.from });
                     builder.where(`${field} <= to_char(float8 :column, 'FM999999999.00')`, { column: value.to });
+                } else if (dates.includes(field)) {
+
+                    // @ts-ignore
+                    const fromMomentDate = moment(value.from);
+                    const toMomentDate = moment(value.to);
+
+                    const startDay = fromMomentDate.startOf('day').toDate();
+                    const endDay = toMomentDate.endOf('day').toDate();
+
+                    builder.where(`${field} >= :startDay`, { startDay });
+                    builder.where(`${field} <= :endDay`, { endDay });
+
                 } else {
                     builder.where(`${field} >= :column`, { column: value.from });
                     builder.where(`${field} <= :column`, { column: value.to });
@@ -135,6 +191,17 @@ export const generateQueryFilter = ({
 
             if (inValues.includes(field)) {
                 builder.where(`${field} IN :value`, { value });
+            } else if (dates.includes(field)) {
+
+                // @ts-ignore
+                const momentDate = moment(value);
+
+                const startDay = momentDate.startOf('day').toDate();
+                const endDay = momentDate.endOf('day').toDate();
+
+                builder.where(`${field} >= :startDay`, { startDay });
+                builder.where(`${field} <= :endDay`, { endDay });
+
             } else {
                 builder.where(`${field} = :value`, { value });
             }
