@@ -9,6 +9,9 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, paginateResponseSchema, generateQueryFilter } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ProductCategoryService } from '../product-category/product-category.service';
+import { PromotionService } from '../promotion/promotion.service';
+import { decodeToken } from 'src/helpers/auth.helpers';
+import { UserRole } from 'src/model/constants/user.constants';
 
 @Injectable()
 export class ProductService {
@@ -18,6 +21,7 @@ export class ProductService {
         private readonly productRepo: Repository<ProductEntity>,
         @Inject(forwardRef(() => ProductCategoryService))
         private readonly productCategoryService: ProductCategoryService,
+        private readonly promotionService: PromotionService,
     ) {}
 
     // TODO: Adicionar usuário backoffice que o criou
@@ -103,26 +107,14 @@ export class ProductService {
 
     }
 
-    // TODO: Adiciona os filtros de paginação
-    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = []): Promise<any> {
-        // Filters
-        // const filter = generateFilter({
-        //     like: ['name', 'description', 'actualValueCents'],
-        //     numbers: ['status', 'category', 'type'],
-        //     equalStrings: ['creationDate'],
-        //     datas: Array.isArray(productFilter) ? productFilter : [],
-        // });
+    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = [], token: string): Promise<any> {
 
-        // const skip = skipFromPage(page);
-        // const [products, allResultsCount] = await this.productRepo.findAndCount({
-        //     where: { ...filter },
-        //     take,
-        //     skip,
-        // });
+        const tokenObj = decodeToken(token);
+
         const skip = skipFromPage(page);
         const builder = this.productRepo.createQueryBuilder();
 
-        const [result, count] = await generateQueryFilter({
+        let [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description'],
             numbers: ['pro_status', 'pro_type', 'pro_category_id'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
@@ -132,6 +124,29 @@ export class ProductService {
             .skip(skip)
             .limit(take)
             .getManyAndCount();
+
+        const roles = [UserRole.NENHUM];
+
+        if (tokenObj) {
+            roles.push(tokenObj.role);
+        }
+
+        const promoProducts = await this.promotionService.findUserPromotionProducts(roles);
+
+        if (promoProducts.length) {
+
+            result = result.map(product => {
+
+                const promoProd = promoProducts.find(({ productId }) => productId === product.id);
+
+                return {
+                    ...product,
+                    promotionValueCents: promoProd ? promoProd.valueCents : '',
+                };
+
+            });
+
+        }
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }

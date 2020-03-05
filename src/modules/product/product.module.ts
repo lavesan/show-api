@@ -5,11 +5,13 @@ import { ProductEntity } from '../../entities/product.entity';
 import { ProductController } from 'src/controllers/all/product/product.controller';
 import { BackofficeProductController } from 'src/controllers/backoffice/product/backoffice-product.controller';
 import { ProductCategoryModule } from '../product-category/product-category.module';
+import { PromotionModule } from '../promotion/promotion.module';
 
 @Module({
     imports: [
       TypeOrmModule.forFeature([ProductEntity]),
       forwardRef(() => ProductCategoryModule),
+      PromotionModule,
       ProductModule,
     ],
     controllers: [ProductController, BackofficeProductController],

@@ -1,5 +1,5 @@
 import { IsNumberString, IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
-import { ProductType, ProductStatus } from 'src/model/constants/product.constants';
+import { ProductStatus } from 'src/model/constants/product.constants';
 
 export class SaveProductForm {
 
@@ -9,14 +9,11 @@ export class SaveProductForm {
     @IsString()
     imgUrl: string;
 
-    @IsEnum(ProductType)
-    type: ProductType;
-
     @IsEnum(ProductStatus)
     status: ProductStatus;
 
     @IsString()
-    quantityPrefix: string;
+    quantitySuffix: string;
 
     @IsNumber()
     @IsOptional()

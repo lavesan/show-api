@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Query, Post } from '@nestjs/common';
+import { Controller, Get, Body, Query, Post, Headers } from '@nestjs/common';
 import { ProductService } from 'src/services/product/product.service';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
@@ -16,8 +16,12 @@ export class ProductController {
     }
 
     @Post('all')
-    findAllFilteredPaginate(@Query() paginationForm: PaginationForm, @Body() productFilter: FilterForm[]) {
-        return this.productService.findAllFilteredPaginate(paginationForm, productFilter);
+    findAllFilteredPaginate(
+        @Query() paginationForm: PaginationForm,
+        @Body() productFilter: FilterForm[],
+        @Headers('authorization') token: string,
+    ) {
+        return this.productService.findAllFilteredPaginate(paginationForm, productFilter, token);
     }
 
     @Get('tree')

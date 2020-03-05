@@ -23,6 +23,7 @@ import { EcommerceMiddleware } from './middlewares/ecommerce-auth-role.middlewar
 import { ProductComboModule } from './modules/product-combo/product-combo.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
+import { PromotionModule } from './modules/promotion/promotion.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.mod
     CommentModule,
     ProductComboModule,
     ScheduleTasksModule,
+    PromotionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

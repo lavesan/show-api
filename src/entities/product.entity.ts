@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { ProductType, ProductStatus } from 'src/model/constants/product.constants';
+import { ProductStatus } from 'src/model/constants/product.constants';
 import { UserBackofficeEntity } from './user-backoffice.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
 import { ProductCategoryEntity } from './productCategory.entity';
@@ -16,8 +16,8 @@ export class ProductEntity {
     @Column({ name: 'pro_img_url', type: 'text', nullable: true })
     imgUrl: string;
 
-    @Column({ name: 'pro_quant_prefix', type: 'varchar' })
-    quantityPrefix: string;
+    @Column({ name: 'pro_quant_suffix', type: 'varchar' })
+    quantitySuffix: string;
 
     @Column({ name: 'pro_quantity_on_stock', type: 'float8' })
     quantityOnStock: number;
@@ -25,17 +25,11 @@ export class ProductEntity {
     @Column({ name: 'pro_description', type: 'text' })
     description: string;
 
-    @Column({ name: 'pro_type', type: 'integer' })
-    type: ProductType;
-
     @Column({ name: 'pro_status', type: 'integer' })
     status: ProductStatus;
 
     @Column({ name: 'pro_actual_value', type: 'text' })
     actualValueCents: string;
-
-    @Column({ name: 'pro_last_value', type: 'text' })
-    lastValueCents: string;
 
     @Column({ name: 'pro_creation_date', type: 'timestamp', update: false })
     creationDate: Date;

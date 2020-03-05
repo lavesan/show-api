@@ -170,13 +170,11 @@ export class createDb1576893815309 implements MigrationInterface {
                 pro_id SERIAL,
                 pro_name TEXT NOT NULL,
                 pro_img_url TEXT,
-                pro_quant_prefix VARCHAR(10) NOT NULL,
+                pro_quant_suffix VARCHAR(10) NOT NULL,
                 pro_quantity_on_stock FLOAT8 NOT NULL,
                 pro_description TEXT NOT NULL,
-                pro_type INTEGER NOT NULL,
                 pro_status INTEGER NOT NULL,
                 pro_actual_value TEXT NOT NULL,
-                pro_last_value TEXT,
                 pro_creation_date TIMESTAMP NOT NULL,
                 pro_update_date TIMESTAMP,
                 pro_user_backoffice_who_created_id INTEGER NOT NULL,
@@ -188,11 +186,35 @@ export class createDb1576893815309 implements MigrationInterface {
                 FOREIGN KEY (pro_category_id) REFERENCES cat_category (cat_id)
             );
 
-            comment on column pro_product.pro_type is 'Tipo do produto. 0 para Normal, 1 para Promoção';
             comment on column pro_product.pro_status is 'Status do produto. 0 para ATIVO, 1 para INATIVO';
             comment on column pro_product.pro_actual_value is 'O valor atual que o produto está sendo vendido';
-            comment on column pro_product.pro_last_value is 'O valor anterior que o produto estava sendo vendido, antes de uma promoção ou seja la o que for';
-            comment on column pro_product.pro_quant_prefix is 'Préfixo da quantidade do produto (kg, x...)';
+            comment on column pro_product.pro_quant_suffix is 'Sufixo da quantidade do produto (kg, x...)';
+
+            -- Tabela que tem os dados de uma promoção
+            CREATE TABLE prm_promotion (
+                prm_id SERIAL,
+                prm_title VARCHAR(20) NOT NULL,
+                prm_description TEXT NOT NULL,
+                prm_img_url TEXT,
+                prm_status INTEGER NOT NULL,
+                prm_creation_date TIMESTAMP NOT NULL,
+                prm_user_type INTEGER[] NOT NULL,
+                PRIMARY KEY (prm_id)
+            );
+
+            comment on column prm_promotion.prm_user_type is 'Array com tipos de usuário do ecommerce para que a promoção aparecerá';
+            comment on column prm_promotion.prm_status is '1 para ativa, 2 para inativa';
+
+            -- Tabela que linka o Produtom a Promoção e o valor dele nesta promoção
+            CREATE TABLE pmo_product_promotion (
+                pmo_id SERIAL,
+                pmo_value_cents TEXT NOT NULL,
+                pmo_prm_id INTEGER NOT NULL,
+                pmo_pro_id INTEGER NOT NULL,
+                PRIMARY KEY (pmo_id),
+                FOREIGN KEY (pmo_prm_id) REFERENCES prm_promotion (prm_id),
+                FOREIGN KEY (pmo_pro_id) REFERENCES pro_product (pro_id)
+            );
 
             -- Tabela para linkar as ordens com os produtos
             CREATE TABLE orp_order_product (
@@ -230,6 +252,8 @@ export class createDb1576893815309 implements MigrationInterface {
         return await queryRunner.query(`
             DROP TABLE IF EXISTS orp_order_product;
             DROP TABLE IF EXISTS com_comment;
+            DROP TABLE IF EXISTS prm_promotion CASCADE;
+            DROP TABLE IF EXISTS pmo_product_promotion;
             DROP TABLE IF EXISTS pro_product;
             DROP TABLE IF EXISTS cat_category;
             DROP TABLE IF EXISTS ord_order CASCADE;
