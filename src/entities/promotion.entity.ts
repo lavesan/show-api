@@ -30,8 +30,4 @@ export class PromotionEntity {
     @Column({ name: 'prm_creation_date', type: 'timestamp', update: false })
     creationDate: Date;
 
-    @OneToMany(type => ProductPromotionEntity, productPromotion => productPromotion.promotionId)
-    @JoinColumn({ name: 'prm_id' })
-    productPromotion: ProductPromotionEntity[];
-
 }

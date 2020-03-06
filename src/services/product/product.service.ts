@@ -81,6 +81,27 @@ export class ProductService {
 
     }
 
+    async findAllProductsFromPromotion(promotionId: number) {
+        const prodPromo = await this.promotionService.findAllProductsByPromotionIds([promotionId]);
+        const productsIds = prodPromo.map(pro => pro.productId);
+        const products = await this.findManyByIds(productsIds);
+        return products.map(product => {
+
+            const productPromotion = prodPromo.find(proPm => proPm.productId === product.id);
+
+            let promotionValueCents = '000';
+            if (productPromotion) {
+                promotionValueCents = productPromotion.valueCents;
+            }
+
+            return {
+                ...product,
+                promotionValueCents,
+            }
+
+        });
+    }
+
     async findAllByCategoryId(categoryId: number) {
         return this.productRepo.find({ category: { id: categoryId } });
     }
@@ -149,6 +170,11 @@ export class ProductService {
         }
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
+
+    }
+
+    findAll(): Promise<ProductEntity[]> {
+        return this.productRepo.find();
     }
 
 }

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ProductEntity } from './product.entity';
 
 @Entity('pmo_product_promotion')
@@ -14,6 +14,6 @@ export class ProductPromotionEntity {
     promotionId: number;
 
     @Column({ name: 'pmo_pro_id', type: 'integer' })
-    productId: ProductEntity;
+    productId: number;
 
 }

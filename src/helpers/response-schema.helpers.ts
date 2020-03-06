@@ -56,7 +56,8 @@ interface IFieldsGenerateFilter {
     numbers?: string[];
     equalStrings?: string[];
     valueCentsNumbers?: string[];
-    dates?: Array<string|Date>;
+    dates?: string[];
+    numbersArray?: string[];
     inValues?: string[];
     datas: FilterForm[];
 }
@@ -71,6 +72,7 @@ export const generateQueryFilter = ({
     equalStrings = [],
     valueCentsNumbers = [],
     dates = [],
+    numbersArray = [],
     inValues = [],
     datas,
     builder,
@@ -201,6 +203,10 @@ export const generateQueryFilter = ({
 
                 builder.where(`${field} >= :startDay`, { startDay });
                 builder.where(`${field} <= :endDay`, { endDay });
+
+            } else if (numbersArray.includes(field)) {
+
+                builder.where(`${field} @> :value::INTEGER[]`, { value: [value] });
 
             } else {
                 builder.where(`${field} = :value`, { value });

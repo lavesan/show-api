@@ -9,6 +9,10 @@ import { ActivationPromotion } from 'src/model/forms/promotion/ActivationPromoti
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { UserRole } from 'src/model/constants/user.constants';
 import { decodeToken } from 'src/helpers/auth.helpers';
+import { FilterForm } from 'src/model/forms/FilterForm';
+import { PaginationForm } from 'src/model/forms/PaginationForm';
+import { skipFromPage, generateQueryFilter, paginateResponseSchema } from 'src/helpers/response-schema.helpers';
+import { PromotionStatus } from 'src/model/constants/promotion.constants';
 
 @Injectable()
 export class PromotionService {
@@ -65,18 +69,20 @@ export class PromotionService {
 
         const tokenObj = decodeToken(token);
 
+        const roles = [UserRole.NENHUM];
+
         if (tokenObj) {
-
-            return this.findUserPromotion([UserRole.NENHUM, tokenObj.role]);
-
+            roles.push(tokenObj.role);
         }
+
+        return this.findUserPromotion(roles);
 
     }
 
     private async findUserPromotion(userRoles: UserRole[]): Promise<any> {
 
         const promotions = await this.promotionRepo.createQueryBuilder('promo')
-            .where('prm_user_type @> ARRAY[:userRoles]::INTEGER[]', { userRoles: userRoles.toString() })
+            .where('promo.userTypes @> ARRAY[:userRoles]::INTEGER[]', { userRoles: userRoles.toString() })
             .getMany();
 
         const promoIds = promotions.map(({ id }) => id);
@@ -100,6 +106,7 @@ export class PromotionService {
 
         const promotions = await this.promotionRepo.createQueryBuilder('promo')
             .where('prm_user_type @> ARRAY[:userRoles]::INTEGER[]', { userRoles: userRoles.toString() })
+            .where('promo.status = :status', { status: PromotionStatus.ACTIVE })
             .getMany();
 
         const promoIds = promotions.map(({ id }) => id);
@@ -110,7 +117,7 @@ export class PromotionService {
 
     }
 
-    private findAllProductsByPromotionIds(promotionIds: number[]): Promise<ProductPromotionEntity[]> {
+    findAllProductsByPromotionIds(promotionIds: number[]): Promise<ProductPromotionEntity[]> {
         return this.productPromotionRepo.find({ promotionId: In(promotionIds) });
     }
 
@@ -132,7 +139,10 @@ export class PromotionService {
                 .set({ valueCents })
                 .where("promotionId = :id", { id })
                 .where("pmo_pro_id = :productId", { productId: product.id })
-                .execute();
+                .execute()
+                    .catch(err => {
+                        console.log('deu pau vei...', err);
+                    });
             updatedValues.push(updated);
         }
 
@@ -146,6 +156,28 @@ export class PromotionService {
 
     saveImage({ promotionId, imgUrl }: SaveImageForm) {
         return this.promotionRepo.update({ id: promotionId }, { imgUrl });
+    }
+
+    async findAllFilteredAndPaginated({ take, page }: PaginationForm, productFilter: FilterForm[] = []) {
+
+        const skip = skipFromPage(page);
+        const builder = this.promotionRepo.createQueryBuilder('promo');
+
+        const [result, count] = await generateQueryFilter({
+            like: ['prm_title', 'prm_description'],
+            numbers: ['prm_status'],
+            numbersArray: ['prm_user_type'],
+            dates: ['prm_creation_date'],
+            datas: Array.isArray(productFilter) ? productFilter : [],
+            builder,
+        })
+            .skip(skip)
+            .limit(take)
+            .orderBy('prm_id', 'ASC')
+            .getManyAndCount();
+
+        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
+
     }
 
 }

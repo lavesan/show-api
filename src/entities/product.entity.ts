@@ -51,4 +51,5 @@ export class ProductEntity {
     @ManyToOne(type => ProductCategoryEntity, productCategory => productCategory.id)
     @JoinColumn({ name: 'pro_category_id' })
     category: ProductCategoryEntity;
+
 }

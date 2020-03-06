@@ -5,6 +5,7 @@ import { DeleteResult, UpdateResult } from 'typeorm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
+import { ProductEntity } from 'src/entities/product.entity';
 
 @Controller('backoffice/product')
 export class BackofficeProductController {
@@ -24,6 +25,16 @@ export class BackofficeProductController {
     @Delete(':id')
     deleteOne(@Param('id') productId: number): Promise<DeleteResult> {
         return this.productService.delete(productId);
+    }
+
+    @Get('all')
+    findAll(): Promise<ProductEntity[]> {
+        return this.productService.findAll();
+    }
+
+    @Get('promotion/all')
+    findAllProductsFromPromotion(@Query('id') promotionId: number) {
+        return this.productService.findAllProductsFromPromotion(promotionId);
     }
 
 }
