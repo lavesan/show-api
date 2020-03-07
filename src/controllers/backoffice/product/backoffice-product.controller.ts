@@ -3,9 +3,8 @@ import { ProductService } from 'src/services/product/product.service';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
-import { PaginationForm } from 'src/model/forms/PaginationForm';
-import { FilterForm } from 'src/model/forms/FilterForm';
 import { ProductEntity } from 'src/entities/product.entity';
+import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 
 @Controller('backoffice/product')
 export class BackofficeProductController {
@@ -18,8 +17,15 @@ export class BackofficeProductController {
     }
 
     @Put()
-    updateOne(@Body() body: UpdateProductForm) {
+    updateOne(@Body() body: UpdateProductForm): Promise<UpdateResult> {
         return this.productService.updateOne(body);
+    }
+
+    @Put()
+    updateImage(@Body() body: SaveImageForm) {
+        return {
+            message: 'alterar isso aqui',
+        };
     }
 
     @Delete(':id')
@@ -35,6 +41,11 @@ export class BackofficeProductController {
     @Get('promotion/all')
     findAllProductsFromPromotion(@Query('id') promotionId: number) {
         return this.productService.findAllProductsFromPromotion(promotionId);
+    }
+
+    @Post('activate')
+    activateProduct() {
+        
     }
 
 }

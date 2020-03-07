@@ -34,8 +34,9 @@ export class AuthService {
      * @description Constructs the payload data
      * @param {Partial<UserEntity>} user
      */
-    private constructTokenPayload(user: Partial<UserEntity>): TokenPayloadType {
+    private constructTokenPayload(user: Partial<UserEntity>,): TokenPayloadType {
         return {
+            type: 'ecommerce',
             id: user.id,
             login: user.email,
             role: user.role,

@@ -154,8 +154,8 @@ export class PromotionService {
         return this.promotionRepo.update({ id: promotionId }, { status });
     }
 
-    saveImage({ promotionId, imgUrl }: SaveImageForm) {
-        return this.promotionRepo.update({ id: promotionId }, { imgUrl });
+    saveImage({ id, imgUrl }: SaveImageForm) {
+        return this.promotionRepo.update({ id }, { imgUrl });
     }
 
     async findAllFilteredAndPaginated({ take, page }: PaginationForm, productFilter: FilterForm[] = []) {

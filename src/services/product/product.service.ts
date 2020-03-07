@@ -1,6 +1,6 @@
 import { Injectable, Inject, forwardRef, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeleteResult, In } from 'typeorm';
+import { Repository, DeleteResult, In, UpdateResult } from 'typeorm';
 
 import { ProductEntity } from 'src/entities/product.entity';
 import { SaveProductForm } from 'src/model/forms/product/SaveProductForm';
@@ -12,6 +12,8 @@ import { ProductCategoryService } from '../product-category/product-category.ser
 import { PromotionService } from '../promotion/promotion.service';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserRole } from 'src/model/constants/user.constants';
+import { ActivationPromotion } from 'src/model/forms/promotion/ActivationPromotion';
+import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
 
 @Injectable()
 export class ProductService {
@@ -48,9 +50,15 @@ export class ProductService {
     }
 
     // TODO: Adicionar usuário backoffice que o alterou
-    async updateOne({ categoryId, ...product }: UpdateProductForm) {
+    async updateOne({ categoryId, ...product }: UpdateProductForm): Promise<UpdateResult> {
 
-        const category = await this.productCategoryService.findOneByIdOrFail(categoryId);
+        const category = await this.productCategoryService.findOneByIdOrFail(categoryId)
+            .catch(() => {
+                throw new HttpException({
+                    code: HttpStatus.NOT_FOUND,
+                    message: 'Categoria não encontrada',
+                }, HttpStatus.NOT_FOUND);
+            });
         const data = {
             ...product,
             category,
@@ -128,16 +136,19 @@ export class ProductService {
 
     }
 
-    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = [], token: string): Promise<any> {
+    activationProduct({ id, status }: ActivationProduct) {
+        return this.productRepo.update({ id }, { status });
+    }
 
-        const tokenObj = decodeToken(token);
+    async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = [], token: string = ''): Promise<any> {
 
         const skip = skipFromPage(page);
-        const builder = this.productRepo.createQueryBuilder();
+        const builder = this.productRepo.createQueryBuilder('pro')
+            .leftJoinAndSelect('pro.category', 'cat');
 
         let [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description'],
-            numbers: ['pro_status', 'pro_type', 'pro_category_id'],
+            numbers: ['pro_status', 'pro_type', 'pro_category_id', 'pro.category'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             datas: Array.isArray(productFilter) ? productFilter : [],
             builder,
@@ -148,24 +159,33 @@ export class ProductService {
 
         const roles = [UserRole.NENHUM];
 
+        const tokenObj = decodeToken(token);
+
+        let userType: string = 'ecommerce';
+
         if (tokenObj) {
+            userType = tokenObj.type;
             roles.push(tokenObj.role);
         }
 
-        const promoProducts = await this.promotionService.findUserPromotionProducts(roles);
+        if (userType === 'ecommerce') {
 
-        if (promoProducts.length) {
+            const promoProducts = await this.promotionService.findUserPromotionProducts(roles);
 
-            result = result.map(product => {
+            if (promoProducts.length) {
 
-                const promoProd = promoProducts.find(({ productId }) => productId === product.id);
+                result = result.map(product => {
 
-                return {
-                    ...product,
-                    promotionValueCents: promoProd ? promoProd.valueCents : '',
-                };
+                    const promoProd = promoProducts.find(({ productId }) => productId === product.id);
 
-            });
+                    return {
+                        ...product,
+                        promotionValueCents: promoProd ? promoProd.valueCents : '',
+                    };
+
+                });
+
+            }
 
         }
 

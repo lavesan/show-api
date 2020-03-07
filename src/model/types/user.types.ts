@@ -3,4 +3,5 @@ export interface TokenPayloadType {
     role: number;
     id: number;
     name: string;
+    type: 'admin' | 'ecommerce';
 }

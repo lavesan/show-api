@@ -36,6 +36,7 @@ export class AdminAuthService {
      */
     private constructTokenPayload(user: Partial<UserBackofficeEntity>): TokenPayloadType {
         return {
+            type: 'admin',
             id: user.id,
             login: user.email,
             role: user.role,
