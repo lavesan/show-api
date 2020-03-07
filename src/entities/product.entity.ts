@@ -10,7 +10,7 @@ export class ProductEntity {
     @PrimaryGeneratedColumn({ name: 'pro_id' })
     id: number;
 
-    @Column({ name: 'pro_name', type: 'text' })
+    @Column({ name: 'pro_name', type: 'text', unique: true })
     name: string;
 
     @Column({ name: 'pro_img_url', type: 'text', nullable: true })
@@ -22,7 +22,7 @@ export class ProductEntity {
     @Column({ name: 'pro_quantity_on_stock', type: 'float8' })
     quantityOnStock: number;
 
-    @Column({ name: 'pro_description', type: 'text' })
+    @Column({ name: 'pro_description', type: 'text', nullable: true })
     description: string;
 
     @Column({ name: 'pro_status', type: 'integer' })

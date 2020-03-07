@@ -182,6 +182,10 @@ export class ProductCategoryService {
         return this.productCategoryRepo.find({ subCategoryOfId: findAllWithFatherId });
     }
 
+    findAll() {
+        return this.productCategoryRepo.find();
+    }
+
     /**
      * @description Recursive function to load tree of categories
      * @param {ProductCategoryEntity[]} param0

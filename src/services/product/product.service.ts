@@ -27,11 +27,12 @@ export class ProductService {
     ) {}
 
     // TODO: Adicionar usuário backoffice que o criou
-    async saveOne({ categoryId, quantityOnStock = 0, ...product }: SaveProductForm): Promise<any> {
+    async saveOne({ categoryId, quantityOnStock = 0, ...product }: SaveProductForm): Promise<ProductEntity> {
 
         const category = await this.productCategoryService.findById(categoryId);
 
         if (category) {
+
             const data = {
                 ...product,
                 category,
@@ -40,6 +41,7 @@ export class ProductService {
             };
 
             return await this.productRepo.save(data);
+
         }
 
         throw new HttpException({
@@ -150,11 +152,13 @@ export class ProductService {
             like: ['pro_name', 'pro_description'],
             numbers: ['pro_status', 'pro_type', 'pro_category_id', 'pro.category'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
+            dates: ['pro_creation_date'],
             datas: Array.isArray(productFilter) ? productFilter : [],
             builder,
         })
             .skip(skip)
             .limit(take)
+            .orderBy('pro.id', 'ASC')
             .getManyAndCount();
 
         const roles = [UserRole.NENHUM];

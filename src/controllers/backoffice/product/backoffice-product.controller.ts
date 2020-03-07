@@ -13,7 +13,7 @@ export class BackofficeProductController {
     constructor(private readonly productService: ProductService) {}
 
     @Post()
-    saveOne(@Body() body: SaveProductForm): Promise<any[]> {
+    saveOne(@Body() body: SaveProductForm): Promise<ProductEntity> {
         return this.productService.saveOne(body);
     }
 

@@ -7,6 +7,7 @@ export class SaveProductForm {
     name: string;
 
     @IsString()
+    @IsOptional()
     imgUrl: string;
 
     @IsEnum(ProductStatus)
