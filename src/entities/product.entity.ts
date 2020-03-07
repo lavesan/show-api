@@ -48,7 +48,7 @@ export class ProductEntity {
     @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.product)
     orderToProd: OrderToProductEntity[];
 
-    @ManyToOne(type => ProductCategoryEntity, productCategory => productCategory.id)
+    @ManyToOne(type => ProductCategoryEntity, productCategory => productCategory.id, { eager: true })
     @JoinColumn({ name: 'pro_category_id' })
     category: ProductCategoryEntity;
 
