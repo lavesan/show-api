@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import * as moment from 'moment';
 
 import { OrderToProductEntity } from 'src/entities/orderToProduct.entity';
@@ -177,6 +177,10 @@ export class OrderToProductService {
 
     async checkDebit(id: number) {
         return this.orderService.checkDebitOrder(id);
+    }
+
+    findByOrderIds(orderIds: number[]) {
+        return this.orderToProductRepo.find({ order: { id: In(orderIds) } });
     }
 
 }

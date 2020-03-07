@@ -4,6 +4,7 @@ import { UserEntity } from './user.entity';
 
 @Entity('con_contact')
 export class ContactEntity {
+
     @PrimaryGeneratedColumn({ name: 'con_id' })
     id: number;
 
@@ -25,4 +26,5 @@ export class ContactEntity {
     @ManyToOne(table => UserEntity, user => user.id)
     @JoinColumn({ name: 'con_use_id' })
     user: UserEntity;
+
 }

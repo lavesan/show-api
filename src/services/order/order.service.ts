@@ -13,6 +13,8 @@ import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
 import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
+import { onlyNumberStringToFloatNumber } from 'src/helpers/calc.helpers';
+import { OrderToProductService } from '../order-to-product/order-to-product.service';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +23,7 @@ export class OrderService {
         @InjectRepository(OrderEntity)
         private readonly orderRepo: Repository<OrderEntity>,
         private readonly sendgridService: SendgridService,
+        private readonly orderToProductService: OrderToProductService,
     ) {}
 
     time = {
@@ -210,13 +213,77 @@ export class OrderService {
             id,
             type: OrderType.DEBIT,
             status: In([
+                OrderStatus.DONE,
                 OrderStatus.MADE,
-                OrderStatus.PREPARING,
                 OrderStatus.SENDED,
                 OrderStatus.SENDING,
-                OrderStatus.DONE,
+                OrderStatus.PREPARING,
             ]),
         }));
+    }
+
+    private allElemOccurences(arr) {
+
+        const elements = [];
+        let prev;
+
+        arr.sort();
+        for ( var i = 0; i < arr.length; i++ ) {
+            if ( arr[i] !== prev ) {
+                elements.push({
+                    id: arr[i],
+                    frequency: 1,
+                });
+                // a.push(arr[i]);
+                // b.push(1);
+            } else {
+                elements[elements.length - 1]++;
+                // b[b.length-1]++;
+            }
+
+            prev = arr[i];
+        }
+
+        return elements;
+
+    }
+
+    async findUserStatistic(userId: number) {
+
+        const order = await this.orderRepo.find({ user: { id: userId } });
+
+        // Calculate average Order
+        const prices = order.map(ord => {
+            return onlyNumberStringToFloatNumber(ord.totalValueCents);
+        });
+        const totalValueOrders = prices.reduce((previous, next) => previous + next);
+        const averageOrder = totalValueOrders / prices.length;
+
+        // Gets what's the 3 products more bought
+        const orderIds = order.map(ord => ord.id);
+
+        const orderToProducts = await this.orderToProductService.findByOrderIds(orderIds);
+
+        const products = orderToProducts.map(ordProd => ordProd.product);
+
+        const matrixProductsIds = products.map(pr => pr.id);
+
+        let arrProductsIds = [];
+        matrixProductsIds.forEach(arr => arrProductsIds = arrProductsIds.concat(arr));
+
+        const occurences = this.allElemOccurences(arrProductsIds);
+
+        // let biggers = [];
+
+        // occurences
+
+        return {
+            averageOrder,
+            // boughtFrequency: '',
+            // dayOfWeekMostBought: '',
+            // mostBoughtsProds,
+        }
+
     }
 
 }

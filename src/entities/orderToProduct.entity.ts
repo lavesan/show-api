@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderEntity } from './order.entity';
 import { ProductEntity } from './product.entity';
 
@@ -13,7 +13,7 @@ export class OrderToProductEntity {
     @ManyToOne(type => OrderEntity, order => order.id)
     @JoinColumn({ name: 'orp_ord_id' })
     order: OrderEntity;
-    
+
     @ManyToOne(type => ProductEntity, product => product.id)
     @JoinColumn({ name: 'orp_pro_id' })
     product: ProductEntity;

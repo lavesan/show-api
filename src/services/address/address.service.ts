@@ -16,12 +16,16 @@ export class AddressService {
         private readonly userService: UserService,
     ) {}
 
-    async save(address: SaveAddressForm): Promise<any> {
+    async save({ userId, ...address }: SaveAddressForm): Promise<any> {
+
         const data = {
             ...address,
+            user: { id: userId },
             creationDate: new Date(),
         }
+
         return await this.addressRepo.save(data);
+
     }
 
     async updateWithToken(address: UpdateAddressForm, token: string) {

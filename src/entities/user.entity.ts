@@ -1,8 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn } from 'typeorm';
 import { UserRole, UserStatus, UserGender } from '../model/constants/user.constants';
 import { AddressEntity } from './address.entity';
 import { CardEntity } from './card.entity';
 import { OrderEntity } from './order.entity';
+import { ContactEntity } from './contact.entity';
 
 @Entity('use_user')
 export class UserEntity {
@@ -68,13 +69,20 @@ export class UserEntity {
     @Column({ name: 'use_update_date', type: 'timestamp', nullable: true })
     updateDate: Date;
 
-    @OneToMany(table => AddressEntity, address => address.user)
+    @OneToMany(table => AddressEntity, address => address.user.id)
+    @JoinColumn({ name: 'use_id' })
     addresses: AddressEntity[];
 
-    @OneToMany(table => OrderEntity, order => order.user)
+    @OneToMany(table => OrderEntity, order => order.user.id)
+    @JoinColumn({ name: 'use_id' })
     orders: OrderEntity[];
 
-    @OneToMany(table => CardEntity, card => card.user)
+    @OneToMany(table => CardEntity, card => card.user.id)
+    @JoinColumn({ name: 'use_id' })
     cards: CardEntity[];
+
+    @OneToMany(table => ContactEntity, contact => contact.user.id)
+    @JoinColumn({ name: 'use_id' })
+    contacts: ContactEntity[];
 
 }

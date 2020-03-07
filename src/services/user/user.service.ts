@@ -12,6 +12,7 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { paginateResponseSchema, skipFromPage, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ConfirmEmailForm } from 'src/model/forms/user/ConfirmEmailForm';
+import { ActivationUserForm } from 'src/model/forms/user/ActivationUserForm';
 
 @Injectable()
 export class UserService {
@@ -77,13 +78,13 @@ export class UserService {
                     user.password = user.forgotPassword;
                     user.forgotPassword = null;
                     user.forgotPasswordCreation = null;
-    
+
                     await this.update(user);
-    
+
                     // Encontrou o usuário e a senha está correta
                     delete user.password;
                     return await Promise.resolve(successRes({ data: user }));
-                
+
                 }
 
                 user.forgotPassword = null;
@@ -201,6 +202,10 @@ export class UserService {
 
         return await this.update(data);
 
+    }
+
+    activationUser({ id, status }: ActivationUserForm): Promise<UpdateResult> {
+        return this.userRepo.update({ id }, { status });
     }
 
 }
