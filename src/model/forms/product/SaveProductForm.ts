@@ -25,10 +25,6 @@ export class SaveProductForm {
     @IsNumberString()
     actualValueCents: string;
 
-    @IsNumberString()
-    @IsOptional()
-    lastValueCents: string;
-
     @IsString()
     @IsOptional()
     description: string;

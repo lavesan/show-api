@@ -5,6 +5,7 @@ import { DeleteResult, UpdateResult } from 'typeorm';
 import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { ProductEntity } from 'src/entities/product.entity';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
+import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
 
 @Controller('backoffice/product')
 export class BackofficeProductController {
@@ -43,9 +44,9 @@ export class BackofficeProductController {
         return this.productService.findAllProductsFromPromotion(promotionId);
     }
 
-    @Post('activate')
-    activateProduct() {
-        
+    @Put('activate')
+    activateProduct(@Body() body: ActivationProduct) {
+        return this.productService.activationProduct(body);
     }
 
 }
