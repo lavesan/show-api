@@ -17,7 +17,8 @@ export class PromotionBackofficeController {
         return this.promotionService.save(body);
     }
 
-    @Post('image')
+    // TODO: Adicionar alguma requisição para salvar esta imagem na amazon ou algo assim, para não sobrecarregar o BD
+    @Put('image')
     saveImage(@Body() body: SaveImageForm) {
         return this.promotionService.saveImage(body);
     }
