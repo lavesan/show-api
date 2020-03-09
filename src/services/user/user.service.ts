@@ -13,21 +13,27 @@ import { paginateResponseSchema, skipFromPage, generateQueryFilter, successRes }
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ConfirmEmailForm } from 'src/model/forms/user/ConfirmEmailForm';
 import { ActivationUserForm } from 'src/model/forms/user/ActivationUserForm';
+import { ChangeUserRoleForm } from 'src/model/forms/user/ChangeUserRoleForm';
+import { ContactService } from '../contact/contact.service';
+import { AddressService } from '../address/address.service';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        private readonly contactService: ContactService,
+        private readonly addressService: AddressService,
     ) {}
 
     async save(user: RegisterUserForm): Promise<UserEntity> {
-        // TODO: Salvar a role em um local separado para Lis setá-la no backoffice
+
         const data = {
             ...user,
             emailConfirmed: false,
             status: UserStatus.ACTIVE,
             role: UserRole.NENHUM,
+            choosenRole: user.role,
             creationDate: new Date(),
             password: generateHashPwd(user.password),
         };
@@ -206,6 +212,22 @@ export class UserService {
 
     activationUser({ id, status }: ActivationUserForm): Promise<UpdateResult> {
         return this.userRepo.update({ id }, { status });
+    }
+
+    changeRole({ id, role }: ChangeUserRoleForm) {
+        return this.userRepo.update({ id }, { role });
+    }
+
+    async findAddressAndContact(userId: number) {
+
+        const addresses = await this.addressService.findAllByUserId(userId);
+        const phones = await this.contactService.findAllByUserId(userId);
+
+        return {
+            addresses,
+            phones,
+        }
+
     }
 
 }
