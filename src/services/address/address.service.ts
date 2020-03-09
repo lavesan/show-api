@@ -6,14 +6,13 @@ import { SaveAddressForm } from 'src/model/forms/address/SaveAddressForm';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { UpdateAddressForm } from 'src/model/forms/address/UpdateAddressForm';
 import { IUpdateAddress } from 'src/model/types/address.types';
-import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AddressService {
+
     constructor(
         @InjectRepository(AddressEntity)
         private readonly addressRepo: Repository<AddressEntity>,
-        private readonly userService: UserService,
     ) {}
 
     async save({ userId, ...address }: SaveAddressForm): Promise<any> {
@@ -41,15 +40,16 @@ export class AddressService {
         }
     }
 
-    async update({ userId, ...address }: IUpdateAddress): Promise<any> {
-        const user = await this.userService.findOneByIdOrFail(userId);
+    async update({ userId, id, ...address }: IUpdateAddress): Promise<any> {
+
         const data = {
             ...address,
             updateDate: new Date(),
-            user,
-        }
+            user: { id: userId },
+        };
 
-        return await this.addressRepo.update({ id: address.id, user }, data);
+        return await this.addressRepo.update({ id }, data);
+
     }
 
     async delete(addressId: number): Promise<DeleteResult> {
@@ -62,14 +62,11 @@ export class AddressService {
      */
     async findAddressesWithToken(token: string) {
         const { id } = decodeToken(token);
-        return this.findAddressesByUserId(id);
+        return this.findAllByUserId(id);
     }
 
-    async findAddressesByUserId(userId: number): Promise<any> {
+    findAllByUserId(userId: number): Promise<any> {
         return this.addressRepo.find({ user: { id: userId } });
     }
 
-    private async findAllByUserId(userId: number): Promise<any> {
-        return await this.addressRepo.find({ user: { id: userId } });
-    }
 }

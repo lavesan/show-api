@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, Put, Get, Delete, Param } from '@nestjs/common';
+import { Controller, Post, Body, Put, Delete, Param } from '@nestjs/common';
 import { ContactService } from 'src/services/contact/contact.service';
 import { SaveContactForm } from 'src/model/forms/contact/SaveContactForm';
 import { UpdateContactForm } from 'src/model/forms/contact/UpdateContactForm';
@@ -11,25 +11,17 @@ export class ContactController {
         private readonly contactService: ContactService,
     ) {}
 
-    @Post('user')
-    saveManyWithToken(
-        @Body() contact: SaveContactForm[],
-        @Headers('authorization') tokenAuth: string,
-    ) {
-        return this.contactService.saveManyWithAuth(contact, tokenAuth);
+    @Post()
+    saveOne(@Body() contact: SaveContactForm) {
+        return this.contactService.save(contact);
     }
 
-    @Put('user')
+    @Put()
     updateOne(@Body() contact: UpdateContactForm) {
         return this.contactService.update(contact);
     }
 
-    @Get('user')
-    findAllofUser(@Headers('authorization') tokenAuth: string) {
-        return this.contactService.findWithToken(tokenAuth);
-    }
-
-    @Delete('user/:id')
+    @Delete(':id')
     deleteOne(@Param('id') contactId: number): Promise<DeleteResult> {
         return this.contactService.delete(contactId);
     }
