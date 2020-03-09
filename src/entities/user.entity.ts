@@ -57,6 +57,9 @@ export class UserEntity {
     @Column({ name: 'use_role', type: 'integer' })
     role: UserRole;
 
+    @Column({ name: 'use_choosen_role', type: 'integer', nullable: true })
+    choosenRole: UserRole;
+
     @Column({ name: 'use_description', type: 'text' })
     description: string;
 

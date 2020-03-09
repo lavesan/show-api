@@ -18,6 +18,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 use_img_url TEXT,
                 use_age INTEGER,
                 use_role INTEGER NOT NULL,
+                use_choosen_role INTEGER,
                 use_gender INTEGER NOT NULL,
                 use_animals INTEGER,
                 use_childrens INTEGER,
