@@ -6,6 +6,7 @@ import { UpdateProductForm } from 'src/model/forms/product/UpdateProductForm';
 import { ProductEntity } from 'src/entities/product.entity';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
+import { UpdateStockForm } from 'src/model/forms/product/UpdateStockForm';
 
 @Controller('backoffice/product')
 export class BackofficeProductController {
@@ -47,6 +48,11 @@ export class BackofficeProductController {
     @Put('activate')
     activateProduct(@Body() body: ActivationProduct) {
         return this.productService.activationProduct(body);
+    }
+
+    @Put('stock')
+    updateStock(@Body() body: UpdateStockForm) {
+        return this.productService.updateStock(body);
     }
 
 }
