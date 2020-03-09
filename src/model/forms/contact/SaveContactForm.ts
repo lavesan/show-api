@@ -1,7 +1,10 @@
 import { ContactType } from "src/model/constants/contact.constants";
-import { IsEnum, IsString } from "class-validator";
+import { IsEnum, IsString, IsNumber } from "class-validator";
 
 export class SaveContactForm {
+
+    @IsNumber()
+    userId: number;
 
     @IsString()
     number: string;
