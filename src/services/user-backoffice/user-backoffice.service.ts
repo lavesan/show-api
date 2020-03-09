@@ -13,6 +13,7 @@ import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice
 import { UserBackofficeStatus, UserBackofficeRole } from 'src/model/constants/user-backoffice.constants';
 import { removeAdminPwd } from 'src/helpers/user.helpers';
 import { ActivationUserBackofficeForm } from 'src/model/forms/user-backoffice/ActivationUserBackofficeForm';
+import { UpdateLoggedUserForm } from 'src/model/forms/user-backoffice/UpateLoggedUserForm';
 
 @Injectable()
 export class UserBackofficeService {
@@ -67,7 +68,7 @@ export class UserBackofficeService {
 
                     // Encontrou o usuário e a senha está correta
                     delete user.password;
-                    return await Promise.resolve(successRes({ data: user }));
+                    return successRes({ data: user });
 
                 }
 
@@ -184,10 +185,16 @@ export class UserBackofficeService {
         return this.userBackofficeRepo.delete({ id: userBackofficeId });
     }
 
-    async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[]) {
+    async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[], token) {
 
         const skip = skipFromPage(page);
         const builder = this.userBackofficeRepo.createQueryBuilder();
+
+        const tokenObj = decodeToken(token);
+
+        if (tokenObj) {
+            builder.where(`usb_id != ${tokenObj.id}`);
+        }
 
         let [result, count] = await generateQueryFilter({
             like: ['usb_name', 'usb_email'],
@@ -222,6 +229,21 @@ export class UserBackofficeService {
         }
 
         return this.userBackofficeRepo.update({ id }, { status });
+
+    }
+
+    updateLoggedUser({ id, password, ...body }: UpdateLoggedUserForm) {
+
+        const data: any = {
+            ...body,
+            updateDate: new Date(),
+        }
+
+        if (password) {
+            data.password = generateHashPwd(password);
+        }
+
+        return this.userBackofficeRepo.update({ id }, data);
 
     }
 

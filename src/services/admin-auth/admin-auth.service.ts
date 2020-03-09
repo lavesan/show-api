@@ -47,6 +47,7 @@ export class AdminAuthService {
     async loginUser(userDTO: LoginUserForm) {
 
         const user = await this.userBackofficeService.loginUser(userDTO);
+        console.log('user: ', user)
         return this.sendJwtTokenWithUserData(user);
 
     }
@@ -127,15 +128,18 @@ export class AdminAuthService {
 
     }
 
-    private async sendJwtTokenWithUserData(user: Partial<UserBackofficeEntity>) {
+    private async sendJwtTokenWithUserData(user: any) {
 
         if (user) {
 
             // Constructs the payload
             const payload = this.constructTokenPayload(user);
             const userData = {
-                name: user.name,
-                imgUrl: user.imgUrl,
+                id: user.data.id,
+                name: user.data.name,
+                role: user.data.role,
+                email: user.data.email,
+                imgUrl: user.data.imgUrl,
             };
 
             const token = await this.signPayload(payload);
