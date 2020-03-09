@@ -183,4 +183,68 @@ export class OrderToProductService {
         return this.orderToProductRepo.find({ order: { id: In(orderIds) } });
     }
 
+    private allElemOccurences(arr) {
+
+        const elements = [];
+        let prev;
+
+        arr.sort();
+        for ( var i = 0; i < arr.length; i++ ) {
+            if ( arr[i] !== prev ) {
+                elements.push({
+                    id: arr[i],
+                    frequency: 1,
+                });
+                // a.push(arr[i]);
+                // b.push(1);
+            } else {
+                elements[elements.length - 1]++;
+                // b[b.length-1]++;
+            }
+
+            prev = arr[i];
+        }
+
+        return elements;
+
+    }
+
+    async findUserStatistic(userId: number) {
+
+        const order = await this.orderService.findAllByUserId(userId);
+
+        // Calculate average Order
+        const prices = order.map(ord => {
+            return onlyNumberStringToFloatNumber(ord.totalValueCents);
+        });
+        const totalValueOrders = prices.reduce((previous, next) => previous + next);
+        const averageOrder = totalValueOrders / prices.length;
+
+        // Gets what's the 3 products more bought
+        const orderIds = order.map(ord => ord.id);
+
+        const orderToProducts = await this.findByOrderIds(orderIds);
+
+        const products = orderToProducts.map(ordProd => ordProd.product);
+
+        const matrixProductsIds = products.map(pr => pr.id);
+
+        let arrProductsIds = [];
+        matrixProductsIds.forEach(arr => arrProductsIds = arrProductsIds.concat(arr));
+
+        const occurences = this.allElemOccurences(arrProductsIds);
+
+        // let biggers = [];
+
+        // occurences
+
+        return {
+            averageOrder,
+            // boughtFrequency: '',
+            // dayOfWeekMostBought: '',
+            mostBoughtsProds: occurences,
+        }
+
+    }
+
 }

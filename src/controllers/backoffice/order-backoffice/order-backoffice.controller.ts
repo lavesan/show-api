@@ -4,11 +4,15 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { UpdateStatusOrderForm } from 'src/model/forms/order/UpdateStatusOrderForm';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
+import { OrderToProductService } from 'src/services/order-to-product/order-to-product.service';
 
 @Controller('backoffice/order')
 export class OrderBackofficeController {
 
-    constructor(private readonly orderService: OrderService) {}
+    constructor(
+        private readonly orderService: OrderService,
+        private readonly orderToProductService: OrderToProductService,
+    ) {}
 
     // TODO: Adicionar parâmetros que faltam no objeto de resposta
     @Post('all')
@@ -34,7 +38,7 @@ export class OrderBackofficeController {
 
     @Get('statistic')
     userStatistics(@Query('id') userId: number) {
-        return this.orderService.findUserStatistic(userId);
+        return this.orderToProductService.findUserStatistic(userId);
     }
 
 }
