@@ -4,10 +4,10 @@ import { FilterForm } from 'src/model/forms/FilterForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
 import { UpdateUserBackofficeForm } from 'src/model/forms/user-backoffice/UpdateUserBackofficeForm';
-import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeForm';
 import { ResetPasswordUserBackofficeMailForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeMailForm';
+import { ActivationUserBackofficeForm } from 'src/model/forms/user-backoffice/ActivationUserBackofficeForm';
 
-@Controller('user-backoffice')
+@Controller('backoffice/user-backoffice')
 export class UserBackofficeController {
 
     constructor(private readonly userBackofficeService: UserBackofficeService) {}
@@ -22,11 +22,6 @@ export class UserBackofficeController {
         return this.userBackofficeService.update(userBackoffice);
     }
 
-    @Put('reset-password')
-    resetPassword(@Body() resetPasswordForm: ResetPasswordUserBackofficeForm) {
-        return this.userBackofficeService.resetPassword(resetPasswordForm);
-    }
-
     @Delete('id')
     deleteOne(@Param('id') userId: number) {
         return this.userBackofficeService.delete(userId);
@@ -37,9 +32,14 @@ export class UserBackofficeController {
         return this.userBackofficeService.findOneById(userId);
     }
 
-    @Get('all')
+    @Post('all')
     findAllFilteredPaginated(@Query() paginationForm: PaginationForm, @Body() filterForm: FilterForm[]) {
-        this.userBackofficeService.findAllFilteredPaginated(paginationForm, filterForm);
+        return this.userBackofficeService.findAllFilteredPaginated(paginationForm, filterForm);
+    }
+
+    @Put('activate')
+    manageActivation(@Body() body: ActivationUserBackofficeForm) {
+        return this.userBackofficeService.manageActivation(body);
     }
 
 }

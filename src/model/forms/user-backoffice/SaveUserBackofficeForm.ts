@@ -1,7 +1,11 @@
-import { UserBackofficeRole } from "src/model/constants/user-backoffice.constants";
+import { UserBackofficeRole, UserBackofficeStatus } from "src/model/constants/user-backoffice.constants";
 import { IsEnum, IsString, IsOptional } from "class-validator";
 
 export class SaveUserBackofficeForm {
+
+
+    @IsEnum(UserBackofficeStatus)
+    status: UserBackofficeStatus;
 
     @IsString()
     name: string;

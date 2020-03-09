@@ -81,7 +81,7 @@ export class ProductCategoryService {
         if (categories.length) {
 
             throw new HttpException({
-                message: 'Existem subcategorias desta categoria. Exclua elas ou as altere de local.',
+                message: 'Existem subcategorias desta categoria. Exclua elas se quiser remover esta categoria.',
                 status: HttpStatus.FORBIDDEN,
             }, HttpStatus.FORBIDDEN);
 
@@ -92,7 +92,7 @@ export class ProductCategoryService {
         if (products.length) {
 
             throw new HttpException({
-                message: 'Existem produtos com esta categoria, altere-a nos produtos ou escolha uma categoria para todos os produtos irem para ela:',
+                message: 'Existem produtos com esta categoria, altere-os para outra categoria antes.',
                 status: HttpStatus.FORBIDDEN,
             }, HttpStatus.FORBIDDEN);
 

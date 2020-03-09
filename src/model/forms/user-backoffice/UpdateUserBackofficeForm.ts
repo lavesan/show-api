@@ -1,13 +1,21 @@
-import { SaveUserBackofficeForm } from "./SaveUserBackofficeForm";
-import { IsNumber, IsEnum } from "class-validator";
-import { UserBackofficeStatus } from "src/model/constants/user-backoffice.constants";
+import { IsNumber, IsEnum, IsString } from "class-validator";
+import { UserBackofficeStatus, UserBackofficeRole } from "src/model/constants/user-backoffice.constants";
 
-export class UpdateUserBackofficeForm extends SaveUserBackofficeForm {
+export class UpdateUserBackofficeForm {
 
     @IsNumber()
     id: number;
 
     @IsEnum(UserBackofficeStatus)
     status: UserBackofficeStatus;
+
+    @IsString()
+    name: string;
+
+    @IsString()
+    email: string;
+
+    @IsEnum(UserBackofficeRole)
+    role: UserBackofficeRole;
 
 }

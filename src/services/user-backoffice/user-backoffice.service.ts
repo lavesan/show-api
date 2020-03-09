@@ -10,7 +10,9 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, paginateResponseSchema, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { ResetPasswordUserBackofficeForm } from 'src/model/forms/user-backoffice/ResetPasswordUserBackofficeForm';
-import { UserBackofficeStatus } from 'src/model/constants/user-backoffice.constants';
+import { UserBackofficeStatus, UserBackofficeRole } from 'src/model/constants/user-backoffice.constants';
+import { removeAdminPwd } from 'src/helpers/user.helpers';
+import { ActivationUserBackofficeForm } from 'src/model/forms/user-backoffice/ActivationUserBackofficeForm';
 
 @Injectable()
 export class UserBackofficeService {
@@ -102,7 +104,6 @@ export class UserBackofficeService {
             where: { id: userId, status: UserBackofficeStatus.ACTIVE },
         });
     }
-    
 
     /**
      * @description Apenas um administrador vai puder criar novos usuários
@@ -119,7 +120,6 @@ export class UserBackofficeService {
         const data = {
             ...userBackofficeForm,
             emailConfirmed: false,
-            status: UserBackofficeStatus.ACTIVE,
             password: generateHashPwd(password),
             creationDate: new Date(),
         };
@@ -133,7 +133,18 @@ export class UserBackofficeService {
     }
 
     async update({ id, ...updateUserBackofficeForm }: Partial<UserBackofficeEntity>): Promise<UpdateResult> {
+
+        const administrators = await this.userBackofficeRepo.find({ role: UserBackofficeRole.ADMIN, status: UserBackofficeStatus.ACTIVE });
+
+        if (administrators.length === 1 && administrators[0].id === id) {
+            throw new HttpException({
+                code: HttpStatus.FORBIDDEN,
+                message: 'Este é o último administrador ativo. É obrigatório que se tenha ao menos um administrador ativo.',
+            }, HttpStatus.FORBIDDEN)
+        }
+
         return this.userBackofficeRepo.update({ id }, updateUserBackofficeForm);
+
     }
 
     async resetPassword({ newPassword, token }: ResetPasswordUserBackofficeForm): Promise<UpdateResult> {
@@ -174,25 +185,11 @@ export class UserBackofficeService {
     }
 
     async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[]) {
-        // Filters
-        // const filter = generateFilter({
-        //     like: ['name', 'email'],
-        //     numbers: ['role'],
-        //     datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
-        // });
 
-        // const skip = skipFromPage(page);
-        // const [products, allResultsCount] = await this.userBackofficeRepo.findAndCount({
-        //     where: { ...filter },
-        //     take,
-        //     skip,
-        // });
-
-        // return paginateResponseSchema({ data: products, allResultsCount, page, limit: take });
         const skip = skipFromPage(page);
         const builder = this.userBackofficeRepo.createQueryBuilder();
 
-        const [result, count] = await generateQueryFilter({
+        let [result, count] = await generateQueryFilter({
             like: ['usb_name', 'usb_email'],
             numbers: ['usb_role', 'usb_status'],
             datas: Array.isArray(userBackofficeFilter) ? userBackofficeFilter : [],
@@ -200,13 +197,32 @@ export class UserBackofficeService {
         })
             .skip(skip)
             .limit(take)
+            .orderBy('usb_id', 'ASC')
             .getManyAndCount();
 
+        result = result.map(user => removeAdminPwd(user));
+
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
+
     }
 
-    async findByEmail(email: string): Promise<UserBackofficeEntity> {
+    findByEmail(email: string): Promise<UserBackofficeEntity> {
         return this.userBackofficeRepo.findOne({ email });
+    }
+
+    async manageActivation({ id, status }: ActivationUserBackofficeForm) {
+
+        const administrators = await this.userBackofficeRepo.find({ role: UserBackofficeRole.ADMIN, status: UserBackofficeStatus.ACTIVE });
+
+        if (administrators.length === 1 && administrators[0].id === id) {
+            throw new HttpException({
+                code: HttpStatus.FORBIDDEN,
+                message: 'Este é o último administrador ativo. É obrigatório que se tenha ao menos um administrador ativo.',
+            }, HttpStatus.FORBIDDEN)
+        }
+
+        return this.userBackofficeRepo.update({ id }, { status });
+
     }
 
 }

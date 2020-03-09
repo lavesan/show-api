@@ -11,7 +11,7 @@ export class UserBackofficeEntity {
     @Column({ name: 'usb_name', type: 'text' })
     name: string;
 
-    @Column({ name: 'usb_email', type: 'text' })
+    @Column({ name: 'usb_email', type: 'text', unique: true })
     email: string;
 
     @Column({ name: 'usb_password', type: 'text' })

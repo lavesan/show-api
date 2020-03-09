@@ -16,6 +16,7 @@ import { ActivationUserForm } from 'src/model/forms/user/ActivationUserForm';
 import { ChangeUserRoleForm } from 'src/model/forms/user/ChangeUserRoleForm';
 import { ContactService } from '../contact/contact.service';
 import { AddressService } from '../address/address.service';
+import { removePwd } from 'src/helpers/user.helpers';
 
 @Injectable()
 export class UserService {
@@ -175,7 +176,7 @@ export class UserService {
         const skip = skipFromPage(page);
         const builder = this.userRepo.createQueryBuilder();
 
-        const [result, count] = await generateQueryFilter({
+        let [result, count] = await generateQueryFilter({
             like: ['use_email', 'use_description', 'use_name'],
             numbers: ['use_age', 'use_role', 'use_status'],
             datas: Array.isArray(userFilter) ? userFilter : [],
@@ -183,11 +184,12 @@ export class UserService {
         })
             .skip(skip)
             .limit(take)
+            .orderBy('use_id', 'ASC')
             .getManyAndCount();
 
-        const resultsWithoutPassword = result.map(({ password, ...body }) => body);
+            result = result.map(user => removePwd(user));
 
-        return paginateResponseSchema({ data: resultsWithoutPassword, allResultsCount: count, page, limit: take });
+        return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }
 
     async findByEmail(email: string): Promise<UserEntity> {

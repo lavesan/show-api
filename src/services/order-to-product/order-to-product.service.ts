@@ -217,8 +217,8 @@ export class OrderToProductService {
         const prices = order.map(ord => {
             return onlyNumberStringToFloatNumber(ord.totalValueCents);
         });
-        const totalValueOrders = prices.reduce((previous, next) => previous + next);
-        const averageOrder = totalValueOrders / prices.length;
+        const totalValueOrders = prices.length ? prices.reduce((previous, next) => previous + next) : 0;
+        const averageOrder = prices.length ? totalValueOrders / prices.length : 0;
 
         // Gets what's the 3 products more bought
         const orderIds = order.map(ord => ord.id);
@@ -234,14 +234,15 @@ export class OrderToProductService {
 
         const occurences = this.allElemOccurences(arrProductsIds);
 
+        console.log('occurences: ', occurences);
         // let biggers = [];
 
         // occurences
 
         return {
             averageOrder,
-            // boughtFrequency: '',
-            // dayOfWeekMostBought: '',
+            boughtFrequency: 'semanal',
+            dayOfWeekMostBought: 'segunda',
             mostBoughtsProds: occurences,
         }
 
