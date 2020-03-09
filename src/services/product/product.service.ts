@@ -14,6 +14,7 @@ import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserRole } from 'src/model/constants/user.constants';
 import { ActivationPromotion } from 'src/model/forms/promotion/ActivationPromotion';
 import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
+import { UpdateStockForm } from 'src/model/forms/product/UpdateStockForm';
 
 @Injectable()
 export class ProductService {
@@ -150,7 +151,7 @@ export class ProductService {
 
         let [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description'],
-            numbers: ['pro_status', 'pro_type', 'pro_category_id', 'pro.category'],
+            numbers: ['pro_status', 'pro_type', 'pro_category_id', 'pro.category.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             dates: ['pro_creation_date'],
             datas: Array.isArray(productFilter) ? productFilter : [],
@@ -199,6 +200,10 @@ export class ProductService {
 
     findAll(): Promise<ProductEntity[]> {
         return this.productRepo.find();
+    }
+
+    updateStock({ id, quantityOnStock }: UpdateStockForm) {
+        return this.productRepo.update({ id }, { quantityOnStock })
     }
 
 }
