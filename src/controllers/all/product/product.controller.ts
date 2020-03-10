@@ -15,6 +15,11 @@ export class ProductController {
         return this.productService.findById(productId);
     }
 
+    @Get('categories/all')
+    findProductsFromCategories(@Headers('authorization') token: string) {
+        return this.productService.findAllProductsFromPromotions(token);
+    }
+
     @Post('all')
     findAllFilteredPaginate(
         @Query() paginationForm: PaginationForm,

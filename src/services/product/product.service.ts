@@ -93,6 +93,7 @@ export class ProductService {
     }
 
     async findAllProductsFromPromotion(promotionId: number) {
+
         const prodPromo = await this.promotionService.findAllProductsByPromotionIds([promotionId]);
         const productsIds = prodPromo.map(pro => pro.productId);
         const products = await this.findManyByIds(productsIds);
@@ -111,6 +112,7 @@ export class ProductService {
             }
 
         });
+
     }
 
     async findAllByCategoryId(categoryId: number) {
@@ -151,7 +153,7 @@ export class ProductService {
 
         let [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description'],
-            numbers: ['pro_status', 'pro_type', 'pro_category_id', 'pro.category.id', 'pro_quantity_on_stock'],
+            numbers: ['pro_status', 'pro_type', 'pro.category.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             dates: ['pro_creation_date'],
             datas: Array.isArray(productFilter) ? productFilter : [],
@@ -204,6 +206,15 @@ export class ProductService {
 
     updateStock({ id, quantityOnStock }: UpdateStockForm) {
         return this.productRepo.update({ id }, { quantityOnStock })
+    }
+
+    async findAllProductsFromPromotions(token: string = '') {
+
+        const userPromotions = await this.promotionService.findPromotionsFromUser(token);
+
+        return userPromotions;
+        // this.findAllProductsFromPromotion(roles);
+
     }
 
 }

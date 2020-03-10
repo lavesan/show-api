@@ -82,8 +82,19 @@ export class PromotionService {
     private async findUserPromotion(userRoles: UserRole[]): Promise<any> {
 
         const promotions = await this.promotionRepo.createQueryBuilder('promo')
-            .where('promo.userTypes @> ARRAY[:userRoles]::INTEGER[]', { userRoles: userRoles.toString() })
-            .getMany();
+            .getMany()
+            .then(res => {
+                // console.log('res: ', res);
+                return res.filter(elem => {
+                    return elem.userTypes.some(compare => {
+                        return userRoles.includes(compare);
+                    });
+                })
+            });
+
+        if (!promotions.length) {
+            return [];
+        }
 
         const promoIds = promotions.map(({ id }) => id);
 

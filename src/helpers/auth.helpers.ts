@@ -22,10 +22,7 @@ export const comparePwdWithHash = (passowrd: string, hashPwd: string): boolean =
 }
 
 export const decodeToken = (token: string): IDecodeTokenType | null => {
-    if (token) {
-        return jwtDecode(token);
-    }
-    return null;
+    return token ? jwtDecode(token) : null;
 }
 
 export const validateToken = ({ secretKey, req, next }) => {
