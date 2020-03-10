@@ -185,7 +185,7 @@ export class UserBackofficeService {
         return this.userBackofficeRepo.delete({ id: userBackofficeId });
     }
 
-    async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[], token) {
+    async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[], token: string) {
 
         const skip = skipFromPage(page);
         const builder = this.userBackofficeRepo.createQueryBuilder('usb');
