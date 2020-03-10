@@ -71,7 +71,7 @@ export class UserService {
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
-                return successRes({ data: user });
+                return user;
 
             } else if (comparePwdWithHash(password, user.forgotPassword)) {
 
@@ -90,7 +90,7 @@ export class UserService {
 
                     // Encontrou o usuário e a senha está correta
                     delete user.password;
-                    return await Promise.resolve(successRes({ data: user }));
+                    return user;
 
                 }
 

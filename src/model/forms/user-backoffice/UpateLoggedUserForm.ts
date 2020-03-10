@@ -11,9 +11,11 @@ export class UpdateLoggedUserForm {
     status: UserBackofficeStatus;
 
     @IsString()
+    @IsOptional()
     name: string;
 
     @IsString()
+    @IsOptional()
     email: string;
 
     @IsString()
@@ -25,6 +27,7 @@ export class UpdateLoggedUserForm {
     confirmPassword: string;
 
     @IsEnum(UserBackofficeRole)
+    @IsOptional()
     role: UserBackofficeRole;
 
     @IsString()

@@ -49,7 +49,7 @@ export class UserBackofficeService {
             if (comparePwdWithHash(password, user.password)) {
                 // Encontrou o usuário e a senha está correta
                 delete user.password;
-                return successRes({ data: user });
+                return user;
 
             } else if (comparePwdWithHash(password, user.forgotPassword)) {
 
@@ -68,7 +68,7 @@ export class UserBackofficeService {
 
                     // Encontrou o usuário e a senha está correta
                     delete user.password;
-                    return successRes({ data: user });
+                    return user;
 
                 }
 
@@ -188,12 +188,12 @@ export class UserBackofficeService {
     async findAllFilteredPaginated({ take, page }: PaginationForm, userBackofficeFilter: FilterForm[], token) {
 
         const skip = skipFromPage(page);
-        const builder = this.userBackofficeRepo.createQueryBuilder();
+        const builder = this.userBackofficeRepo.createQueryBuilder('usb');
 
         const tokenObj = decodeToken(token);
 
-        if (tokenObj) {
-            builder.where(`usb_id != ${tokenObj.id}`);
+        if (tokenObj && tokenObj.id) {
+            builder.where('usb.id != :id', { id: tokenObj.id });
         }
 
         let [result, count] = await generateQueryFilter({
