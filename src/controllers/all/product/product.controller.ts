@@ -16,8 +16,13 @@ export class ProductController {
     }
 
     @Get('categories/all')
-    findProductsFromCategories(@Headers('authorization') token: string) {
-        return this.productService.findAllProductsFromPromotions(token);
+    findProductsFromCategories() {
+        return this.productService.findAllProductsWithCategories();
+    }
+
+    @Get('promotion/all')
+    findPromotionProducts(@Headers('authorization') token: string) {
+        return this.productService.findPromotionProducts(token);
     }
 
     @Post('all')

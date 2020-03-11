@@ -208,12 +208,30 @@ export class ProductService {
         return this.productRepo.update({ id }, { quantityOnStock })
     }
 
-    async findAllProductsFromPromotions(token: string = '') {
+    findPromotionProducts(token: string) {
+        return this.promotionService.findPromotionsFromUser(token);
+    }
 
-        const userPromotions = await this.promotionService.findPromotionsFromUser(token);
+    async findAllProductsWithCategories() {
 
-        return userPromotions;
-        // this.findAllProductsFromPromotion(roles);
+        const allCategories = await this.productCategoryService.findAll();
+
+        const result = [];
+
+        for (const cat of allCategories) {
+
+            const products = await this.productRepo.find({
+                where: { category: { id: cat.id } },
+                take: 10,
+            });
+            result.push({
+                category: cat,
+                products,
+            })
+
+        }
+
+        return result;
 
     }
 
