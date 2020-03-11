@@ -133,24 +133,59 @@ export class PromotionService {
     async update({ products, id, ...body }: UpdatePromotionForm) {
 
         await this.promotionRepo.update({ id }, body);
+        const savedProducts = await this.productPromotionRepo.find({ promotionId: id });
 
-        const updatedValues = [];
+        const result = {
+            updated: [],
+            saved: {},
+            deleted: {},
+        };
+        const productsToInsert = [];
 
         for (const { valueCents, ...product } of products) {
-            const updated = await this.productPromotionRepo.createQueryBuilder()
-                // .update(User)
-                .update()
-                .set({ valueCents })
-                .where("promotionId = :id", { id })
-                .where("pmo_pro_id = :productId", { productId: product.id })
-                .execute()
-                    .catch(err => {
-                        console.log('deu pau vei...', err);
-                    });
-            updatedValues.push(updated);
+            if (savedProducts.some(prod => prod.productId === product.id)) {
+                // Updates the product sent
+                const updated = await this.productPromotionRepo.update({
+                    productId: product.id,
+                    promotionId: id,
+                }, { valueCents });
+                result.updated.push(updated);
+            } else {
+                productsToInsert.push({
+                    valueCents,
+                    productId: product.id,
+                    promotionId: id,
+                });
+            }
         }
 
-        return updatedValues;
+        // Saves the products sent but not stored
+        if (productsToInsert.length) {
+            result.saved = await this.productPromotionRepo.createQueryBuilder()
+                .insert()
+                .values(productsToInsert)
+                .execute()
+                    .catch(() => {
+                        throw new HttpException({
+                            code: HttpStatus.NOT_FOUND,
+                            message: 'Um dos produtos não foi encontrado.',
+                        }, HttpStatus.NOT_FOUND)
+                    });
+        }
+
+        // Remove the products not sent
+        const productsToRemove = savedProducts.filter(savProd => {
+            return !products.some(prod => {
+                return prod.id === savProd.productId;
+            });
+        });
+
+        if (productsToRemove.length) {
+            const productsIds = productsToRemove.map(prod => prod.productId);
+            result.deleted = await this.productPromotionRepo.delete({ productId: In(productsIds), promotionId: id });
+        }
+
+        return result;
 
     }
 

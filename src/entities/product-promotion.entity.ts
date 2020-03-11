@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { ProductEntity } from './product.entity';
 
 @Entity('pmo_product_promotion')
 export class ProductPromotionEntity {

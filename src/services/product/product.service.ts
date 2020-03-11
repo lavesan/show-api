@@ -153,7 +153,7 @@ export class ProductService {
 
         let [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description'],
-            numbers: ['pro_status', 'pro_type', 'pro.category.id', 'pro_quantity_on_stock'],
+            numbers: ['pro_status', 'pro.category.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             dates: ['pro_creation_date'],
             datas: Array.isArray(productFilter) ? productFilter : [],
