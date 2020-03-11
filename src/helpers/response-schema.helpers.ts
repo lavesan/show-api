@@ -114,6 +114,8 @@ export const generateQueryFilter = ({
                 const startDay = momentDate.startOf('day').toDate();
                 builder.where(`${field} < :column`, { column: startDay });
 
+            } else if (valueCentsNumbers.includes(field)) {
+                builder.where(`${field}::INTEGER < :column`, { column: Number(value) });
             } else {
                 builder.where(`${field} < :column`, { column: value });
             }
@@ -128,6 +130,8 @@ export const generateQueryFilter = ({
                 const endDay = momentDate.endOf('day').toDate();
                 builder.where(`${field} <= :column`, { column: endDay });
 
+            } else if (valueCentsNumbers.includes(field)) {
+                builder.where(`${field}::INTEGER <= :column`, { column: Number(value) });
             } else {
                 builder.where(`${field} <= :column`, { column: value });
             }
@@ -142,6 +146,8 @@ export const generateQueryFilter = ({
                 const endDay = momentDate.endOf('day').toDate();
                 builder.where(`${field} > :column`, { column: endDay });
 
+            } else if (valueCentsNumbers.includes(field)) {
+                builder.where(`${field}::INTEGER > :column`, { column: Number(value) });
             } else {
                 builder.where(`${field} > :column`, { column: value });
             }
@@ -154,8 +160,10 @@ export const generateQueryFilter = ({
                 const momentDate = moment(value);
 
                 const startDay = momentDate.startOf('day').toDate();
-                builder.where(`${field} <= :column`, { column: startDay });
+                builder.where(`${field} >= :column`, { column: startDay });
 
+            } else if (valueCentsNumbers.includes(field)) {
+                builder.where(`${field}::INTEGER >= :column`, { column: Number(value) });
             } else {
                 builder.where(`${field} >= :column`, { column: value });
             }
@@ -164,23 +172,19 @@ export const generateQueryFilter = ({
 
             if (typeof value === 'object') {
                 if (valueCentsNumbers.includes(field)) {
-                    builder.where(`${field} >= to_char(float8 :column, 'FM999999999.00')`, { column: value.from });
-                    builder.where(`${field} <= to_char(float8 :column, 'FM999999999.00')`, { column: value.to });
+                    builder.where(`${field}::INTEGER BETWEEN :from AND :to`, { from: Number(value.from), to: Number(value.to) });
                 } else if (dates.includes(field)) {
 
-                    // @ts-ignore
                     const fromMomentDate = moment(value.from);
                     const toMomentDate = moment(value.to);
 
                     const startDay = fromMomentDate.startOf('day').toDate();
                     const endDay = toMomentDate.endOf('day').toDate();
 
-                    builder.where(`${field} >= :startDay`, { startDay });
-                    builder.where(`${field} <= :endDay`, { endDay });
+                    builder.where(`${field} BETWEEN :startDay AND :endDay`, { startDay, endDay });
 
                 } else {
-                    builder.where(`${field} >= :column`, { column: value.from });
-                    builder.where(`${field} <= :column`, { column: value.to });
+                    builder.where(`${field} BETWEEN :from AND :to`, { from: value.from, to: value.to });
                 }
 
             }
