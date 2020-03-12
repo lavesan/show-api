@@ -210,6 +210,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 cob_title VARCHAR(15) NOT NULL,
                 cob_brief_description VARCHAR(15),
                 cob_description TEXT,
+                cob_img_url TEXT,
                 cob_normal_value_cents TEXT,
                 cob_value_cents TEXT NOT NULL,
                 cob_status INTEGER NOT NULL,

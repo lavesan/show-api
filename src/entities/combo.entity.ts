@@ -19,6 +19,9 @@ export class ComboEntity {
     @Column({ name: 'cob_brief_description', type: 'varchar', nullable: true })
     briefDescription: string;
 
+    @Column({ name: 'cob_img_url', type: 'text', nullable: true })
+    imgUrl: string;
+
     @Column({ name: 'cob_title', type: 'varchar' })
     title: string;
 
