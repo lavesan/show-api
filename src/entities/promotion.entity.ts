@@ -18,6 +18,9 @@ export class PromotionEntity {
     @Column({ name: 'prm_description', type: 'text' })
     description: string;
 
+    @Column({ name: 'prm_brief_description', type: 'text', nullable: true })
+    briefDescription: string;
+
     @Column({ name: 'prm_img_url', type: 'text', nullable: true })
     imgUrl: string;
 

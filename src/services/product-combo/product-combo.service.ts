@@ -1,107 +1,160 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ProductComboEntity } from 'src/entities/product-combo.entity';
-import { Repository, In, UpdateResult } from 'typeorm';
-import { ProductComboStatus } from 'src/model/constants/product-combo.constants';
-import { UserRole } from 'src/model/constants/user.constants';
-import { decodeToken } from 'src/helpers/auth.helpers';
-import { ProductService } from '../product/product.service';
+import { ComboEntity } from 'src/entities/combo.entity';
+import { Repository, In } from 'typeorm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { skipFromPage, generateQueryFilter, paginateResponseSchema } from 'src/helpers/response-schema.helpers';
+import { ComboToProductEntity } from 'src/entities/combo-to-product.entity';
+import { ActivationComboForm } from 'src/model/forms/combo/ActivationComboForm';
+import { UpdateComboForm } from 'src/model/forms/combo/UpdateComboForm';
+import { SaveComboForm } from 'src/model/forms/combo/SaveComboForm';
 
 @Injectable()
 export class ProductComboService {
 
     constructor(
-        @InjectRepository(ProductComboEntity)
-        private readonly productComboRepo: Repository<ProductComboEntity>,
-        private readonly productService: ProductService,
+        @InjectRepository(ComboEntity)
+        private readonly comboRepo: Repository<ComboEntity>,
+        @InjectRepository(ComboToProductEntity)
+        private readonly comboToProductRepo: Repository<ComboToProductEntity>,
     ) {}
 
-    async saveOne(body): Promise<ProductComboEntity> {
+    async saveOne({ products, ...body }: SaveComboForm) {
 
         const data = {
             ...body,
-            status: ProductComboStatus.ACTIVE,
-            creationData: new Date(),
+            creationDate: new Date(),
         };
 
-        return this.productComboRepo.save(data);
+        const result = await this.comboRepo.save(data);
+
+        const insertValues = [];
+
+        for (const { id, quantity } of products) {
+            insertValues.push({
+                combo: { id: result.id },
+                product: { id },
+                quantity,
+            })
+        }
+        const insertedProducts = await this.comboToProductRepo.createQueryBuilder()
+            .insert()
+            .values(insertValues)
+            .execute();
+
+        return {
+            ...result,
+            products: insertedProducts,
+        };
 
     }
 
-    async updateOne({ id, ...body }): Promise<UpdateResult> {
+    async updateOne({ comboId, products, ...body }: UpdateComboForm) {
 
         const data = {
             ...body,
             updateDate: new Date(),
         };
 
-        return this.productComboRepo.update({ id }, data);
+        await this.comboRepo.update({ id: comboId }, data);
+        const savedProducts = await this.comboToProductRepo.find({ combo: { id: comboId } });
+
+        const result = {
+            updated: [],
+            saved: {},
+            deleted: {},
+        };
+        const productsToInsert = [];
+
+        for (const { id, quantity } of products) {
+            if (savedProducts.some(prod => {
+                return prod.product.id === id;
+            })) {
+                // Updates the product sent
+                const updated = await this.comboToProductRepo.update({
+                    product: { id },
+                    combo: { id: comboId },
+                }, { quantity })
+                    .catch(err => {
+                        console.log('é aqui....', err);
+                    });
+                result.updated.push(updated);
+            } else {
+                productsToInsert.push({
+                    quantity,
+                    product: { id },
+                    combo: { id: comboId },
+                });
+            }
+        }
+
+        // Saves the products sent but not stored
+        if (productsToInsert.length) {
+            result.saved = await this.comboToProductRepo.createQueryBuilder()
+                .insert()
+                .values(productsToInsert)
+                .execute()
+                    .catch(() => {
+                        throw new HttpException({
+                            code: HttpStatus.NOT_FOUND,
+                            message: 'Um dos produtos não foi encontrado.',
+                        }, HttpStatus.NOT_FOUND);
+                    });
+        }
+
+        // Remove the products not sent
+        const productsToRemove = savedProducts.filter(savProd => {
+            return !products.some(prod => {
+                return prod.id === savProd.product.id;
+            });
+        });
+
+        if (productsToRemove.length) {
+            const productsIds = productsToRemove.map(prod => prod.product.id);
+            result.deleted = await this.comboToProductRepo.delete({ product: { id: In(productsIds) }, combo: { id: comboId } });
+        }
+
+        return result;
 
     }
 
-    async findAllWithUserRole(token: string) {
-
-        if (token) {
-            const decodedToken = decodeToken(token) || { role: UserRole.NENHUM };
-            return await this.findWithRoles([decodedToken.role, UserRole.NENHUM]);
-        }
-
-        return await this.findWithRoles([UserRole.NENHUM]);
-
+    async findAll() {
+        return this.comboRepo.find();
     }
 
     async findAllFilteredPaginated({ page, take }: PaginationForm, filterForm: FilterForm[]) {
 
         const skip = skipFromPage(page);
-        const builder = this.productComboRepo.createQueryBuilder();
+        const builder = this.comboRepo.createQueryBuilder();
 
         const [result, count] = await generateQueryFilter({
-            like: ['pcb_description', 'pcb_title'],
-            numbers: ['pcb_status'],
-            valueCentsNumbers: ['pcb_value_cents'],
+            like: ['cob_description', 'cob_title', 'cob_brief_description'],
+            numbers: ['cob_status'],
+            valueCentsNumbers: ['cob_value_cents'],
             datas: Array.isArray(filterForm) ? filterForm : [],
             builder,
         })
             .skip(skip)
             .limit(take)
-            .orderBy('order.creationDate', 'DESC')
+            .orderBy('cob_id', 'ASC')
             .getManyAndCount();
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
 
     }
 
-    private async findWithRoles(roles: UserRole[]) {
+    async delete(comboId: number) {
+        await this.comboToProductRepo.delete({ combo: { id: comboId } });
+        return this.comboRepo.delete({ id: comboId });
+    }
 
-        let combos = [];
+    activate({ comboId, status }: ActivationComboForm) {
+        return this.comboRepo.update({ id: comboId }, { status });
+    }
 
-        try {
-            combos = await this.productComboRepo
-                .createQueryBuilder()
-                .where('pcb_users_roles_will_appear @> array[:roles]::text[]', { roles })
-                .getMany();
-
-        } finally {
-
-            const combosMaped = combos.map(async combo => {
-
-                let products = [];
-
-                try {
-                    products = await this.productService.findManyByIds(combo.productsIds);
-                } finally {
-                    return { ...combo, products };
-                }
-
-            });
-
-            return combosMaped;
-
-        }
-
+    async findAllProductsFromCombo(comboId: number) {
+        return this.comboToProductRepo.find({ combo: { id: comboId } });
     }
 
 }

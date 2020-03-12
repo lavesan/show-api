@@ -82,19 +82,6 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column car_card.car_brand is 'Bandeira do cartão';
             comment on column car_card.car_getnet_id is 'Id para coletar token, deletar cartões e atualizar cartão do cofre da getnet';
 
-            CREATE TABLE pcb_product_combo (
-                pcb_id SERIAL,
-                pcb_title VARCHAR(15) NOT NULL,
-                pcb_description TEXT,
-                pcb_value_cents TEXT,
-                pcb_status INTEGER NOT NULL,
-                pcb_products_ids INTEGER[] NOT NULL,
-                pcb_users_roles_will_appear INTEGER[],
-                pcb_creation_date TIMESTAMP NOT NULL,
-                pcb_update_date TIMESTAMP,
-                PRIMARY KEY (pcb_id)
-            );
-
             CREATE TABLE ord_order (
                 ord_id SERIAL,
                 ord_card_code VARCHAR(60),
@@ -196,6 +183,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 prm_id SERIAL,
                 prm_title VARCHAR(20) NOT NULL,
                 prm_description TEXT NOT NULL,
+                prm_brief_description TEXT,
                 prm_img_url TEXT,
                 prm_status INTEGER NOT NULL,
                 prm_creation_date TIMESTAMP NOT NULL,
@@ -217,17 +205,30 @@ export class createDb1576893815309 implements MigrationInterface {
                 FOREIGN KEY (pmo_pro_id) REFERENCES pro_product (pro_id)
             );
 
+            CREATE TABLE cob_combo (
+                cob_id SERIAL,
+                cob_title VARCHAR(15) NOT NULL,
+                cob_brief_description VARCHAR(15),
+                cob_description TEXT,
+                cob_normal_value_cents TEXT,
+                cob_value_cents TEXT NOT NULL,
+                cob_status INTEGER NOT NULL,
+                cob_creation_date TIMESTAMP NOT NULL,
+                cob_update_date TIMESTAMP,
+                PRIMARY KEY (cob_id)
+            );
+
             -- Tabela para linkar as ordens com os produtos
             CREATE TABLE orp_order_product (
                 orp_id SERIAL,
                 orp_quantity FLOAT8 NOT NULL,
                 orp_ord_id INTEGER NOT NULL,
                 orp_pro_id INTEGER,
-                orp_pcb_id INTEGER,
+                orp_cob_id INTEGER,
                 PRIMARY KEY (orp_id),
                 FOREIGN KEY (orp_ord_id) REFERENCES ord_order (ord_id),
                 FOREIGN KEY (orp_pro_id) REFERENCES pro_product (pro_id),
-                FOREIGN KEY (orp_pcb_id) REFERENCES pcb_product_combo (pcb_id)
+                FOREIGN KEY (orp_cob_id) REFERENCES cob_combo (cob_id)
             );
 
             -- Tabela para linkar os comentários
@@ -246,24 +247,35 @@ export class createDb1576893815309 implements MigrationInterface {
             );
             comment on column com_comment.com_active_place is 'O valor dele definirá em qual posição ele ficará na listagem de comentários';
 
+            CREATE TABLE pcb_product_combo (
+                pcb_id SERIAL,
+                pcb_quantity FLOAT8 NOT NULL,
+                pcb_cob_id INTEGER NOT NULL,
+                pcb_pro_id INTEGER NOT NULL,
+                PRIMARY KEY (pcb_id),
+                FOREIGN KEY (pcb_cob_id) REFERENCES cob_combo (cob_id),
+                FOREIGN KEY (pcb_pro_id) REFERENCES pro_product (pro_id)
+            );
+
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<any> {
         return await queryRunner.query(`
-            DROP TABLE IF EXISTS orp_order_product;
-            DROP TABLE IF EXISTS com_comment;
+            DROP TABLE IF EXISTS orp_order_product CASCADE;
+            DROP TABLE IF EXISTS com_comment CASCADE;
             DROP TABLE IF EXISTS prm_promotion CASCADE;
             DROP TABLE IF EXISTS pmo_product_promotion;
-            DROP TABLE IF EXISTS pro_product;
-            DROP TABLE IF EXISTS cat_category;
+            DROP TABLE IF EXISTS pcb_product_combo CASCADE;
+            DROP TABLE IF EXISTS cob_combo CASCADE;
+            DROP TABLE IF EXISTS pro_product CASCADE;
+            DROP TABLE IF EXISTS cat_category CASCADE;
             DROP TABLE IF EXISTS ord_order CASCADE;
-            DROP TABLE IF EXISTS pcb_product_combo;
-            DROP TABLE IF EXISTS car_card;
-            DROP TABLE IF EXISTS adr_address;
-            DROP TABLE IF EXISTS con_contact;
-            DROP TABLE IF EXISTS use_user;
-            DROP TABLE IF EXISTS usb_user_backoffice;
+            DROP TABLE IF EXISTS car_card CASCADE;
+            DROP TABLE IF EXISTS adr_address CASCADE;
+            DROP TABLE IF EXISTS con_contact CASCADE;
+            DROP TABLE IF EXISTS use_user CASCADE;
+            DROP TABLE IF EXISTS usb_user_backoffice CASCADE;
         `);
     }
 

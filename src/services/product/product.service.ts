@@ -12,9 +12,10 @@ import { ProductCategoryService } from '../product-category/product-category.ser
 import { PromotionService } from '../promotion/promotion.service';
 import { decodeToken } from 'src/helpers/auth.helpers';
 import { UserRole } from 'src/model/constants/user.constants';
-import { ActivationPromotion } from 'src/model/forms/promotion/ActivationPromotion';
 import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
 import { UpdateStockForm } from 'src/model/forms/product/UpdateStockForm';
+import { ProductStatus } from 'src/model/constants/product.constants';
+import { ProductComboService } from '../product-combo/product-combo.service';
 
 @Injectable()
 export class ProductService {
@@ -25,6 +26,7 @@ export class ProductService {
         @Inject(forwardRef(() => ProductCategoryService))
         private readonly productCategoryService: ProductCategoryService,
         private readonly promotionService: PromotionService,
+        private readonly comboService: ProductComboService,
     ) {}
 
     // TODO: Adicionar usuário backoffice que o criou
@@ -115,6 +117,10 @@ export class ProductService {
 
     }
 
+    findAllProductsFromCombo(comboId: number) {
+        return this.comboService.findAllProductsFromCombo(comboId);
+    }
+
     async findAllByCategoryId(categoryId: number) {
         return this.productRepo.find({ category: { id: categoryId } });
     }
@@ -202,6 +208,10 @@ export class ProductService {
 
     findAll(): Promise<ProductEntity[]> {
         return this.productRepo.find();
+    }
+
+    findAllActives(): Promise<ProductEntity[]> {
+        return this.productRepo.find({ status: ProductStatus.ACTIVE });
     }
 
     updateStock({ id, quantityOnStock }: UpdateStockForm) {

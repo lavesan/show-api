@@ -6,11 +6,13 @@ import { ProductController } from 'src/controllers/all/product/product.controlle
 import { BackofficeProductController } from 'src/controllers/backoffice/product/backoffice-product.controller';
 import { ProductCategoryModule } from '../product-category/product-category.module';
 import { PromotionModule } from '../promotion/promotion.module';
+import { ProductComboModule } from '../product-combo/product-combo.module';
 
 @Module({
     imports: [
       TypeOrmModule.forFeature([ProductEntity]),
       forwardRef(() => ProductCategoryModule),
+      ProductComboModule,
       PromotionModule,
       ProductModule,
     ],

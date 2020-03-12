@@ -35,6 +35,11 @@ export class BackofficeProductController {
         return this.productService.delete(productId);
     }
 
+    @Get('actives')
+    findAllActives(): Promise<ProductEntity[]> {
+        return this.productService.findAllActives();
+    }
+
     @Get('all')
     findAll(): Promise<ProductEntity[]> {
         return this.productService.findAll();
@@ -43,6 +48,11 @@ export class BackofficeProductController {
     @Get('promotion/all')
     findAllProductsFromPromotion(@Query('id') promotionId: number) {
         return this.productService.findAllProductsFromPromotion(promotionId);
+    }
+
+    @Get('combo/all')
+    findAllProductsFromCombo(@Query('id') comboId: number) {
+        return this.productService.findAllProductsFromCombo(comboId);
     }
 
     @Put('activate')
