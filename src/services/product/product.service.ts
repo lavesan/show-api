@@ -16,6 +16,7 @@ import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
 import { UpdateStockForm } from 'src/model/forms/product/UpdateStockForm';
 import { ProductStatus } from 'src/model/constants/product.constants';
 import { ProductComboService } from '../product-combo/product-combo.service';
+import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 
 @Injectable()
 export class ProductService {
@@ -230,10 +231,7 @@ export class ProductService {
 
         for (const cat of allCategories) {
 
-            const products = await this.productRepo.find({
-                where: { category: { id: cat.id } },
-                take: 10,
-            });
+            const products = await this.productRepo.find({ category: { id: cat.id } });
             result.push({
                 category: cat,
                 products,
@@ -243,6 +241,10 @@ export class ProductService {
 
         return result;
 
+    }
+
+    updateImage({ id, imgUrl }: SaveImageForm) {
+        return this.productRepo.update({ id }, { imgUrl })
     }
 
 }

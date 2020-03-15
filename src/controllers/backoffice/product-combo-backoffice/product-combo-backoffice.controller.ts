@@ -34,9 +34,7 @@ export class ProductComboBackofficeController {
 
     @Put('image')
     updateImage(@Body() body: SaveImageForm) {
-        return {
-            message: 'TODO: Salvar a imagem do combo',
-        }
+        return this.productComboService.updateImage(body);
     }
 
     @Post('all')

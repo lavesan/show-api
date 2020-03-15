@@ -27,7 +27,7 @@ export class OrderService {
         close: '18:00',
     };
 
-    async save(order: Partial<OrderEntity>) {
+    save(order: Partial<OrderEntity>) {
 
         const data = {
             ...order,
@@ -50,20 +50,18 @@ export class OrderService {
             delete data.user;
         }
 
-        return await this.orderRepo.save(data)
+        return this.orderRepo.save(data);
 
     }
 
     async update({ orderId, orderStatus }: UpdateStatusOrderForm): Promise<UpdateResult> {
 
-        const order = await this.findById(orderId);
         const data = {
-            ...order,
             updateDate: new Date(),
             status: orderStatus,
         };
 
-        return await this.orderRepo.update({ id: orderId }, data);
+        return this.orderRepo.update({ id: orderId }, data);
 
     }
 
@@ -131,7 +129,8 @@ export class OrderService {
     }: any): Promise<IPaginateResponseType<any>> {
 
         const skip = skipFromPage(page);
-        const builder = this.orderRepo.createQueryBuilder('order');
+        const builder = this.orderRepo.createQueryBuilder('ord')
+            .leftJoinAndSelect('ord.user', 'use');
 
         // Vindo do ecommerce, o usuário só verá os SEUS pedidos
         if (id) {
@@ -139,15 +138,16 @@ export class OrderService {
         }
 
         const [result, count] = await generateQueryFilter({
-            numbers: ['ord_type', 'ord_status'],
+            numbers: ['ord_type', 'ord_status', 'use.id'],
             equalStrings: ['ord_get_on_market'],
             valueCentsNumbers: ['ord_total_value_cents', 'ord_total_product_value_cents', 'ord_total_freight_value_cents', 'ord_change_value_cents'],
+            dates: ['ord_deleted_date', 'ord_creation_date', 'receiveDate', 'receiveTime'],
             datas: Array.isArray(filterOpt) ? filterOpt : [],
             builder,
         })
             .skip(skip)
             .limit(take)
-            .orderBy('order.creationDate', 'DESC')
+            .orderBy('ord.creationDate', 'DESC')
             .getManyAndCount();
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });

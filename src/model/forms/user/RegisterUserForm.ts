@@ -1,10 +1,9 @@
-import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean } from 'class-validator';
+import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean, IsEmail } from 'class-validator';
 import { UserRole, UserGender } from '../../../model/constants/user.constants';
-import { emailRegex } from '../../../helpers/validate.helpers';
 
 export class RegisterUserForm {
 
-    @Matches(emailRegex)
+    @IsEmail()
     email: string;
 
     @IsString()

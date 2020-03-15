@@ -17,6 +17,7 @@ import { ChangeUserRoleForm } from 'src/model/forms/user/ChangeUserRoleForm';
 import { ContactService } from '../contact/contact.service';
 import { AddressService } from '../address/address.service';
 import { removePwd } from 'src/helpers/user.helpers';
+import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 
 @Injectable()
 export class UserService {
@@ -230,6 +231,10 @@ export class UserService {
             phones,
         }
 
+    }
+
+    updateImage({ id, imgUrl }: SaveImageForm) {
+        return this.userRepo.update({ id }, { imgUrl });
     }
 
 }

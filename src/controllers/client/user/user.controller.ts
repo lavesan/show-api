@@ -1,5 +1,6 @@
-import { Controller, Delete, Param } from '@nestjs/common';
+import { Controller, Delete, Param, Put, Body } from '@nestjs/common';
 import { UserService } from 'src/services/user/user.service';
+import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 
 @Controller('client/user')
 export class UserController {
@@ -9,6 +10,11 @@ export class UserController {
     @Delete(':id')
     softDelete(@Param('id') userId: number) {
         return this.userService.softDelete(userId);
+    }
+
+    @Put('image')
+    updateImage(@Body() body: SaveImageForm) {
+        return this.userService.updateImage(body);
     }
 
 }

@@ -3,6 +3,7 @@ import { ProductInfoForm } from '../product/ProductInfoForm';
 import { IsEnum, IsNumberString, IsOptional, IsString, IsBoolean, IsArray, IsObject } from 'class-validator';
 import { SaveScheduledTimeForm } from '../scheduled-time/SaveScheduledTimeForm';
 import { SaveCardForm } from '../getnet/SaveCardForm';
+import { ComboInfoForm } from '../combo/ComboInfoForm';
 
 export class SaveOrderForm {
 
@@ -22,6 +23,9 @@ export class SaveOrderForm {
 
     @IsArray()
     products: ProductInfoForm[];
+
+    @IsArray()
+    combos: ComboInfoForm[];
 
     @IsObject()
     @IsOptional()

@@ -23,11 +23,9 @@ export class BackofficeProductController {
         return this.productService.updateOne(body);
     }
 
-    @Put()
+    @Put('image')
     updateImage(@Body() body: SaveImageForm) {
-        return {
-            message: 'alterar isso aqui',
-        };
+        return this.productService.updateImage(body);
     }
 
     @Delete(':id')

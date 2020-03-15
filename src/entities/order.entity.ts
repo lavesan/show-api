@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMan
 import { OrderType, OrderStatus, OrderUserWhoDeleted } from '../model/constants/order.constants';
 import { UserEntity } from './user.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
+import { AddressEntity } from './address.entity';
 
 @Entity('ord_order')
 export class OrderEntity {
@@ -61,11 +62,15 @@ export class OrderEntity {
     @Column({ name: 'ord_deleted_date', type: 'timestamp', nullable: true })
     deleteDate: Date;
 
-    @ManyToOne(table => UserEntity, user => user.id)
+    @ManyToOne(table => UserEntity, user => user.id, { eager: true })
     @JoinColumn({ name: 'ord_use_id' })
     user: UserEntity;
 
-    @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order, { cascade: true })
+    @ManyToOne(table => AddressEntity, address => address.id, { eager: true })
+    @JoinColumn({ name: 'ord_adr_id' })
+    address: AddressEntity;
+
+    @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order, { eager: true })
     orderToProd: OrderToProductEntity[];
 
 }

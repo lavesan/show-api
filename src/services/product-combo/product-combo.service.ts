@@ -9,6 +9,7 @@ import { ComboToProductEntity } from 'src/entities/combo-to-product.entity';
 import { ActivationComboForm } from 'src/model/forms/combo/ActivationComboForm';
 import { UpdateComboForm } from 'src/model/forms/combo/UpdateComboForm';
 import { SaveComboForm } from 'src/model/forms/combo/SaveComboForm';
+import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 
 @Injectable()
 export class ProductComboService {
@@ -155,6 +156,10 @@ export class ProductComboService {
 
     async findAllProductsFromCombo(comboId: number) {
         return this.comboToProductRepo.find({ combo: { id: comboId } });
+    }
+
+    updateImage({ id, imgUrl }: SaveImageForm) {
+        return this.comboRepo.update({ id }, { imgUrl });
     }
 
 }
