@@ -138,10 +138,11 @@ export class OrderService {
         }
 
         const [result, count] = await generateQueryFilter({
-            numbers: ['ord_type', 'ord_status', 'use.id'],
+            like: ['use.name'],
+            numbers: ['ord_type', 'ord_status', 'ord_id'],
             equalStrings: ['ord_get_on_market'],
             valueCentsNumbers: ['ord_total_value_cents', 'ord_total_product_value_cents', 'ord_total_freight_value_cents', 'ord_change_value_cents'],
-            dates: ['ord_deleted_date', 'ord_creation_date', 'receiveDate', 'receiveTime'],
+            dates: ['ord_deleted_date', 'ord_creation_date', 'ord_receive_date', 'ord_receive_time'],
             datas: Array.isArray(filterOpt) ? filterOpt : [],
             builder,
         })
