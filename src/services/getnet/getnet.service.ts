@@ -151,6 +151,7 @@ export class GetnetService {
             method: 'POST',
             body: formParameters,
             headers: h,
+            // @ts-ignore
             mode: 'cors',
         });
 
@@ -199,6 +200,7 @@ export class GetnetService {
             method: 'POST',
             body: JSON.stringify(body),
             headers: h,
+            // @ts-ignore
             mode: 'cors',
         });
 
@@ -270,7 +272,8 @@ export class GetnetService {
         const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit/${order.getnetPaymentId}/cancel`, {
             method: 'POST',
             headers,
-            mode: 'cors',
+            // @ts-ignore
+            mode: 'cors'
         });
 
         return fetch(req)
@@ -288,6 +291,7 @@ export class GetnetService {
         const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/cancel/request?cancel_custom_key=${cancelId}`, {
             method: 'GET',
             headers,
+            // @ts-ignore
             mode: 'cors',
         });
 
@@ -371,6 +375,7 @@ export class GetnetService {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: h,
+                // @ts-ignore
                 mode: 'cors',
             });
 
@@ -393,6 +398,7 @@ export class GetnetService {
             method: 'POST',
             body: JSON.stringify(body),
             headers,
+            // @ts-ignore
             mode: 'cors',
         });
 
@@ -483,6 +489,8 @@ export class GetnetService {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: h,
+            // @ts-ignore
+            
                 mode: 'cors',
             });
 
@@ -522,6 +530,7 @@ export class GetnetService {
             method: 'POST',
             body: JSON.stringify(body),
             headers: h,
+            // @ts-ignore
             mode: 'cors',
         });
 
@@ -539,6 +548,7 @@ export class GetnetService {
         const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/debit/${body.paymentId}/authenticated/finalize`, {
             method: 'POST',
             headers: h,
+            // @ts-ignore
             mode: 'cors',
         });
 
@@ -554,6 +564,7 @@ export class GetnetService {
         const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit/${paymentId}/authenticated/finalize`, {
             method: 'POST',
             headers: h,
+            // @ts-ignore
             mode: 'cors',
         });
 
