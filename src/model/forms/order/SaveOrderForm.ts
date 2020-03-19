@@ -34,6 +34,10 @@ export class SaveOrderForm {
     @IsBoolean()
     payed: boolean;
 
+    @IsString()
+    @IsOptional()
+    description: string;
+
     @IsObject()
     @IsOptional()
     card: SaveCardForm;

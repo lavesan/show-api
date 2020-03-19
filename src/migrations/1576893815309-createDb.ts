@@ -86,6 +86,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_id SERIAL,
                 ord_card_code VARCHAR(60),
                 ord_type INTEGER NOT NULL,
+                ord_description VARCHAR(50),
                 ord_payed BOOLEAN NOT NULL,
                 ord_status INTEGER NOT NULL,
                 ord_total_value_cents TEXT NOT NULL,

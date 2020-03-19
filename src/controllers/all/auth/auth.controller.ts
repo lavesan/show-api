@@ -1,11 +1,9 @@
-import { Controller, Post, Body, Delete, UseGuards, Headers, Request, Put } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Post, Body, Delete, Headers, Request, Put } from '@nestjs/common';
 import * as fs from 'fs';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { RegisterUserForm } from '../../../model/forms/user/RegisterUserForm';
 import { LoginUserForm } from '../../../model/forms/user/LoginUserForm';
-import { AUTH_CONSTS } from 'src/helpers/auth.helpers';
 import { AdminAuthService } from 'src/services/admin-auth/admin-auth.service';
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 import { SaveUserBackofficeForm } from 'src/model/forms/user-backoffice/SaveUserBackofficeForm';
@@ -52,13 +50,11 @@ export class AuthController {
     }
 
     @Post('user/refresh-token')
-    @UseGuards(AuthGuard(AUTH_CONSTS.CLIENT))
     userRefreshToken(@Headers('authorization') tokenAuth: string) {
         return this.authService.refreshToken(tokenAuth);
     }
 
     @Post('user-backoffice/refresh-token')
-    @UseGuards(AuthGuard(AUTH_CONSTS.ADMIN))
     adminRefreshToken(@Headers('authorization') tokenAuth: string) {
         return this.adminAuthService.refreshToken(tokenAuth);
     }
