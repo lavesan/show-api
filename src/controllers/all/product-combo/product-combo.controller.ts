@@ -1,12 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
 import { ProductComboService } from 'src/services/product-combo/product-combo.service';
 
-@Controller('product-combo')
+@Controller('combo')
 export class ProductComboController {
 
     constructor(private readonly productComboService: ProductComboService) {}
 
-    @Get()
+    @Get('all')
     findAll() {
         return this.productComboService.findAll();
     }

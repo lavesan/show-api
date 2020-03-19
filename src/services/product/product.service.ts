@@ -158,7 +158,13 @@ export class ProductService {
         const builder = this.productRepo.createQueryBuilder('pro')
             .leftJoinAndSelect('pro.category', 'cat');
 
-        let [result, count] = await generateQueryFilter({
+        const tokenObj = decodeToken(token);
+
+        if (tokenObj && tokenObj.type === 'ecommerce') {
+            builder.where('pro.status = :status', { status: ProductStatus.ACTIVE });
+        }
+
+        const [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description'],
             numbers: ['pro_status', 'pro.category.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
@@ -170,38 +176,6 @@ export class ProductService {
             .limit(take)
             .orderBy('pro.id', 'ASC')
             .getManyAndCount();
-
-        const roles = [UserRole.NENHUM];
-
-        const tokenObj = decodeToken(token);
-
-        let userType: string = 'ecommerce';
-
-        if (tokenObj) {
-            userType = tokenObj.type;
-            roles.push(tokenObj.role);
-        }
-
-        if (userType === 'ecommerce') {
-
-            const promoProducts = await this.promotionService.findUserPromotionProducts(roles);
-
-            if (promoProducts.length) {
-
-                result = result.map(product => {
-
-                    const promoProd = promoProducts.find(({ productId }) => productId === product.id);
-
-                    return {
-                        ...product,
-                        promotionValueCents: promoProd ? promoProd.valueCents : '',
-                    };
-
-                });
-
-            }
-
-        }
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
 
@@ -231,7 +205,10 @@ export class ProductService {
 
         for (const cat of allCategories) {
 
-            const products = await this.productRepo.find({ category: { id: cat.id } });
+            const products = await this.productRepo.find({
+                category: { id: cat.id },
+                status: ProductStatus.ACTIVE,
+            });
             result.push({
                 category: cat,
                 products,

@@ -83,6 +83,7 @@ export class PromotionService {
 
         const promotions = await this.promotionRepo.createQueryBuilder('promo')
             .where('promo.userTypes @> ARRAY[:userRoles]::INTEGER[]', { userRoles: userRoles.toString() })
+            .where('prm_status = :status', { status: PromotionStatus.ACTIVE })
             .getMany();
 
         if (!promotions.length) {
