@@ -24,6 +24,7 @@ import { ProductComboModule } from './modules/product-combo/product-combo.module
 import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
+import { FilesModule } from './modules/files/files.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { PromotionModule } from './modules/promotion/promotion.module';
     ProductComboModule,
     ScheduleTasksModule,
     PromotionModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
