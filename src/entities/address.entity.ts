@@ -3,6 +3,7 @@ import { UserEntity } from './user.entity';
 
 @Entity('adr_address')
 export class AddressEntity {
+
     @PrimaryGeneratedColumn({ name: 'adr_id' })
     id: number;
 
@@ -30,4 +31,5 @@ export class AddressEntity {
     @ManyToOne(table => UserEntity, user => user.id)
     @JoinColumn({ name: 'adr_use_id' })
     user: UserEntity;
+
 }

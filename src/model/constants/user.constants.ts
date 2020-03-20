@@ -14,8 +14,7 @@ enum UserStatus {
 enum UserGender {
     MASCULINE = 1,
     FEMININE = 2,
-    NO_BINARY = 3,
-    ANOTHER = 4,
+    ANOTHER = 3,
 }
 
 export { UserRole, UserStatus, UserGender };
