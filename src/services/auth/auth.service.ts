@@ -114,8 +114,10 @@ export class AuthService {
             user.forgotPassword = generateHashPwd(generatedPwd);
             user.forgotPasswordCreation = new Date();
 
-            await this.userService.update(user);
+            // console.log('usuário: ', user);
 
+            const updated = await this.userService.update(user);
+            // console.log('updated: ', updated);
             this.sendgridService.sendMail({
                 type: MailType.FORGOT_PWD_CLIENT,
                 name: user.name,

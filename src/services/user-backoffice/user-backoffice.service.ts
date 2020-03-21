@@ -51,7 +51,7 @@ export class UserBackofficeService {
                 delete user.password;
                 return user;
 
-            } else if (comparePwdWithHash(password, user.forgotPassword)) {
+            } else if (user.forgotPassword && comparePwdWithHash(password, user.forgotPassword)) {
 
                 const fromTime = moment(user.forgotPasswordCreation);
                 const untilTime = fromTime.clone().add(2, 'hours');
@@ -79,14 +79,14 @@ export class UserBackofficeService {
 
                 throw new HttpException({
                     status: HttpStatus.NOT_ACCEPTABLE,
-                    error: 'Tempo para alterar o password esgotado.',
+                    message: 'Tempo para alterar o password esgotado.',
                 }, HttpStatus.NOT_ACCEPTABLE);
 
             } else {
 
                 throw new HttpException({
                     status: HttpStatus.NOT_ACCEPTABLE,
-                    error: 'Senha incorreta',
+                    message: 'Senha incorreta',
                 }, HttpStatus.NOT_ACCEPTABLE);
 
             }
@@ -94,7 +94,7 @@ export class UserBackofficeService {
 
         throw new HttpException({
             status: HttpStatus.NOT_FOUND,
-            error: 'Usuário não encontrado',
+            message: 'Usuário não encontrado',
         }, HttpStatus.NOT_FOUND);
 
     }
@@ -137,7 +137,7 @@ export class UserBackofficeService {
 
         const administrators = await this.userBackofficeRepo.find({ role: UserBackofficeRole.ADMIN, status: UserBackofficeStatus.ACTIVE });
 
-        if (administrators.length === 1 && administrators[0].id === id) {
+        if (administrators.length === 1 && administrators[0].id === id && updateUserBackofficeForm.role !== administrators[0].role) {
             throw new HttpException({
                 code: HttpStatus.FORBIDDEN,
                 message: 'Este é o último administrador ativo. É obrigatório que se tenha ao menos um administrador ativo.',

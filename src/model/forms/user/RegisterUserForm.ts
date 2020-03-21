@@ -1,5 +1,7 @@
-import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean, IsEmail } from 'class-validator';
+import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean, IsEmail, IsObject } from 'class-validator';
 import { UserRole, UserGender } from '../../../model/constants/user.constants';
+import { SaveAddressForm } from '../address/SaveAddressForm';
+import { SaveContactForm } from '../contact/SaveContactForm';
 
 export class RegisterUserForm {
 
@@ -36,5 +38,11 @@ export class RegisterUserForm {
 
     @IsBoolean()
     termOfContract: boolean;
+
+    @IsObject()
+    address: SaveAddressForm;
+
+    @IsObject()
+    contact: SaveContactForm;
 
 }

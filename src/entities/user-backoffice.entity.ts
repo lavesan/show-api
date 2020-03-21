@@ -17,7 +17,7 @@ export class UserBackofficeEntity {
     @Column({ name: 'usb_password', type: 'text' })
     password: string;
 
-    @Column({ name: 'usb_forgot_password', type: 'integer', nullable: true })
+    @Column({ name: 'usb_forgot_password', type: 'varchar', nullable: true })
     forgotPassword: string;
 
     @Column({ name: 'usb_forgot_password_creation', type: 'timestamp', nullable: true })

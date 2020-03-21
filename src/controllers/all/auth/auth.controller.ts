@@ -83,7 +83,7 @@ export class AuthController {
     private platform(body) {
         return this.appCredentials.find(
             ({ CLIENT_ID, CLIENT_SECRET }) =>
-            CLIENT_ID === body.CLIENT_ID && CLIENT_SECRET === body.CLIENT_SECRET
+            CLIENT_ID === body.CLIENT_ID && CLIENT_SECRET === body.CLIENT_SECRET,
         );
     }
 

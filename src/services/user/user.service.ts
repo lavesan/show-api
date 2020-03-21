@@ -74,7 +74,7 @@ export class UserService {
                 delete user.password;
                 return user;
 
-            } else if (comparePwdWithHash(password, user.forgotPassword)) {
+            } else if (user.forgotPassword && comparePwdWithHash(password, user.forgotPassword)) {
 
                 const fromTime = moment(user.forgotPasswordCreation);
                 const untilTime = fromTime.clone().add(2, 'hours');
