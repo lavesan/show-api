@@ -1,7 +1,8 @@
-import { IsEnum, IsNumber, IsString, Matches, IsOptional, IsBoolean, IsEmail, IsObject } from 'class-validator';
+import { IsEnum, IsString, Matches, IsOptional, IsBoolean, IsEmail, IsObject, IsNumberString } from 'class-validator';
 import { UserRole, UserGender } from '../../../model/constants/user.constants';
 import { SaveAddressForm } from '../address/SaveAddressForm';
 import { SaveContactForm } from '../contact/SaveContactForm';
+import { onlyCharacterRegex } from 'src/helpers/validate.helpers';
 
 export class RegisterUserForm {
 
@@ -11,22 +12,25 @@ export class RegisterUserForm {
     @IsString()
     password: string;
 
-    @Matches(/^[A-Z a-z]+$/)
+    @Matches(onlyCharacterRegex)
     name: string;
 
     @IsString()
+    @IsOptional()
     imgUrl: string;
 
     @IsEnum(UserGender)
     gender: UserGender;
 
-    @IsNumber()
+    @IsNumberString()
     age: number;
 
-    @IsNumber()
+    @IsNumberString()
+    @IsOptional()
     animalsQuantity: number;
 
-    @IsNumber()
+    @IsNumberString()
+    @IsOptional()
     childrensQuantity: number;
 
     @IsEnum(UserRole)
@@ -43,6 +47,7 @@ export class RegisterUserForm {
     address: SaveAddressForm;
 
     @IsObject()
+    @IsOptional()
     contact: SaveContactForm;
 
 }

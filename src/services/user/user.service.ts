@@ -30,16 +30,59 @@ export class UserService {
 
     async save(user: RegisterUserForm): Promise<UserEntity> {
 
-        const data = {
-            ...user,
-            emailConfirmed: false,
-            status: UserStatus.ACTIVE,
-            role: UserRole.NENHUM,
-            choosenRole: user.role,
-            creationDate: new Date(),
-            password: generateHashPwd(user.password),
-        };
-        return await this.userRepo.save(data);
+        try {
+
+            const foundUser = await this.findByEmail(user.email);
+
+            if (foundUser) {
+                throw new HttpException({
+                    code: HttpStatus.FORBIDDEN,
+                    message: 'Já existe um usuário com este email.'
+                }, HttpStatus.FORBIDDEN);
+            }
+
+            const { contact, address, ...userData } = user;
+
+            const data = {
+                ...userData,
+                emailConfirmed: false,
+                status: UserStatus.ACTIVE,
+                role: UserRole.NENHUM,
+                choosenRole: userData.role,
+                creationDate: new Date(),
+                password: generateHashPwd(userData.password),
+            };
+            const newUser = await this.userRepo.save(data);
+
+            if (contact) {
+
+                const contactData = {
+                    ...contact,
+                    userId: newUser.id,
+                }
+
+                await this.contactService.save(contactData);
+
+            }
+            if (address) {
+
+                const addressData = {
+                    ...address,
+                    userId: newUser.id,
+                }
+
+                await this.addressService.save(addressData);
+
+            }
+
+            return newUser;
+
+        } catch(err) {
+            throw new HttpException({
+                ...err,
+            }, HttpStatus.BAD_GATEWAY);
+        }
+
     }
 
     async update(user: Partial<UserEntity>): Promise<UpdateResult> {

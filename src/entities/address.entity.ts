@@ -16,6 +16,9 @@ export class AddressEntity {
     @Column({ name: 'adr_number', type: 'varchar' })
     number: string;
 
+    @Column({ name: 'adr_district', type: 'varchar' })
+    district: string;
+
     @Column({ name: 'adr_complement', type: 'text', nullable: true })
     complement: string;
 

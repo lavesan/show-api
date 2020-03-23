@@ -3,6 +3,7 @@ import { IsNumberString, IsOptional, IsString, IsNumber } from 'class-validator'
 export class SaveAddressForm {
 
     @IsNumber()
+    @IsOptional()
     userId: number;
 
     @IsString()
@@ -20,5 +21,8 @@ export class SaveAddressForm {
 
     @IsString()
     type: string;
+
+    @IsString()
+    district: string;
 
 }
