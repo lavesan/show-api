@@ -36,9 +36,9 @@ export class UserService {
 
             if (foundUser) {
                 throw new HttpException({
-                    code: HttpStatus.FORBIDDEN,
+                    code: HttpStatus.BAD_REQUEST,
                     message: 'Já existe um usuário com este email.'
-                }, HttpStatus.FORBIDDEN);
+                }, HttpStatus.BAD_REQUEST);
             }
 
             const { contact, address, ...userData } = user;

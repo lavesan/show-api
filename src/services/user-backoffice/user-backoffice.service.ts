@@ -139,9 +139,9 @@ export class UserBackofficeService {
 
         if (administrators.length === 1 && administrators[0].id === id && updateUserBackofficeForm.role !== administrators[0].role) {
             throw new HttpException({
-                code: HttpStatus.FORBIDDEN,
+                code: HttpStatus.BAD_REQUEST,
                 message: 'Este é o último administrador ativo. É obrigatório que se tenha ao menos um administrador ativo.',
-            }, HttpStatus.FORBIDDEN)
+            }, HttpStatus.BAD_REQUEST)
         }
 
         return this.userBackofficeRepo.update({ id }, updateUserBackofficeForm);
@@ -223,9 +223,9 @@ export class UserBackofficeService {
 
         if (administrators.length === 1 && administrators[0].id === id) {
             throw new HttpException({
-                code: HttpStatus.FORBIDDEN,
+                code: HttpStatus.BAD_REQUEST,
                 message: 'Este é o último administrador ativo. É obrigatório que se tenha ao menos um administrador ativo.',
-            }, HttpStatus.FORBIDDEN)
+            }, HttpStatus.BAD_REQUEST)
         }
 
         return this.userBackofficeRepo.update({ id }, { status });
