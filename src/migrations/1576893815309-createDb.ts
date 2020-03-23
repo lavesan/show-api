@@ -185,6 +185,7 @@ export class createDb1576893815309 implements MigrationInterface {
                 prm_id SERIAL,
                 prm_title VARCHAR(20) NOT NULL,
                 prm_description TEXT NOT NULL,
+                prm_is_principal BOOLEAN,
                 prm_brief_description TEXT,
                 prm_img_url TEXT,
                 prm_status INTEGER NOT NULL,

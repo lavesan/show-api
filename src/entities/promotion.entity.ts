@@ -12,6 +12,9 @@ export class PromotionEntity {
     @Column({ name: 'prm_status', type: 'integer' })
     status: PromotionStatus;
 
+    @Column({ name: 'prm_is_principal', type: 'boolean' })
+    isPrincipal: boolean;
+
     @Column({ name: 'prm_title', type: 'varchar' })
     title: string;
 

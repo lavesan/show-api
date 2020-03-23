@@ -1,5 +1,5 @@
 import { PromotionStatus } from "src/model/constants/promotion.constants";
-import { IsEnum, IsArray, IsString } from "class-validator";
+import { IsEnum, IsArray, IsString, IsBoolean, IsOptional } from "class-validator";
 import { UserRole } from "src/model/constants/user.constants";
 import { SaveProductPromotionForm } from "./SaveProductPromotionForm";
 
@@ -19,5 +19,9 @@ export class SavePromotionForm {
 
     @IsArray()
     products: SaveProductPromotionForm[];
+
+    @IsBoolean()
+    @IsOptional()
+    isPrincipal: boolean;
 
 }
