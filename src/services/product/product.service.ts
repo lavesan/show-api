@@ -17,6 +17,7 @@ import { UpdateStockForm } from 'src/model/forms/product/UpdateStockForm';
 import { ProductStatus } from 'src/model/constants/product.constants';
 import { ProductComboService } from '../product-combo/product-combo.service';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
+import { IDebitProductQuantity } from 'src/model/types/product.types';
 
 @Injectable()
 export class ProductService {
@@ -195,6 +196,30 @@ export class ProductService {
 
     findPromotionProducts(token: string) {
         return this.promotionService.findPromotionsFromUser(token);
+    }
+
+    async debitQuantityOnStock(debitProductQuantity: IDebitProductQuantity[]) {
+
+        for (const { id, quantity } of debitProductQuantity) {
+            await this.productRepo.createQueryBuilder()
+                .update()
+                .set({ quantityOnStock: () => `quantityOnStock - ${quantity}` })
+                .where('id = :id', { id })
+                .execute();
+        }
+
+    }
+
+    async addQuantitiesOnStock(debitProductQuantity: IDebitProductQuantity[]) {
+
+        for (const { id, quantity } of debitProductQuantity) {
+            await this.productRepo.createQueryBuilder()
+                .update()
+                .set({ quantityOnStock: () => `quantityOnStock + ${quantity}` })
+                .where('id = :id', { id })
+                .execute();
+        }
+
     }
 
     async findAllProductsWithCategories() {

@@ -5,13 +5,13 @@ enum OrderType {
 }
 
 enum OrderStatus {
-    MADE = 0,
-    PREPARING = 1,
-    SENDING = 2,
-    SENDED = 3,
-    DONE = 4,
-    CANCELED = 5,
-    WAITING_APPROVAL = 6,
+    TO_FINISH = 0,
+    MADE = 1,
+    PREPARING = 2,
+    SENDING = 3,
+    SENDED = 4,
+    DONE = 5,
+    CANCELED = 6,
 }
 
 enum OrderUserWhoDeleted {

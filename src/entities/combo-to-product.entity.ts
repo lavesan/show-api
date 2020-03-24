@@ -11,7 +11,7 @@ export class ComboToProductEntity {
     @Column({ name: 'pcb_quantity', type: 'float8' })
     quantity: number;
 
-    @ManyToOne(table => ComboEntity, combo => combo.id)
+    @ManyToOne(table => ComboEntity, combo => combo.id, { lazy: true })
     @JoinColumn({ name: 'pcb_cob_id' })
     // @Column({ name: 'pcb_cob_id', type: 'text' })
     combo: ComboEntity;

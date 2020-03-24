@@ -12,6 +12,7 @@ import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
 import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class OrderService {
@@ -20,6 +21,7 @@ export class OrderService {
         @InjectRepository(OrderEntity)
         private readonly orderRepo: Repository<OrderEntity>,
         private readonly sendgridService: SendgridService,
+        private readonly productService: ProductService,
     ) {}
 
     time = {
@@ -31,7 +33,7 @@ export class OrderService {
 
         const data = {
             ...order,
-            status: order.type === OrderType.DEBIT ? OrderStatus.WAITING_APPROVAL : OrderStatus.MADE,
+            status: OrderStatus.TO_FINISH,
             creationDate: new Date(),
         };
 
@@ -51,6 +53,17 @@ export class OrderService {
         }
 
         return this.orderRepo.save(data);
+
+    }
+
+    updateOrder({ id, ...order }: Partial<OrderEntity>) {
+
+        const data = {
+            ...order,
+            updateDate: new Date(),
+        }
+
+        return this.orderRepo.update({ id }, data);
 
     }
 
@@ -198,7 +211,7 @@ export class OrderService {
                 OrderStatus.SENDED,
                 OrderStatus.SENDING,
                 OrderStatus.DONE,
-                OrderStatus.WAITING_APPROVAL,
+                OrderStatus.TO_FINISH,
             ]),
             receiveDate: date,
             receiveTime: time,
@@ -221,6 +234,14 @@ export class OrderService {
 
     findAllByUserId(userId: number) {
         return this.orderRepo.find({ user: { id: userId } });
+    }
+
+    findAllWaitingApproval() {
+        return this.orderRepo.find({ status: OrderStatus.TO_FINISH });
+    }
+
+    deleteMany(ids: number[]) {
+        return this.orderRepo.delete({ id: In(ids) });
     }
 
 }

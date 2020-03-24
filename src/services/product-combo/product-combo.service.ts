@@ -176,8 +176,12 @@ export class ProductComboService {
         return this.comboRepo.update({ id: comboId }, { status });
     }
 
-    async findAllProductsFromCombo(comboId: number) {
+    findAllProductsFromCombo(comboId: number) {
         return this.comboToProductRepo.find({ combo: { id: comboId } });
+    }
+
+    findAllProductsFromCombos(comboIds: number[]) {
+        return this.comboToProductRepo.find({ combo: { id: In(comboIds) } });
     }
 
     updateImage({ id, imgUrl }: SaveImageForm) {

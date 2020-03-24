@@ -107,6 +107,61 @@ export class PromotionService {
 
     }
 
+    async findPromotionBestPricesFromUser(token: string) {
+
+        const tokenObj = decodeToken(token);
+
+        const roles = [UserRole.NENHUM];
+
+        if (tokenObj) {
+            roles.push(tokenObj.role);
+        }
+
+        return this.findBestPriceProducts(roles);
+
+    }
+
+    private async findBestPriceProducts(userRoles: UserRole[]): Promise<any[]> {
+
+        const promotions = await this.promotionRepo.createQueryBuilder('promo')
+            .where('promo.userTypes @> ARRAY[:userRoles]::INTEGER[]', { userRoles: userRoles.toString() })
+            .where('prm_status = :status', { status: PromotionStatus.ACTIVE })
+            .getMany();
+
+        if (!promotions.length) {
+            return [];
+        }
+
+        const promoIds = promotions.map(({ id }) => id);
+
+        const products = await this.findAllProductsByPromotionIds(promoIds);
+
+        const aux = {};
+
+        products.forEach(product => {
+
+            if (!aux[product.productId]) {
+                aux[product.productId] = [product];
+            } else {
+                aux[product.productId].push(product);
+            }
+
+        });
+
+        return Object.values(aux).map((prodsProms: any[]) => {
+
+            let prod = prodsProms[0];
+            prodsProms.forEach(seiLa => {
+                if (prod.valueCents > seiLa.valueCents) {
+                    prod = seiLa;
+                }
+            })
+            return prod;
+
+        });
+
+    }
+
     async findUserPromotionProducts(userRoles: UserRole[]) {
 
         const promotions = await this.promotionRepo.createQueryBuilder('promo')

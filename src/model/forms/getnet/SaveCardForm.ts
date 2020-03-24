@@ -1,7 +1,11 @@
-import { IsString, Length, MinLength, MaxLength, IsEnum } from "class-validator";
+import { IsString, Length, MinLength, MaxLength, IsEnum, IsNumber, IsOptional } from "class-validator";
 import { CardBrand } from "src/model/constants/getnet.constants";
 
 export class SaveCardForm {
+
+    @IsNumber()
+    @IsOptional()
+    id: number;
 
     @IsEnum(CardBrand)
     brand: CardBrand;

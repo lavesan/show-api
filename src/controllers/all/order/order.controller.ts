@@ -6,6 +6,7 @@ import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { IPaginateResponseType } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
+import { ConfirmOrderForm } from 'src/model/forms/order/ConfirmOrderForm';
 
 @Controller('order')
 export class OrderController {
@@ -18,6 +19,11 @@ export class OrderController {
     @Post()
     saveOrder(@Body() body: SaveOrderForm, @Headers('authorization') token: string) {
         return this.orderToProductService.save(body, token);
+    }
+
+    @Put('confirm')
+    confirmOrder(@Body() body: ConfirmOrderForm) {
+        return this.orderToProductService.confirmOrder(body);
     }
 
     // Route to the bank sends the sell status when it's finished, if that's ok, i save as OK

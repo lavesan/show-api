@@ -10,6 +10,8 @@ import { OrderBackofficeController } from 'src/controllers/backoffice/order-back
 import { OrderController } from 'src/controllers/all/order/order.controller';
 import { SendgridModule } from '../sendgrid/sendgrid.module';
 import { GetnetModule } from '../getnet/getnet.module';
+import { PromotionModule } from '../promotion/promotion.module';
+import { ProductComboModule } from '../product-combo/product-combo.module';
 
 @Module({
     imports: [
@@ -19,8 +21,11 @@ import { GetnetModule } from '../getnet/getnet.module';
       ProductModule,
       SendgridModule,
       GetnetModule,
+      PromotionModule,
+      ProductComboModule,
     ],
     controllers: [OrderBackofficeController, OrderController],
     providers: [OrderService, OrderToProductService],
+    exports: [OrderToProductService],
 })
 export class OrderModule {}
