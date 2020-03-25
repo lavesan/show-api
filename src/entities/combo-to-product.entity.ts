@@ -13,12 +13,10 @@ export class ComboToProductEntity {
 
     @ManyToOne(table => ComboEntity, combo => combo.id, { lazy: true })
     @JoinColumn({ name: 'pcb_cob_id' })
-    // @Column({ name: 'pcb_cob_id', type: 'text' })
     combo: ComboEntity;
 
     @ManyToOne(table => ProductEntity, product => product.id, { eager: true })
     @JoinColumn({ name: 'pcb_pro_id' })
-    // @Column({ name: 'pcb_pro_id', type: 'varchar' })
     product: ProductEntity;
 
 }

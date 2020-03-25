@@ -3,6 +3,7 @@ import { OrderType, OrderStatus, OrderUserWhoDeleted } from '../model/constants/
 import { UserEntity } from './user.entity';
 import { OrderToProductEntity } from './orderToProduct.entity';
 import { AddressEntity } from './address.entity';
+import { ContactEntity } from './contact.entity';
 
 @Entity('ord_order')
 export class OrderEntity {
@@ -72,6 +73,10 @@ export class OrderEntity {
     @ManyToOne(table => AddressEntity, address => address.id, { eager: true })
     @JoinColumn({ name: 'ord_adr_id' })
     address: AddressEntity;
+
+    @ManyToOne(table => ContactEntity, address => address.id, { eager: true })
+    @JoinColumn({ name: 'ord_con_id' })
+    contact: ContactEntity;
 
     @OneToMany(type => OrderToProductEntity, ordToProd => ordToProd.order, { eager: true })
     orderToProd: OrderToProductEntity[];

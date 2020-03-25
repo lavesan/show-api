@@ -184,6 +184,30 @@ export class ProductComboService {
         return this.comboToProductRepo.find({ combo: { id: In(comboIds) } });
     }
 
+    findAllCombosByIds(comboIds: number[]) {
+        return this.comboRepo.find({ id: In(comboIds) });
+    }
+
+    async findAllComboProducts(comboIds: number[]) {
+
+        const combos = await this.findAllCombosByIds(comboIds);
+
+        const result = [];
+        for (const combo of combos) {
+
+            const products = await this.findAllProductsFromCombo(combo.id);
+
+            result.push({
+                ...combo,
+                products,
+            });
+
+        }
+
+        return result;
+
+    }
+
     updateImage({ id, imgUrl }: SaveImageForm) {
         return this.comboRepo.update({ id }, { imgUrl });
     }

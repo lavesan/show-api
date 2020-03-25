@@ -1,9 +1,10 @@
-import { IsNumberString, IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsNumberString, IsNumber } from "class-validator";
 
-export class SaveAddressForm {
+export class SaveAddressToOrderForm {
 
     @IsNumber()
-    userId?: number;
+    @IsOptional()
+    id: number;
 
     @IsString()
     address: string;

@@ -15,15 +15,15 @@ export class AddressService {
         private readonly addressRepo: Repository<AddressEntity>,
     ) {}
 
-    async save({ userId, ...address }: SaveAddressForm): Promise<any> {
+    save({ userId, ...address }: SaveAddressForm): Promise<any> {
 
         const data = {
             ...address,
-            user: { id: userId },
+            user: userId ? { id: userId } : null,
             creationDate: new Date(),
-        }
+        };
 
-        return await this.addressRepo.save(data);
+        return this.addressRepo.save(data);
 
     }
 
@@ -67,6 +67,10 @@ export class AddressService {
 
     findAllByUserId(userId: number): Promise<any> {
         return this.addressRepo.find({ user: { id: userId } });
+    }
+
+    findOneById(addressId: number) {
+        return this.addressRepo.findOne({ id: addressId });
     }
 
 }

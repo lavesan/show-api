@@ -34,37 +34,6 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column use_user.use_gender is 'Gênero do usuário. (1 para masculino, 2 para feminino)';
             comment on column use_user.use_animals is 'Número de animais que o cliente tem';
 
-            CREATE TABLE con_contact (
-                con_id SERIAL,
-                con_number VARCHAR(13) NOT NULL,
-                con_ddd VARCHAR(3) NOT NULL,
-                con_type INTEGER NOT NULL,
-                con_creation_date TIMESTAMP NOT NULL,
-                con_update_date TIMESTAMP,
-                con_use_id INTEGER NOT NULL,
-                PRIMARY KEY (con_id),
-                FOREIGN KEY (con_use_id) REFERENCES use_user (use_id)
-            );
-
-            comment on column con_contact.con_type is '0 para um celular e 1 para telefone';
-
-            CREATE TABLE adr_address (
-                adr_id SERIAL,
-                adr_address VARCHAR(60) NOT NULL,
-                adr_cep VARCHAR(13) NOT NULL,
-                adr_number VARCHAR(10) NOT NULL,
-                adr_district TEXT NOT NULL,
-                adr_complement TEXT,
-                adr_type TEXT NOT NULL,
-                adr_creation_date TIMESTAMP NOT NULL,
-                adr_update_date TIMESTAMP,
-                adr_use_id INTEGER NOT NULL,
-                PRIMARY KEY (adr_id),
-                FOREIGN KEY (adr_use_id) REFERENCES use_user (use_id)
-            );
-
-            comment on column adr_address.adr_type is 'O nome deste endereço. Exp.: casa, sei la, loja...';
-
             CREATE TABLE car_card (
                 car_id SERIAL,
                 car_type INTEGER NOT NULL,
@@ -82,6 +51,37 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column car_card.car_last_digits is 'Últimos 4 dígitos do cartão';
             comment on column car_card.car_brand is 'Bandeira do cartão';
             comment on column car_card.car_getnet_id is 'Id para coletar token, deletar cartões e atualizar cartão do cofre da getnet';
+
+            CREATE TABLE con_contact (
+                con_id SERIAL,
+                con_number VARCHAR(13) NOT NULL,
+                con_ddd VARCHAR(3) NOT NULL,
+                con_type INTEGER NOT NULL,
+                con_creation_date TIMESTAMP NOT NULL,
+                con_update_date TIMESTAMP,
+                con_use_id INTEGER,
+                PRIMARY KEY (con_id),
+                FOREIGN KEY (con_use_id) REFERENCES use_user (use_id)
+            );
+
+            comment on column con_contact.con_type is '0 para um celular e 1 para telefone';
+
+            CREATE TABLE adr_address (
+                adr_id SERIAL,
+                adr_address VARCHAR(60) NOT NULL,
+                adr_cep VARCHAR(13) NOT NULL,
+                adr_number VARCHAR(10) NOT NULL,
+                adr_district TEXT NOT NULL,
+                adr_complement TEXT,
+                adr_type TEXT NOT NULL,
+                adr_creation_date TIMESTAMP NOT NULL,
+                adr_update_date TIMESTAMP,
+                adr_use_id INTEGER,
+                PRIMARY KEY (adr_id),
+                FOREIGN KEY (adr_use_id) REFERENCES use_user (use_id)
+            );
+
+            comment on column adr_address.adr_type is 'O nome deste endereço. Exp.: casa, sei la, loja...';
 
             CREATE TABLE ord_order (
                 ord_id SERIAL,
@@ -105,9 +105,11 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_user_type_who_deleted INTEGER,
                 ord_use_id INTEGER,
                 ord_adr_id INTEGER,
+                ord_con_id INTEGER,
                 PRIMARY KEY (ord_id),
                 FOREIGN KEY (ord_use_id) REFERENCES use_user (use_id),
-                FOREIGN KEY (ord_adr_id) REFERENCES adr_address (adr_id)
+                FOREIGN KEY (ord_adr_id) REFERENCES adr_address (adr_id),
+                FOREIGN KEY (ord_con_id) REFERENCES con_contact (con_id)
             );
 
             comment on column ord_order.ord_card_code is 'Código do cartão se a venda foi feita online';

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult, In } from 'typeorm';
 import * as moment from 'moment';
@@ -12,7 +12,6 @@ import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
 import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
-import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class OrderService {
@@ -21,12 +20,23 @@ export class OrderService {
         @InjectRepository(OrderEntity)
         private readonly orderRepo: Repository<OrderEntity>,
         private readonly sendgridService: SendgridService,
-        private readonly productService: ProductService,
     ) {}
 
     time = {
-        open: '08:00',
-        close: '18:00',
+        activeWeek: {
+            interval1: {
+                open: '08:00',
+                close: '13:00',
+            },
+            interval2: {
+                open: '17:00',
+                close: '19:00',
+            },
+        },
+        saturday: {
+            open: '08:30',
+            close: '13:00',
+        },
     };
 
     save(order: Partial<OrderEntity>) {
@@ -174,9 +184,62 @@ export class OrderService {
 
     async findActiveDates(dateInString: string) {
 
+        const dateInMoment = moment(dateInString, 'DD/MM/YYYY');
         const scheduledDates = await this.orderRepo.find({ receiveDate: dateInString });
-        const compareDate = moment(this.time.open, 'HH:mm');
-        const close = moment(this.time.close, 'HH:mm');
+
+        const dayOfWeek = dateInMoment.day();
+
+        const freeDates = {
+            date: dateInString,
+            activeTimes: [],
+        };
+
+        if (dayOfWeek === 0) {
+            throw new HttpException({
+                status: HttpStatus.BAD_REQUEST,
+                message: 'Não atendemos neste dia',
+            }, HttpStatus.BAD_REQUEST);
+        } else if (dayOfWeek === 6) {
+
+            const hours = this.getActiveHoursFromIntaval({
+                scheduledDates,
+                from: this.time.saturday.open,
+                to: this.time.saturday.close,
+            });
+            freeDates.activeTimes = freeDates.activeTimes.concat(hours);
+
+        } else {
+
+            const morning = this.getActiveHoursFromIntaval({
+                scheduledDates,
+                from: this.time.activeWeek.interval1.open,
+                to: this.time.activeWeek.interval1.close,
+            });
+
+            const night = this.getActiveHoursFromIntaval({
+                scheduledDates,
+                from: this.time.activeWeek.interval2.open,
+                to: this.time.activeWeek.interval2.close,
+            });
+
+            freeDates.activeTimes = [
+                ...morning,
+                ...night,
+            ];
+        }
+
+        return freeDates;
+
+    }
+
+    private getActiveHoursFromIntaval({
+        scheduledDates,
+        from,
+        to,
+    }) {
+
+        const compareDate = moment(from, 'HH:mm');
+        const close = moment(to, 'HH:mm');
 
         const activeTimes = [];
 
@@ -196,10 +259,7 @@ export class OrderService {
 
         };
 
-        return {
-            date: dateInString,
-            activeTimes,
-        };
+        return activeTimes;
 
     }
 

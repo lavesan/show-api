@@ -12,6 +12,8 @@ import { SendgridModule } from '../sendgrid/sendgrid.module';
 import { GetnetModule } from '../getnet/getnet.module';
 import { PromotionModule } from '../promotion/promotion.module';
 import { ProductComboModule } from '../product-combo/product-combo.module';
+import { AddressModule } from '../address/address.module';
+import { ContactModule } from '../contact/contact.module';
 
 @Module({
     imports: [
@@ -23,6 +25,8 @@ import { ProductComboModule } from '../product-combo/product-combo.module';
       GetnetModule,
       PromotionModule,
       ProductComboModule,
+      AddressModule,
+      ContactModule,
     ],
     controllers: [OrderBackofficeController, OrderController],
     providers: [OrderService, OrderToProductService],

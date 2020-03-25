@@ -15,6 +15,11 @@ import { OrderType, OrderStatus } from 'src/model/constants/order.constants';
 import { PromotionService } from '../promotion/promotion.service';
 import { ConfirmOrderForm } from 'src/model/forms/order/ConfirmOrderForm';
 import { ProductComboService } from '../product-combo/product-combo.service';
+import { priceByDistrict } from 'src/model/constants/order.constants';
+import { ProductInfoForm } from 'src/model/forms/product/ProductInfoForm';
+import { ComboInfoForm } from 'src/model/forms/combo/ComboInfoForm';
+import { AddressService } from '../address/address.service';
+import { ContactService } from '../contact/contact.service';
 
 @Injectable()
 export class OrderToProductService {
@@ -27,6 +32,8 @@ export class OrderToProductService {
         private readonly getnetService: GetnetService,
         private readonly promotionService: PromotionService,
         private readonly comboService: ProductComboService,
+        private readonly addressService: AddressService,
+        private readonly contactService: ContactService,
     ) {}
 
     /**
@@ -34,7 +41,14 @@ export class OrderToProductService {
      * @param {SaveOrderForm} param0
      * @param {string} token If there's a token, use this to save the user
      */
-    async save({ products, ...body }: SaveOrderForm, token: string): Promise<any> {
+    async save({ products = [], combos = [], address, contact, ...body }: SaveOrderForm, token: string): Promise<any> {
+
+        if (!products.length && !combos.length) {
+            throw new HttpException({
+                status: HttpStatus.BAD_REQUEST,
+                message: 'Pedido sem nenhum produto ou combo.',
+            }, HttpStatus.BAD_REQUEST);
+        }
 
         const { receive, ...orderBody } = body;
 
@@ -53,66 +67,53 @@ export class OrderToProductService {
             data.user = user;
         }
 
-        // Finds all the promotions from the user
-        const promProductsBestPrices = await this.promotionService.findPromotionBestPricesFromUser(token);
+        // 1 - Finds all the promotions from the user
+        const productsWithQuantity = await this.getProductsToSave(products, token);
 
-        const productsExceedingStock = [];
+        // 3 - Gets all the values from combos
+        const combosWithQuantity = await this.getCombosToSave(combos);
 
-        // Finds all products and sum to get the total order value
-        const productsIds = products.map(product => product.id);
-        const productsDB = await this.productService.findManyByIds(productsIds);
-        const productsWithQuantity = productsDB.map(product => {
-
-            const { quantity } = products.find(pro => pro.id === prod.id);
-
-            // Saves all the products that exceeds the quantity on stock
-            if (quantity > product.quantityOnStock) {
-                productsExceedingStock.push(product);
-            }
-
-            // Returns error if the quantity is negative
-            if (quantity < 0) {
-                throw new HttpException({
-                    status: HttpStatus.EXPECTATION_FAILED,
-                    message: `A quantidade do produtos ${product.name} está negativa. Valor não aceitável.`,
-                }, HttpStatus.EXPECTATION_FAILED);
-            }
-
-            const prod = product as any;
-
-            const promoProduct = promProductsBestPrices.find(pro => pro.productId === product.id);
-
-            if (promoProduct) {
-                prod.promotionalValueCents = promoProduct.valueCents;
-                prod.promotionId = promoProduct.promotionId;
-            }
-
-            return {
-                ...prod,
-                quantity,
-            };
-        });
-
-        // If there's products in the order exceeding the quantity on stock, returns a error with the products
-        if (productsExceedingStock.length) {
-            throw new HttpException({
-                status: HttpStatus.NOT_ACCEPTABLE,
-                message: 'Há produtos que excedem nossa atual quantidade no estoque.',
-                products: productsExceedingStock,
-            }, HttpStatus.NOT_ACCEPTABLE);
-        }
-
+        // 4 - Sum everything (promotions, products, freight and combos)
         let totalProductValue = 0;
 
-        for (const { actualValueCents, quantity, promotionalValueCents } of productsWithQuantity) {
-            if (promotionalValueCents) {
-                totalProductValue += onlyNumberStringToFloatNumber(promotionalValueCents) * quantity;
-            } else {
-                totalProductValue += onlyNumberStringToFloatNumber(actualValueCents) * quantity;
+        // Sums the combos values, if there's combos
+        if (combosWithQuantity.length) {
+            combosWithQuantity.forEach(comboWithQuantity => {
+                totalProductValue += onlyNumberStringToFloatNumber(comboWithQuantity.totalValue) * comboWithQuantity.quantity;
+            })
+        }
+
+        // Sums the products value, if there's products
+        if (productsWithQuantity.length) {
+            for (const { actualValueCents, quantity, promotionalValueCents } of productsWithQuantity) {
+                if (promotionalValueCents) {
+                    totalProductValue += onlyNumberStringToFloatNumber(promotionalValueCents) * quantity;
+                } else {
+                    totalProductValue += onlyNumberStringToFloatNumber(actualValueCents) * quantity;
+                }
             }
         }
 
-        const totalValue = totalProductValue + onlyNumberStringToFloatNumber(data.totalFreightValuesCents);
+        // Sums the freight value
+        let totalFreightValue = 0;
+
+        let addressDB = address;
+
+        if (address && address.id) {
+            addressDB = await this.addressService.findOneById(address.id);
+        }
+
+        if (!body.getOnMarket) {
+
+
+            if (addressDB) {
+                totalFreightValue = priceByDistrict[addressDB.district];
+                data.totalFreightValuesCents = floatNumberToOnlyNumberString(totalFreightValue);
+            }
+
+        }
+
+        const totalValue = totalProductValue + totalFreightValue;
 
         data.totalValueCents = floatNumberToOnlyNumberString(totalValue);
         data.totalProductValueCents = floatNumberToOnlyNumberString(totalProductValue);
@@ -134,7 +135,8 @@ export class OrderToProductService {
 
         }
 
-        await this.productService.debitQuantityOnStock(productsWithQuantity);
+        // Decreases the quantity on stock of the products and products from combos
+        await this.subtractStockQuantity(combosWithQuantity, productsWithQuantity);
 
         // Saves the order
         const order = await this.orderService.save(data);
@@ -158,9 +160,42 @@ export class OrderToProductService {
 
         }
 
+        // Saves the address, if it don't exist
+        let addressToSave: any = addressDB;
+        if (address && !address.id) {
+            addressToSave = await this.addressService.save(address);
+        }
+
+        // Saves the contact, if it don't exist
+        let contactToSave: any = contact;
+        if (contact && contact.id) {
+            contactToSave = await this.contactService.findOneById(contact.id);
+        } else if (contact && !contact.id) {
+            contactToSave = await this.contactService.save(contact);
+        }
+
+        let finalOrder: any = order;
+        // Saves the contact and address to the order
+        if (addressToSave || contactToSave) {
+
+            const dataToSave = {} as any;
+            if (addressToSave) {
+                dataToSave.address = addressToSave;
+            }
+            if (contactToSave) {
+                dataToSave.contact = contactToSave;
+            }
+
+            finalOrder = await this.orderService.updateOrder({
+                id: order.id,
+                ...dataToSave,
+            });
+        }
+
         return {
-            products: productsWithQuantity,
             order,
+            products: productsWithQuantity,
+            combos: combosWithQuantity,
         };
 
     }
@@ -172,7 +207,7 @@ export class OrderToProductService {
         if (!order) {
             throw new HttpException({
                 status: HttpStatus.NOT_FOUND,
-                message: 'Você pode confirmar um pedido até no máximo 1 dia, passado este tempo você tem de fazer outro.',
+                message: 'O seu pedido passou do tempo limite para ser aceito (1 dia). Por favor, faça outro.',
             }, HttpStatus.NOT_FOUND);
         }
 
@@ -230,7 +265,7 @@ export class OrderToProductService {
     }
 
     async findAllProductFromOrder(orderId: number) {
-        const [result, count] = await this.orderToProductRepo.findAndCount({
+        const result = await this.orderToProductRepo.find({
             where: { order: { id: orderId } }
         });
 
@@ -398,6 +433,145 @@ export class OrderToProductService {
 
         // 2 - Delete todos os dados do pedido
         await this.deleteByOrdersIds(orderIds);
+
+    }
+
+    /**
+     * @description Gets the data needed to calculate the products values
+     * @param {ProductInfoForm[]} products 
+     * @param {string} token 
+     */
+    private async getProductsToSave(products: ProductInfoForm[] = [], token: string): Promise<any[]> {
+
+        let productsWithQuantity = [];
+
+        if (products && products.length) {
+
+            const promProductsBestPrices = await this.promotionService.findPromotionBestPricesFromUser(token);
+
+            const productsExceedingStock = [];
+
+            // 2 - Finds all products and sum to get the total order value
+            const productsIds = products.map(product => product.id);
+            const productsDB = await this.productService.findManyByIds(productsIds);
+            productsWithQuantity = productsDB.map(product => {
+
+                const { quantity } = products.find(pro => pro.id === prod.id);
+
+                // Saves all the products that exceeds the quantity on stock
+                if (quantity > product.quantityOnStock) {
+                    productsExceedingStock.push(product);
+                }
+
+                // Returns error if the quantity is negative
+                if (quantity < 0) {
+                    throw new HttpException({
+                        status: HttpStatus.EXPECTATION_FAILED,
+                        message: `A quantidade do produtos ${product.name} está negativa. Valor não aceitável.`,
+                    }, HttpStatus.EXPECTATION_FAILED);
+                }
+
+                const prod = product as any;
+
+                const promoProduct = promProductsBestPrices.find(pro => pro.productId === product.id);
+
+                if (promoProduct) {
+                    prod.promotionalValueCents = promoProduct.valueCents;
+                    prod.promotionId = promoProduct.promotionId;
+                }
+
+                return {
+                    ...prod,
+                    quantity,
+                };
+            });
+
+            // If there's products in the order exceeding the quantity on stock, returns a error with the products
+            if (productsExceedingStock.length) {
+                throw new HttpException({
+                    status: HttpStatus.NOT_ACCEPTABLE,
+                    message: 'Há produtos que suas quantidades excedem o que temos em estoque.',
+                    products: productsExceedingStock,
+                }, HttpStatus.NOT_ACCEPTABLE);
+            }
+
+        }
+
+        return productsWithQuantity;
+
+    }
+
+    /**
+     * @description Gets the data needed to calculate the combos values
+     * @param {ComboInfoForm[]} combos
+     */
+    private async getCombosToSave(combos: ComboInfoForm[] = []): Promise<any[]> {
+
+        let combosWithQuantity = [];
+
+        if (combos && combos.length) {
+
+            const combosIds = combos.map(combo => combo.id);
+
+            const combosDB = await this.comboService.findAllComboProducts(combosIds);
+
+            combosWithQuantity = combos.map(combo => {
+
+                let comboData = combo;
+
+                const comboDB = combosDB.find(combDB => combDB.id === combo.id);
+                if (comboDB) {
+                    comboData = {
+                        ...comboData,
+                        ...comboDB,
+                    }
+                }
+
+                return comboData;
+
+            })
+
+        }
+
+        return combosWithQuantity;
+
+    }
+
+    /**
+     * @description Subtract the quantity of the products on stock
+     * @param {any[]} combosWithQuantity
+     * @param {any[]} productsWithQuantity
+     */
+    private subtractStockQuantity(combosWithQuantity = [], productsWithQuantity = []) {
+
+        let productsFromCombosToDebit = [];
+
+        if (combosWithQuantity.length) {
+
+            combosWithQuantity.forEach(combowithQuantity => {
+
+                if (combowithQuantity.products && combowithQuantity.products.length) {
+
+                    const comboToAdd = combowithQuantity.products.map(product => {
+
+                        const finalQuantity = product.quantity + combowithQuantity.quantity;
+
+                        return {
+                            id: product.product.id,
+                            quantity: finalQuantity,
+                        }
+
+                    })
+
+                    productsFromCombosToDebit = productsFromCombosToDebit.concat(comboToAdd);
+
+                }
+
+            })
+
+        }
+
+        return this.productService.debitQuantityOnStock(productsWithQuantity);
 
     }
 

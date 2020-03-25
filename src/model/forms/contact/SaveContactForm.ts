@@ -4,7 +4,7 @@ import { IsEnum, IsString, IsNumber } from "class-validator";
 export class SaveContactForm {
 
     @IsNumber()
-    userId: number;
+    userId?: number;
 
     @IsString()
     number: string;

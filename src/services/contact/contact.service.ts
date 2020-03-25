@@ -13,7 +13,7 @@ export class ContactService {
         private readonly contactRepo: Repository<ContactEntity>,
     ) {}
 
-    async findWithToken(tokenAuth: string) {
+    findWithToken(tokenAuth: string) {
         const tokenObj = decodeToken(tokenAuth);
 
         if (tokenObj) {
@@ -21,11 +21,11 @@ export class ContactService {
         }
     }
 
-    async findAllByUserId(userId: number): Promise<ContactEntity[]> {
-        return await this.contactRepo.find({ user: { id: userId } });
+    findAllByUserId(userId: number): Promise<ContactEntity[]> {
+        return this.contactRepo.find({ user: { id: userId } });
     }
 
-    async save({ userId, ...contact }: SaveContactForm): Promise<ContactEntity> {
+    save({ userId, ...contact }: SaveContactForm): Promise<ContactEntity> {
 
         const data = {
             ...contact,
@@ -33,21 +33,25 @@ export class ContactService {
             creationDate: new Date(),
         };
 
-        return await this.contactRepo.save(data);
+        return this.contactRepo.save(data);
 
     }
 
-    async update({ contactId, ...contact }: UpdateContactForm): Promise<UpdateResult> {
+    update({ contactId, ...contact }: UpdateContactForm): Promise<UpdateResult> {
         const data = {
             ...contact,
             updateDate: new Date(),
         }
 
-        return await this.contactRepo.update({ id: contactId }, data);
+        return this.contactRepo.update({ id: contactId }, data);
     }
 
-    async delete(contactId: number): Promise<DeleteResult> {
-        return await this.contactRepo.delete({ id: contactId });
+    delete(contactId: number): Promise<DeleteResult> {
+        return this.contactRepo.delete({ id: contactId });
+    }
+
+    findOneById(contactId: number) {
+        return this.contactRepo.findOne({ id: contactId });
     }
 
 }

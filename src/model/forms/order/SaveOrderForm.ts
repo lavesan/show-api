@@ -3,15 +3,13 @@ import { ProductInfoForm } from '../product/ProductInfoForm';
 import { IsEnum, IsNumberString, IsOptional, IsString, IsBoolean, IsArray, IsObject } from 'class-validator';
 import { SaveScheduledTimeForm } from '../scheduled-time/SaveScheduledTimeForm';
 import { ComboInfoForm } from '../combo/ComboInfoForm';
-import { SaveAddressForm } from '../address/SaveAddressForm';
+import { SaveAddressToOrderForm } from '../address/SaveAddressToOrderForm';
+import { SaveContactToOrderForm } from '../contact/SaveContactToOrderForm';
 
 export class SaveOrderForm {
 
     @IsEnum(OrderType)
     type: OrderType;
-
-    @IsNumberString()
-    totalFreightValuesCents: string;
 
     @IsNumberString()
     @IsOptional()
@@ -22,9 +20,11 @@ export class SaveOrderForm {
     getOnMarket: boolean;
 
     @IsArray()
+    @IsOptional()
     products: ProductInfoForm[];
 
     @IsArray()
+    @IsOptional()
     combos: ComboInfoForm[];
 
     @IsObject()
@@ -37,6 +37,10 @@ export class SaveOrderForm {
 
     @IsObject()
     @IsOptional()
-    address: SaveAddressForm;
+    address: SaveAddressToOrderForm;
+
+    @IsObject()
+    @IsOptional()
+    contact: SaveContactToOrderForm;
 
 }
