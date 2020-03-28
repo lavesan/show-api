@@ -18,6 +18,8 @@ import { ContactService } from '../contact/contact.service';
 import { AddressService } from '../address/address.service';
 import { removePwd } from 'src/helpers/user.helpers';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
+import { CardService } from '../card/card.service';
+import { IUserLoginReturnedData } from 'src/model/types/user.types';
 
 @Injectable()
 export class UserService {
@@ -26,18 +28,26 @@ export class UserService {
         private readonly userRepo: Repository<UserEntity>,
         private readonly contactService: ContactService,
         private readonly addressService: AddressService,
+        private readonly cardService: CardService,
     ) {}
 
-    async save(user: RegisterUserForm): Promise<UserEntity> {
+    async save(user: RegisterUserForm) {
 
         try {
+
+            if (!user.termOfContract) {
+                throw new HttpException({
+                    code: HttpStatus.NOT_ACCEPTABLE,
+                    message: 'É obrigatório aceitar o termo de contrato.',
+                }, HttpStatus.NOT_ACCEPTABLE);
+            }
 
             const foundUser = await this.findByEmail(user.email);
 
             if (foundUser) {
                 throw new HttpException({
                     code: HttpStatus.BAD_REQUEST,
-                    message: 'Já existe um usuário com este email.'
+                    message: 'Já existe um usuário com este email.',
                 }, HttpStatus.BAD_REQUEST);
             }
 
@@ -54,6 +64,7 @@ export class UserService {
             };
             const newUser = await this.userRepo.save(data);
 
+            const contacts = [];
             if (contact) {
 
                 const contactData = {
@@ -61,9 +72,11 @@ export class UserService {
                     userId: newUser.id,
                 }
 
-                await this.contactService.save(contactData);
+                contacts.push(await this.contactService.save(contactData));
 
             }
+
+            const addresses = [];
             if (address) {
 
                 const addressData = {
@@ -71,11 +84,16 @@ export class UserService {
                     userId: newUser.id,
                 }
 
-                await this.addressService.save(addressData);
+                addresses.push(await this.addressService.save(addressData));
 
             }
 
-            return newUser;
+            return {
+                ...removePwd(newUser),
+                addresses,
+                contacts,
+                cards: [],
+            };
 
         } catch(err) {
             throw new HttpException({
@@ -102,7 +120,7 @@ export class UserService {
      * @description Uses bcrypt to compare the password
      * @param {LoginUserForm} param0
      */
-    async loginUser({ login, password }: LoginUserForm): Promise<UserEntity> {
+    async loginUser({ login, password }: LoginUserForm): Promise<IUserLoginReturnedData> {
         // Para o modo `eager` funcionar, preciso pesquisar com os métodos `find`, `findOne`, `findAndCount`...
         // ! Não utilizar o `createQueryBuilder`, senão tudo perdido e precisarei usar o `leftJoin` e pa
         const user = await this.userRepo.findOne({
@@ -113,9 +131,17 @@ export class UserService {
         if (user) {
 
             if (comparePwdWithHash(password, user.password)) {
-                // Encontrou o usuário e a senha está correta
-                delete user.password;
-                return user;
+
+                const contacts = await this.contactService.findAllByUserId(user.id);
+                const addresses = await this.addressService.findAllByUserId(user.id);
+                const cards = await this.cardService.findAllByUserId(user.id);
+
+                return {
+                    ...removePwd(user),
+                    contacts,
+                    addresses,
+                    cards,
+                };
 
             } else if (user.forgotPassword && comparePwdWithHash(password, user.forgotPassword)) {
 
@@ -132,9 +158,12 @@ export class UserService {
 
                     await this.update(user);
 
-                    // Encontrou o usuário e a senha está correta
-                    delete user.password;
-                    return user;
+                    const userData = await this.getUserInfo(user.id);
+
+                    return {
+                        ...removePwd(user),
+                        ...userData,
+                    };
 
                 }
 
@@ -166,10 +195,16 @@ export class UserService {
     }
 
     async findActiveById(userId: number) {
-        return this.userRepo.findOne({
-            select: ['email', 'id', 'role', 'name'],
-            where: { id: userId, status: UserStatus.ACTIVE },
-        });
+
+        const user = await this.userRepo.findOne({ id: userId, status: UserStatus.ACTIVE });
+
+        const userData = await this.getUserInfo(user.id);
+
+        return {
+            ...user,
+            ...userData,
+        };
+
     }
 
     async updatePassword({ login, password }: LoginUserForm): Promise<any> {
@@ -278,6 +313,20 @@ export class UserService {
 
     updateImage({ id, imgUrl }: SaveImageForm) {
         return this.userRepo.update({ id }, { imgUrl });
+    }
+
+    private async getUserInfo(userId: number) {
+
+        const contacts = await this.contactService.findAllByUserId(userId);
+        const addresses = await this.addressService.findAllByUserId(userId);
+        const cards = await this.cardService.findAllByUserId(userId);
+
+        return {
+            contacts,
+            addresses,
+            cards,
+        }
+
     }
 
 }

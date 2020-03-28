@@ -35,13 +35,14 @@ export class OrderEntity {
     @Column({ name: 'ord_user_type_who_deleted', type: 'integer', nullable: true })
     userTypeWhoDeleted: OrderUserWhoDeleted;
 
-    @Column({ name: 'ord_get_on_market', type: 'boolean' })
+    // TODO: Remover esta coluna
+    @Column({ name: 'ord_get_on_market', type: 'boolean', nullable: true })
     getOnMarket: boolean;
 
     @Column({ name: 'ord_payed', type: 'boolean' })
     payed: boolean;
 
-    @Column({ name: 'ord_description', type: 'varchar' })
+    @Column({ name: 'ord_description', type: 'varchar', nullable: true })
     description: string;
 
     @Column({ name: 'ord_payment_id', type: 'text', nullable: true })

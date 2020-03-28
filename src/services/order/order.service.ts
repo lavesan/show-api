@@ -251,9 +251,10 @@ export class OrderService {
                 return scheduledDate === comparedTime;
             });
 
-            if (timeIsFree) {
-                activeTimes.push({ time: compareDate.format('HH:mm') });
-            }
+            activeTimes.push({
+                active: timeIsFree,
+                time: compareDate.format('HH:mm'),
+            });
 
             compareDate.add(30, 'minutes');
 

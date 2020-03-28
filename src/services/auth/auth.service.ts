@@ -5,12 +5,13 @@ import { UserService } from '../user/user.service';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { RegisterUserForm } from 'src/model/forms/user/RegisterUserForm';
 import { UserEntity } from 'src/entities/user.entity';
-import { TokenPayloadType } from 'src/model/types/user.types';
+import { TokenPayloadType, IUserLoginReturnedData } from 'src/model/types/user.types';
 import { decodeToken, generateHashPwd } from 'src/helpers/auth.helpers';
 import moment = require('moment');
 import { ForgotPasswordForm } from 'src/model/forms/auth/ForgotPasswordForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
+import { removePwd } from 'src/helpers/user.helpers';
 
 @Injectable()
 export class AuthService {
@@ -55,13 +56,17 @@ export class AuthService {
 
         const tokenObj = decodeToken(tokenAuth);
 
-        const expirationDate = moment.unix(tokenObj.exp);
-        const today = moment();
+        if (tokenObj) {
 
-        if (expirationDate.isAfter(today)) {
+            const expirationDate = moment.unix(tokenObj.exp);
+            const today = moment();
 
-            const user = await this.userService.findActiveById(tokenObj.id);
-            return await this.sendJwtTokenWithUserData(user);
+            if (expirationDate.isAfter(today)) {
+
+                const user = await this.userService.findActiveById(tokenObj.id);
+                return await this.sendJwtTokenWithUserData(removePwd(user));
+
+            }
 
         }
 
@@ -91,13 +96,9 @@ export class AuthService {
             });
 
             const payload = this.constructTokenPayload(user);
-            const userData = {
-                name: user.name,
-                imgUrl: user.imgUrl,
-            };
 
             const token = await this.signPayload(payload);
-            return { user: userData, token };
+            return { user: removePwd(user), token };
 
         }
 
@@ -114,10 +115,15 @@ export class AuthService {
             user.forgotPassword = generateHashPwd(generatedPwd);
             user.forgotPasswordCreation = new Date();
 
-            // console.log('usuário: ', user);
+            await this.userService.update(user)
+                .catch(error => {
+                    throw new HttpException({
+                        status: HttpStatus.BAD_GATEWAY,
+                        message: 'Erro ao atualizar o usuário',
+                        error,
+                    }, HttpStatus.BAD_GATEWAY)
+                });
 
-            const updated = await this.userService.update(user);
-            // console.log('updated: ', updated);
             this.sendgridService.sendMail({
                 type: MailType.FORGOT_PWD_CLIENT,
                 name: user.name,
@@ -136,19 +142,16 @@ export class AuthService {
 
     }
 
-    private async sendJwtTokenWithUserData(user: Partial<UserEntity>) {
+    private async sendJwtTokenWithUserData(user: IUserLoginReturnedData) {
 
         if (user) {
 
             // Constructs the payload
             const payload = this.constructTokenPayload(user);
-            const userData = {
-                name: user.name,
-                imgUrl: user.imgUrl,
-            };
 
             const token = await this.signPayload(payload);
-            return { user: userData, token };
+            return { user, token };
+
         }
         throw new HttpException({
             status: HttpStatus.NOT_FOUND,

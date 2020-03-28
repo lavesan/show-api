@@ -11,29 +11,22 @@ export class SaveOrderForm {
     @IsEnum(OrderType)
     type: OrderType;
 
+    @IsString()
+    @IsOptional()
+    description: string;
+
     @IsNumberString()
     @IsOptional()
     changeValueCents: string;
 
-    @IsBoolean()
-    @IsOptional()
-    getOnMarket: boolean;
-
-    @IsArray()
-    @IsOptional()
-    products: ProductInfoForm[];
-
-    @IsArray()
-    @IsOptional()
-    combos: ComboInfoForm[];
-
     @IsObject()
-    @IsOptional()
     receive: SaveScheduledTimeForm;
 
-    @IsString()
-    @IsOptional()
-    description: string;
+    @IsBoolean()
+    payed: boolean;
+
+    @IsBoolean()
+    saveAddress: boolean;
 
     @IsObject()
     @IsOptional()
@@ -42,5 +35,13 @@ export class SaveOrderForm {
     @IsObject()
     @IsOptional()
     contact: SaveContactToOrderForm;
+
+    @IsArray()
+    @IsOptional()
+    products: ProductInfoForm[];
+
+    @IsArray()
+    @IsOptional()
+    combos: ComboInfoForm[];
 
 }

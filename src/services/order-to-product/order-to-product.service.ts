@@ -8,6 +8,7 @@ import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderService } from '../order/order.service';
 import { ProductService } from '../product/product.service';
 import { decodeToken } from 'src/helpers/auth.helpers';
+import { unmaskDistrictName } from 'src/helpers/unmask.helpers';
 import { UserService } from '../user/user.service';
 import { onlyNumberStringToFloatNumber, floatNumberToOnlyNumberString } from 'src/helpers/calc.helpers';
 import { GetnetService } from '../getnet/getnet.service';
@@ -41,7 +42,7 @@ export class OrderToProductService {
      * @param {SaveOrderForm} param0
      * @param {string} token If there's a token, use this to save the user
      */
-    async save({ products = [], combos = [], address, contact, ...body }: SaveOrderForm, token: string): Promise<any> {
+    async save({ products = [], combos = [], address, contact, saveAddress, ...body }: SaveOrderForm, token: string): Promise<any> {
 
         if (!products.length && !combos.length) {
             throw new HttpException({
@@ -99,18 +100,26 @@ export class OrderToProductService {
 
         let addressDB = address;
 
+        // Search for the address on the database, to update
         if (address && address.id) {
             addressDB = await this.addressService.findOneById(address.id);
         }
 
-        if (!body.getOnMarket) {
+        // Adds freight value to total order value
+        if (addressDB) {
 
+            const formatedDistrict = unmaskDistrictName(addressDB.district);
 
-            if (addressDB) {
-                totalFreightValue = priceByDistrict[addressDB.district];
-                data.totalFreightValuesCents = floatNumberToOnlyNumberString(totalFreightValue);
+            totalFreightValue = priceByDistrict[formatedDistrict];
+
+            if (!totalFreightValue) {
+                throw new HttpException({
+                    status: HttpStatus.BAD_REQUEST,
+                    message: 'Não entregamos nesta localidade',
+                }, HttpStatus.BAD_REQUEST)
             }
 
+            data.totalFreightValuesCents = floatNumberToOnlyNumberString(totalFreightValue);
         }
 
         const totalValue = totalProductValue + totalFreightValue;
@@ -153,7 +162,7 @@ export class OrderToProductService {
                 });
             }
 
-            return await this.orderToProductRepo.createQueryBuilder()
+            await this.orderToProductRepo.createQueryBuilder()
                 .insert()
                 .values(insertValues)
                 .execute();
@@ -163,7 +172,15 @@ export class OrderToProductService {
         // Saves the address, if it don't exist
         let addressToSave: any = addressDB;
         if (address && !address.id) {
-            addressToSave = await this.addressService.save(address);
+
+            const addressData: any = address;
+
+            if (data.user && saveAddress) {
+                addressData.userId = data.user.id;
+            }
+
+            addressToSave = await this.addressService.save(addressData);
+
         }
 
         // Saves the contact, if it don't exist
@@ -194,6 +211,7 @@ export class OrderToProductService {
 
         return {
             order,
+            address: addressDB,
             products: productsWithQuantity,
             combos: combosWithQuantity,
         };
@@ -211,7 +229,7 @@ export class OrderToProductService {
             }, HttpStatus.NOT_FOUND);
         }
 
-        if (OrderType.CREDIT) {
+        if (order.type === OrderType.CREDIT) {
             return await this.getnetService.payCredit({
                 card,
                 amount: onlyNumberStringToFloatNumber(order.totalValueCents),
@@ -228,7 +246,7 @@ export class OrderToProductService {
                         message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
                     }, HttpStatus.NOT_ACCEPTABLE);
                 });
-        } else if (OrderType.DEBIT) {
+        } else if (order.type === OrderType.DEBIT) {
             return await this.getnetService.payDebitFirstStep({
                 card,
                 amount: onlyNumberStringToFloatNumber(order.totalValueCents),
@@ -454,9 +472,12 @@ export class OrderToProductService {
             // 2 - Finds all products and sum to get the total order value
             const productsIds = products.map(product => product.id);
             const productsDB = await this.productService.findManyByIds(productsIds);
+
             productsWithQuantity = productsDB.map(product => {
 
-                const { quantity } = products.find(pro => pro.id === prod.id);
+                delete product.imgUrl;
+
+                const { quantity } = products.find(pro => pro.id === product.id);
 
                 // Saves all the products that exceeds the quantity on stock
                 if (quantity > product.quantityOnStock) {
@@ -567,7 +588,7 @@ export class OrderToProductService {
 
                 }
 
-            })
+            });
 
         }
 

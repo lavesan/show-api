@@ -203,7 +203,7 @@ export class ProductService {
         for (const { id, quantity } of debitProductQuantity) {
             await this.productRepo.createQueryBuilder()
                 .update()
-                .set({ quantityOnStock: () => `quantityOnStock - ${quantity}` })
+                .set({ quantityOnStock: () => `pro_quantity_on_stock - ${quantity}` })
                 .where('id = :id', { id })
                 .execute();
         }
@@ -215,7 +215,7 @@ export class ProductService {
         for (const { id, quantity } of debitProductQuantity) {
             await this.productRepo.createQueryBuilder()
                 .update()
-                .set({ quantityOnStock: () => `quantityOnStock + ${quantity}` })
+                .set({ quantityOnStock: () => `pro_quantity_on_stock + ${quantity}` })
                 .where('id = :id', { id })
                 .execute();
         }

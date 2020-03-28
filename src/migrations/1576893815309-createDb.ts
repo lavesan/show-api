@@ -96,7 +96,6 @@ export class createDb1576893815309 implements MigrationInterface {
                 ord_receive_date DATE,
                 ord_receive_time TIME,
                 ord_payment_id TEXT,
-                ord_get_on_market BOOLEAN,
                 ord_change_value_cents TEXT,
                 ord_creation_date TIMESTAMP NOT NULL,
                 ord_update_date TIMESTAMP,

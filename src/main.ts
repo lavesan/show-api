@@ -13,8 +13,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.use(helmet());
   app.use(rateLimit({
-    windowMs: 1000, // 1 segundo window
-    max: 10, // start blocking after 5 requests
+    windowMs: 500, // meio segundo segundo window
+    max: 10, // start blocking after 10 requests
     message: 'Muitas requisições estão sendo feitas por este IP. Espere 15 minutos para voltar a efetuar',
   }));
   app.use(json({ limit: '50mb' }));

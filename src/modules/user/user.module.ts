@@ -7,6 +7,7 @@ import { BackofficeUserController } from 'src/controllers/backoffice/user/backof
 import { UserController } from 'src/controllers/client/user/user.controller';
 import { ContactModule } from '../contact/contact.module';
 import { AddressModule } from '../address/address.module';
+import { CardModule } from '../card/card.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { AddressModule } from '../address/address.module';
       ContactModule,
       AddressModule,
       UserModule,
+      CardModule,
     ],
     controllers: [UserController, BackofficeUserController],
     providers: [UserService],
