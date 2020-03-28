@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as sgMail from '@sendgrid/mail';
+import * as moment from 'moment';
+
 import { numberStringToReal } from 'src/helpers/calc.helpers';
 
 @Injectable()
@@ -71,7 +73,7 @@ export class SendgridService {
                     ${changeValue ? `<p>Levar troco para: ${numberStringToReal(changeValue)}</p>` : ''}
                 </div>
                 ${date ? `
-                    <p>Entregaremos assim que possível, no dia <b>${date}</b> perto do horário de <b>${time}</b></p>
+                    <p>Entregaremos assim que possível, no dia <b>${moment(date).format('DD/MM/YYYY')}</b> perto do horário de <b>${moment(time).format('HH:mm')}</b></p>
                 ` : ''}
                 <p>Se você quiser acompanhar seu pedido, é só clicar no botão abaixo!</p>
                 <a
