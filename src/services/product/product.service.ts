@@ -155,7 +155,7 @@ export class ProductService {
 
     async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = [], token: string = ''): Promise<any> {
 
-        const skip = skipFromPage(page);
+        const skip = page ? skipFromPage(page) : '';
         const builder = this.productRepo.createQueryBuilder('pro')
             .leftJoinAndSelect('pro.category', 'cat');
 
@@ -165,16 +165,21 @@ export class ProductService {
             builder.where('pro.status = :status', { status: ProductStatus.ACTIVE });
         }
 
+        if (skip) {
+            builder.skip(skip);
+        }
+        if (take) {
+            builder.limit(take);
+        }
+
         const [result, count] = await generateQueryFilter({
-            like: ['pro_name', 'pro_description'],
-            numbers: ['pro_status', 'pro.category.id', 'pro_quantity_on_stock'],
+            like: ['pro_name', 'pro_description', 'cat.name'],
+            numbers: ['pro_status', 'cat.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             dates: ['pro_creation_date'],
             datas: Array.isArray(productFilter) ? productFilter : [],
             builder,
         })
-            .skip(skip)
-            .limit(take)
             .orderBy('pro.id', 'ASC')
             .getManyAndCount();
 
