@@ -306,29 +306,71 @@ export class OrderToProductService {
         return this.orderToProductRepo.find({ order: { id: In(orderIds) } });
     }
 
-    private allElemOccurences(arr) {
+    private findAllOccurences(orderToProdArr: OrderToProductEntity[]) {
 
-        const elements = [];
-        let prev;
+        const finalArr = [];
+        orderToProdArr.forEach(orderToProd => {
 
-        arr.sort();
-        for ( var i = 0; i < arr.length; i++ ) {
-            if ( arr[i] !== prev ) {
-                elements.push({
-                    id: arr[i],
-                    frequency: 1,
-                });
-                // a.push(arr[i]);
-                // b.push(1);
-            } else {
-                elements[elements.length - 1]++;
-                // b[b.length-1]++;
+            const haveProduct = Boolean(orderToProd.product);
+
+            if (!finalArr.some(e => {
+                return haveProduct
+                    ? e.product.id === orderToProd.product.id
+                    : e.product.id === orderToProd.combo.id;
+            })) {
+                const allOccurences = orderToProdArr.filter(e => e.id === orderToProd.id);
+                finalArr.push(
+                    {
+                        quantity: allOccurences.length,
+                        product: haveProduct
+                            ? orderToProd.product
+                            : orderToProd.combo,
+                    }
+                );
+            }
+        });
+
+        return finalArr;
+    }
+
+    private findTopMostSeller = (orderToProducts: OrderToProductEntity[], topNumber: number) => {
+
+        let occurrences = this.findAllOccurences(orderToProducts);
+
+        const topThree = [];
+
+        for (let i = 0; i < topNumber; i++) {
+
+            let lastElem: any = {
+                occurence: {
+                    quantity: 0,
+                },
+            };
+
+            occurrences.forEach((occurence, index) => {
+
+                if (lastElem.occurence.quantity < occurence.quantity) {
+                    lastElem = {
+                        occurence,
+                        index,
+                    };
+                }
+
+            });
+
+            if (!lastElem.hasOwnProperty('index')) {
+                break;
             }
 
-            prev = arr[i];
+            occurrences = [
+                ...occurrences.slice(0, lastElem.index),
+                ...occurrences.slice(lastElem.index + 1, occurrences.length - 1),
+            ];
+
+            topThree.push(lastElem.occurence);
         }
 
-        return elements;
+        return topThree;
 
     }
 
@@ -341,33 +383,22 @@ export class OrderToProductService {
             return onlyNumberStringToFloatNumber(ord.totalValueCents);
         });
         const totalValueOrders = prices.length ? prices.reduce((previous, next) => previous + next) : 0;
-        const averageOrder = prices.length ? totalValueOrders / prices.length : 0;
+        const averageOrder = prices.length ? Number((totalValueOrders / prices.length).toFixed(2)) : 0;
 
         // Gets what's the 3 products more bought
-        const orderIds = order.map(ord => ord.id);
-
-        const orderToProducts = await this.findByOrderIds(orderIds);
-
-        const products = orderToProducts.map(ordProd => ordProd.product);
-
-        const matrixProductsIds = products.map(pr => pr.id);
-
-        let arrProductsIds = [];
-        matrixProductsIds.forEach(arr => arrProductsIds = arrProductsIds.concat(arr));
-
-        const occurences = this.allElemOccurences(arrProductsIds);
-
-        console.log('occurences: ', occurences);
-        // let biggers = [];
-
-        // occurences
+        let occurences = [];
+        if (order.length) {
+            const orderIds = order.map(ord => ord.id);
+            const orderToProducts = await this.findByOrderIds(orderIds);
+            occurences = this.findTopMostSeller(orderToProducts, 3);
+        }
 
         return {
             averageOrder,
             boughtFrequency: 'semanal',
             dayOfWeekMostBought: 'segunda',
             mostBoughtsProds: occurences,
-        }
+        };
 
     }
 

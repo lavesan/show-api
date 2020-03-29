@@ -16,11 +16,11 @@ export class OrderToProductEntity {
     @JoinColumn({ name: 'orp_ord_id' })
     order: OrderEntity;
 
-    @ManyToOne(type => ProductEntity, product => product.id, { lazy: true })
+    @ManyToOne(type => ProductEntity, product => product.id, { eager: true })
     @JoinColumn({ name: 'orp_pro_id' })
     product: ProductEntity;
 
-    @ManyToOne(type => ComboEntity, combo => combo.id, { lazy: true })
+    @ManyToOne(type => ComboEntity, combo => combo.id, { eager: true })
     @JoinColumn({ name: 'orp_cob_id' })
     combo: ComboEntity;
 

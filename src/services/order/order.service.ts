@@ -294,7 +294,16 @@ export class OrderService {
     }
 
     findAllByUserId(userId: number) {
-        return this.orderRepo.find({ user: { id: userId } });
+        return this.orderRepo.find({
+            user: { id: userId },
+            status: In([
+                OrderStatus.DONE,
+                OrderStatus.MADE,
+                OrderStatus.SENDED,
+                OrderStatus.SENDING,
+                OrderStatus.PREPARING,
+            ]),
+        });
     }
 
     findAllWaitingApproval() {
