@@ -72,6 +72,7 @@ interface IPayCredit {
     card: SaveCardForm;
     amount: number;
     user: UserEntity | null;
+    saveCard: boolean;
 }
 
 @Injectable()
@@ -410,7 +411,7 @@ export class GetnetService {
     /**
      * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1credit%2Fpost
      */
-    async payCredit({ card, amount, user }: IPayCredit) {
+    async payCredit({ card, amount, user, saveCard }: IPayCredit) {
 
         const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: getnetUserId(user.id) });
 
@@ -467,7 +468,7 @@ export class GetnetService {
                     // Se o crédito será feito com confirmação tardia
                     delayed: false,
                     // Se o cartão deve ser salvo para futuras compras
-                    save_card_data: false,
+                    save_card_data: saveCard,
                     // Tipo da transação
                     transaction_type: 'FULL',
                     number_installments: 1,
@@ -489,8 +490,7 @@ export class GetnetService {
                 method: 'POST',
                 body: JSON.stringify(body),
                 headers: h,
-            // @ts-ignore
-            
+                // @ts-ignore
                 mode: 'cors',
             });
 

@@ -60,6 +60,7 @@ export class OrderToProductService {
             totalValueCents: '',
             totalProductValueCents: '',
             user: null,
+            payed: false,
         } as any;
 
         // If the token exists, the user is vinculated with the order
@@ -218,7 +219,7 @@ export class OrderToProductService {
 
     }
 
-    async confirmOrder({ id, card }: ConfirmOrderForm) {
+    async confirmOrder({ id, card, saveCard }: ConfirmOrderForm) {
 
         const order = await this.orderService.findById(id);
 
@@ -229,44 +230,47 @@ export class OrderToProductService {
             }, HttpStatus.NOT_FOUND);
         }
 
-        if (order.type === OrderType.CREDIT) {
+        if (order.type === OrderType.CREDIT && card) {
             return await this.getnetService.payCredit({
                 card,
                 amount: onlyNumberStringToFloatNumber(order.totalValueCents),
                 user: order.user,
+                saveCard,
             })
                 .then(res => {
+                    console.log('resposta: ', res);
                     order.payed = true;
-                    this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.DONE });
+                    this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.MADE });
                     return res;
                 })
                 .catch(err => {
-                    throw new HttpException({
-                        code: HttpStatus.NOT_ACCEPTABLE,
-                        message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
-                    }, HttpStatus.NOT_ACCEPTABLE);
-                });
-        } else if (order.type === OrderType.DEBIT) {
-            return await this.getnetService.payDebitFirstStep({
-                card,
-                amount: onlyNumberStringToFloatNumber(order.totalValueCents),
-                user: order.user,
-            })
-                .then(res => {
-                    order.payed = false;
-                    console.log('resposta débito: ', res);
-                    return res;
-                })
-                .catch(err => {
-                    console.log('erro no débito: ', err);
                     throw new HttpException({
                         code: HttpStatus.NOT_ACCEPTABLE,
                         message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
                     }, HttpStatus.NOT_ACCEPTABLE);
                 });
         } else {
-            this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.DONE });
+            this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.MADE });
         }
+        // else if (order.type === OrderType.DEBIT) {
+        //     return await this.getnetService.payDebitFirstStep({
+        //         card,
+        //         amount: onlyNumberStringToFloatNumber(order.totalValueCents),
+        //         user: order.user,
+        //     })
+        //         .then(res => {
+        //             order.payed = false;
+        //             console.log('resposta débito: ', res);
+        //             return res;
+        //         })
+        //         .catch(err => {
+        //             console.log('erro no débito: ', err);
+        //             throw new HttpException({
+        //                 code: HttpStatus.NOT_ACCEPTABLE,
+        //                 message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
+        //             }, HttpStatus.NOT_ACCEPTABLE);
+        //         });
+        // }
 
     }
 
@@ -625,6 +629,10 @@ export class OrderToProductService {
 
         return this.productService.debitQuantityOnStock(productsWithQuantity);
 
+    }
+
+    findOneData(orderId: number) {
+        return this.orderToProductRepo.find({ order: { id: orderId } });
     }
 
 }

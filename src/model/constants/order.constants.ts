@@ -10,8 +10,7 @@ enum OrderStatus {
     PREPARING = 2,
     SENDING = 3,
     SENDED = 4,
-    DONE = 5,
-    CANCELED = 6,
+    CANCELED = 5,
 }
 
 enum OrderUserWhoDeleted {

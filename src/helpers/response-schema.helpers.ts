@@ -205,8 +205,9 @@ export const generateQueryFilter = ({
                 const startDay = momentDate.startOf('day').toDate();
                 const endDay = momentDate.endOf('day').toDate();
 
-                builder.where(`${field} >= :startDay`, { startDay });
-                builder.where(`${field} <= :endDay`, { endDay });
+                console.log('field: ', field);
+
+                builder.where(`${field} BETWEEN :startDay AND :endDay`, { startDay, endDay });
 
             } else if (numbersArray.includes(field)) {
 
@@ -215,6 +216,10 @@ export const generateQueryFilter = ({
             } else {
                 builder.where(`${field} = :value`, { value });
             }
+
+        } else if (type === 'notEquals') {
+
+            builder.where(`${field} != ${value}`, { column: value });
 
         } else if (like.includes(field)) {
 

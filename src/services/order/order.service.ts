@@ -12,6 +12,7 @@ import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { SendgridService } from '../sendgrid/sendgrid.service';
 import { MailType } from 'src/model/constants/sendgrid.constants';
 import { SaveScheduledTimeForm } from 'src/model/forms/scheduled-time/SaveScheduledTimeForm';
+import { ContactService } from '../contact/contact.service';
 
 @Injectable()
 export class OrderService {
@@ -20,6 +21,7 @@ export class OrderService {
         @InjectRepository(OrderEntity)
         private readonly orderRepo: Repository<OrderEntity>,
         private readonly sendgridService: SendgridService,
+        private readonly contactService: ContactService,
     ) {}
 
     time = {
@@ -104,17 +106,13 @@ export class OrderService {
 
     }
 
-    async findAllWithToken({ filter, paginationForm, tokenAuth }): Promise<IPaginateResponseType<any>> {
+    findAllWithToken({ filter, paginationForm, id }): Promise<IPaginateResponseType<any>> {
 
-        const tokenObj = decodeToken(tokenAuth);
-
-        if (tokenObj) {
-            return await this.findAllFilteredPaginated({
-                paginationForm,
-                filterOpt: filter,
-                id: tokenObj.id,
-            });
-        }
+        return this.findAllFilteredPaginated({
+            paginationForm,
+            filterOpt: filter,
+            id,
+        });
 
     }
 
@@ -153,7 +151,9 @@ export class OrderService {
 
         const skip = skipFromPage(page);
         const builder = this.orderRepo.createQueryBuilder('ord')
-            .leftJoinAndSelect('ord.user', 'use');
+            .leftJoinAndSelect('ord.user', 'use')
+            .leftJoinAndSelect('ord.address', 'adr')
+            .leftJoinAndSelect('ord.contact', 'con');
 
         // Vindo do ecommerce, o usuário só verá os SEUS pedidos
         if (id) {
@@ -161,7 +161,7 @@ export class OrderService {
         }
 
         const [result, count] = await generateQueryFilter({
-            like: ['use.name'],
+            like: ['use.name', 'use.email'],
             numbers: ['ord_type', 'ord_status', 'ord_id'],
             equalStrings: ['ord_get_on_market'],
             valueCentsNumbers: ['ord_total_value_cents', 'ord_total_product_value_cents', 'ord_total_freight_value_cents', 'ord_change_value_cents'],
@@ -171,8 +171,31 @@ export class OrderService {
         })
             .skip(skip)
             .limit(take)
-            .orderBy('ord.creationDate', 'DESC')
+            .orderBy('ord.receiveDate', 'DESC')
             .getManyAndCount();
+
+
+        for (let i = 0; i < result.length; i++) {
+
+            if (result[i].user) {
+
+                const contacts = await this.contactService.findAllByUserId(result[i].user.id);
+
+                result[i] = {
+                    ...result[i],
+                    contacts,
+                };
+
+            }
+
+            if (result[i].contact) {
+                result[i] = {
+                    ...result[i],
+                    contacts: [result[i].contact],
+                };
+            }
+
+        }
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
 
@@ -267,12 +290,11 @@ export class OrderService {
     async findOneBydateAndTime({ date, time }: SaveScheduledTimeForm): Promise<undefined | OrderEntity> {
         return await this.orderRepo.findOne({
             status: In([
+                OrderStatus.TO_FINISH,
                 OrderStatus.MADE,
                 OrderStatus.PREPARING,
                 OrderStatus.SENDED,
                 OrderStatus.SENDING,
-                OrderStatus.DONE,
-                OrderStatus.TO_FINISH,
             ]),
             receiveDate: date,
             receiveTime: time,
@@ -284,11 +306,10 @@ export class OrderService {
             id,
             type: OrderType.DEBIT,
             status: In([
-                OrderStatus.DONE,
                 OrderStatus.MADE,
-                OrderStatus.SENDED,
-                OrderStatus.SENDING,
                 OrderStatus.PREPARING,
+                OrderStatus.SENDING,
+                OrderStatus.SENDED,
             ]),
         }));
     }
@@ -297,11 +318,10 @@ export class OrderService {
         return this.orderRepo.find({
             user: { id: userId },
             status: In([
-                OrderStatus.DONE,
                 OrderStatus.MADE,
-                OrderStatus.SENDED,
-                OrderStatus.SENDING,
                 OrderStatus.PREPARING,
+                OrderStatus.SENDING,
+                OrderStatus.SENDED,
             ]),
         });
     }

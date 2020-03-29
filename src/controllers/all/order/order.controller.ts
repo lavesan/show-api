@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, Put, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Put, Get, Query, Param } from '@nestjs/common';
 import { SaveOrderForm } from 'src/model/forms/order/SaveOrderForm';
 import { OrderToProductService } from 'src/services/order-to-product/order-to-product.service';
 import { OrderService } from 'src/services/order/order.service';
@@ -43,17 +43,22 @@ export class OrderController {
         return this.orderService.clientCancelOrder(body);
     }
 
-    @Get('all')
+    @Get('all/:id')
     findAllOfClient(
+        @Param('id') id: number,
         @Query() paginationForm: PaginationForm,
         @Body() filter: FilterForm[],
-        @Headers('authorization') tokenAuth: string,
     ): Promise<IPaginateResponseType<any>> {
         return this.orderService.findAllWithToken({
             paginationForm,
-            tokenAuth,
             filter,
+            id,
         });
+    }
+
+    @Get()
+    findOne(@Query('id') id: number) {
+        return this.orderToProductService.findOneData(id);
     }
 
     @Get('active-schedule')
