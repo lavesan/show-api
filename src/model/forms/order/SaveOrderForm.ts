@@ -15,6 +15,10 @@ export class SaveOrderForm {
     @IsOptional()
     description: string;
 
+    @IsString()
+    @IsOptional()
+    userName: string;
+
     @IsNumberString()
     @IsOptional()
     changeValueCents: string;

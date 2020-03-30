@@ -42,7 +42,7 @@ export class OrderToProductService {
      * @param {SaveOrderForm} param0
      * @param {string} token If there's a token, use this to save the user
      */
-    async save({ products = [], combos = [], address, contact, saveAddress, ...body }: SaveOrderForm, token: string): Promise<any> {
+    async save({ products = [], combos = [], address, contact, saveAddress, userName = '', ...body }: SaveOrderForm, token: string): Promise<any> {
 
         if (!products.length && !combos.length) {
             throw new HttpException({
@@ -61,6 +61,7 @@ export class OrderToProductService {
             totalProductValueCents: '',
             user: null,
             payed: false,
+            userName,
         } as any;
 
         // If the token exists, the user is vinculated with the order
