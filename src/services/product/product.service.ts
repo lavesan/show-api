@@ -200,7 +200,45 @@ export class ProductService {
     }
 
     findPromotionProducts(token: string) {
-        return this.promotionService.findPromotionsFromUser(token);
+        return this.promotionService.findPromotionsFromUser(token)
+            .then(async res => {
+
+                const mappedResponse = [];
+                for (const promo of res) {
+
+                    const productsIds = promo.products.map(({ id }) => id);
+                    const products = await this.findAllProductsFromPromotions(productsIds);
+
+                    const mappedProds = products.map(prod => {
+
+                        const promoProd = promo.products.find(pro => pro.id === prod.id);
+
+                        let returnData = { ...prod };
+
+                        if (promoProd) {
+                            returnData = {
+                                ...returnData,
+                                ...promoProd,
+                                promotionalValueCents: promoProd.valueCents,
+                            }
+                        }
+
+                        return returnData;
+
+                    })
+
+                    const data = {
+                        ...promo,
+                        products: mappedProds,
+                    };
+
+                    mappedResponse.push(data);
+
+                }
+
+                return mappedResponse;
+
+            });
     }
 
     async debitQuantityOnStock(debitProductQuantity: IDebitProductQuantity[]) {
@@ -252,6 +290,14 @@ export class ProductService {
 
     updateImage({ id, imgUrl }: SaveImageForm) {
         return this.productRepo.update({ id }, { imgUrl })
+    }
+
+    findAllActiveByIds(productIds: number[]) {
+        return this.productRepo.find({ id: In(productIds), status: ProductStatus.ACTIVE });
+    }
+
+    findAllProductsFromPromotions(productsIds: number[]) {
+        return this.productRepo.find({ id: In(productsIds), status: ProductStatus.ACTIVE });
     }
 
 }
