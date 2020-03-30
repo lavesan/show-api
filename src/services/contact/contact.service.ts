@@ -29,7 +29,7 @@ export class ContactService {
 
         const data = {
             ...contact,
-            user: { id: userId },
+            user: userId ? { id: userId } : null,
             creationDate: new Date(),
         };
 

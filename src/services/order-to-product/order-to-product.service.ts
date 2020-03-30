@@ -42,7 +42,18 @@ export class OrderToProductService {
      * @param {SaveOrderForm} param0
      * @param {string} token If there's a token, use this to save the user
      */
-    async save({ products = [], combos = [], address, contact, saveAddress, userName = '', ...body }: SaveOrderForm, token: string): Promise<any> {
+    async save({
+            products = [],
+            combos = [],
+            address,
+            contact,
+            saveAddress,
+            userName = '',
+            description,
+            ...body
+        }: SaveOrderForm,
+        token: string
+    ): Promise<any> {
 
         if (!products.length && !combos.length) {
             throw new HttpException({
@@ -61,6 +72,7 @@ export class OrderToProductService {
             totalProductValueCents: '',
             user: null,
             payed: false,
+            description,
             userName,
         } as any;
 
@@ -134,9 +146,9 @@ export class OrderToProductService {
             const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive);
             if (scheduleIsTaken) {
                 throw new HttpException({
-                    status: HttpStatus.NOT_ACCEPTABLE,
+                    status: HttpStatus.BAD_REQUEST,
                     message: 'Este horário já está agendado, por favor escolha outro',
-                }, HttpStatus.NOT_ACCEPTABLE);
+                }, HttpStatus.BAD_REQUEST);
             }
 
             const fullDate = moment(`${receive.date} ${receive.time}`, 'DD/MM/YYYY HH:mm');
@@ -177,9 +189,13 @@ export class OrderToProductService {
 
             const addressData: any = address;
 
+            delete addressData.id;
+
             if (data.user && saveAddress) {
                 addressData.userId = data.user.id;
             }
+
+            addressData.type = 'Endereço';
 
             addressToSave = await this.addressService.save(addressData);
 
@@ -190,7 +206,11 @@ export class OrderToProductService {
         if (contact && contact.id) {
             contactToSave = await this.contactService.findOneById(contact.id);
         } else if (contact && !contact.id) {
+
+            delete contact.id;
+
             contactToSave = await this.contactService.save(contact);
+
         }
 
         let finalOrder: any = order;
@@ -245,13 +265,23 @@ export class OrderToProductService {
                     return res;
                 })
                 .catch(err => {
+                    console.log('aiaia...deu pau')
                     throw new HttpException({
-                        code: HttpStatus.NOT_ACCEPTABLE,
+                        code: HttpStatus.BAD_REQUEST,
                         message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
-                    }, HttpStatus.NOT_ACCEPTABLE);
+                    }, HttpStatus.BAD_REQUEST);
                 });
         } else {
+
+            console.log('Entrou em pagar depois com crédito ou dinheiro')
+
             this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.MADE });
+
+            return {
+                ...order,
+                status: OrderStatus.MADE,
+            };
+
         }
         // else if (order.type === OrderType.DEBIT) {
         //     return await this.getnetService.payDebitFirstStep({
@@ -545,11 +575,12 @@ export class OrderToProductService {
 
             // If there's products in the order exceeding the quantity on stock, returns a error with the products
             if (productsExceedingStock.length) {
+                console.log('aiaia... deu pau')
                 throw new HttpException({
-                    status: HttpStatus.NOT_ACCEPTABLE,
+                    status: HttpStatus.BAD_REQUEST,
                     message: 'Há produtos que suas quantidades excedem o que temos em estoque.',
                     products: productsExceedingStock,
-                }, HttpStatus.NOT_ACCEPTABLE);
+                }, HttpStatus.BAD_REQUEST);
             }
 
         }
