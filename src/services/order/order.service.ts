@@ -334,4 +334,21 @@ export class OrderService {
         return this.orderRepo.delete({ id: In(ids) });
     }
 
+    async findAllLength() {
+
+        const orders = await this.orderRepo.find({
+            status: In([
+                OrderStatus.MADE,
+                OrderStatus.PREPARING,
+                OrderStatus.SENDING,
+                OrderStatus.SENDED,
+            ]),
+        });
+
+        return {
+            length: orders.length,
+        };
+
+    }
+
 }

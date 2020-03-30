@@ -14,7 +14,6 @@ export class OrderBackofficeController {
         private readonly orderToProductService: OrderToProductService,
     ) {}
 
-    // TODO: Adicionar parâmetros que faltam no objeto de resposta
     @Post('all')
     findAllFilteredPaginated(
         @Query() paginationForm: PaginationForm,
@@ -24,6 +23,11 @@ export class OrderBackofficeController {
             paginationForm,
             filterOpt: filter,
         });
+    }
+
+    @Get('all/length')
+    findAllLength() {
+        return this.orderService.findAllLength();
     }
 
     @Put()
