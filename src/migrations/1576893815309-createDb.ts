@@ -117,7 +117,6 @@ export class createDb1576893815309 implements MigrationInterface {
             comment on column ord_order.ord_total_value_cents is 'Valor total da venda';
             comment on column ord_order.ord_total_product_value_cents is 'Valor total dos produtos vendidos';
             comment on column ord_order.ord_total_freight_value_cents is 'Valor total do frete';
-            comment on column ord_order.ord_get_on_market is 'Se é para pegar na loja ou não';
             comment on column ord_order.ord_change_value_cents is 'Se for dinheiro, ela vai existir e vai ser o valor que ele vai ter em mãos, para levar o troco';
             comment on column ord_order.ord_deleted_reason is 'Razão para o pedido ter sido removido';
             comment on column ord_order.ord_user_type_who_deleted is 'Tipo do usuário que deletou o pedido. 0 para backoffice e 1 para cliente do ecommerce';
