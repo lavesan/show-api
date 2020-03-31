@@ -13,6 +13,7 @@ import { FilterForm } from 'src/model/forms/FilterForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { skipFromPage, generateQueryFilter, paginateResponseSchema } from 'src/helpers/response-schema.helpers';
 import { PromotionStatus } from 'src/model/constants/promotion.constants';
+const uploadAmazon = require('../../helpers/amazon.helpers');
 
 @Injectable()
 export class PromotionService {
@@ -249,8 +250,16 @@ export class PromotionService {
         return this.promotionRepo.update({ id: promotionId }, { status });
     }
 
-    saveImage({ id, imgUrl }: SaveImageForm) {
-        return this.promotionRepo.update({ id }, { imgUrl });
+    async saveImage({ id, imgUrl }: SaveImageForm) {
+
+        const fileUrl = await uploadAmazon.default().uploadImg(imgUrl, `promotion-${id}`);
+
+        await this.promotionRepo.update({ id }, { imgUrl: fileUrl });
+
+        return {
+            imgUrl: fileUrl,
+        };
+
     }
 
     async findAllFilteredAndPaginated({ take, page }: PaginationForm, productFilter: FilterForm[] = []) {

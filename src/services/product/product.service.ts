@@ -11,13 +11,13 @@ import { FilterForm } from 'src/model/forms/FilterForm';
 import { ProductCategoryService } from '../product-category/product-category.service';
 import { PromotionService } from '../promotion/promotion.service';
 import { decodeToken } from 'src/helpers/auth.helpers';
-import { UserRole } from 'src/model/constants/user.constants';
 import { ActivationProduct } from 'src/model/forms/product/ActivationProduct';
 import { UpdateStockForm } from 'src/model/forms/product/UpdateStockForm';
 import { ProductStatus } from 'src/model/constants/product.constants';
 import { ProductComboService } from '../product-combo/product-combo.service';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { IDebitProductQuantity } from 'src/model/types/product.types';
+const uploadAmazon = require('../../helpers/amazon.helpers');
 
 @Injectable()
 export class ProductService {
@@ -288,8 +288,16 @@ export class ProductService {
 
     }
 
-    updateImage({ id, imgUrl }: SaveImageForm) {
-        return this.productRepo.update({ id }, { imgUrl })
+    async updateImage({ id, imgUrl }: SaveImageForm) {
+
+        const fileUrl = await uploadAmazon.default().uploadImg(imgUrl, `product-${id}`);
+
+        await this.productRepo.update({ id }, { imgUrl: fileUrl });
+
+        return {
+            imgUrl: fileUrl,
+        };
+
     }
 
     findAllActiveByIds(productIds: number[]) {

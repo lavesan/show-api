@@ -11,6 +11,7 @@ import { UpdateComboForm } from 'src/model/forms/combo/UpdateComboForm';
 import { SaveComboForm } from 'src/model/forms/combo/SaveComboForm';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { ProductComboStatus } from 'src/model/constants/product-combo.constants';
+const uploadAmazon = require('../../helpers/amazon.helpers');
 
 @Injectable()
 export class ProductComboService {
@@ -208,8 +209,16 @@ export class ProductComboService {
 
     }
 
-    updateImage({ id, imgUrl }: SaveImageForm) {
-        return this.comboRepo.update({ id }, { imgUrl });
+    async updateImage({ id, imgUrl }: SaveImageForm) {
+
+        const fileUrl = await uploadAmazon.default().uploadImg(imgUrl, `combo-${id}`);
+
+        await this.comboRepo.update({ id }, { imgUrl: fileUrl });
+
+        return {
+            imgUrl: fileUrl,
+        };
+
     }
 
 }

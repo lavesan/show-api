@@ -66,4 +66,9 @@ export class OrderController {
         return this.orderService.findActiveDates(date);
     }
 
+    @Post('all/ids')
+    findAllActiveByIds(@Body() orderIds: number[]) {
+        return this.orderToProductService.findAllActiveOrdersByIds(orderIds);
+    }
+
 }

@@ -667,4 +667,24 @@ export class OrderToProductService {
         return this.orderToProductRepo.find({ order: { id: orderId } });
     }
 
+    async findAllActiveOrdersByIds(orderIds: number[]) {
+
+        const orders = [];
+
+        for (const orderId of orderIds) {
+
+            const order = await this.orderService.findById(orderId);
+
+            if (![OrderStatus.CANCELED, OrderStatus.TO_FINISH].includes(order.status)) {
+
+                const allOrderToProd = this.orderToProductRepo.find();
+
+            }
+
+        }
+
+        return orders;
+
+    }
+
 }

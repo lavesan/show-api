@@ -20,6 +20,7 @@ import { removePwd } from 'src/helpers/user.helpers';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { CardService } from '../card/card.service';
 import { IUserLoginReturnedData } from 'src/model/types/user.types';
+const uploadAmazon = require('../../helpers/amazon.helpers');
 
 @Injectable()
 export class UserService {
@@ -311,8 +312,16 @@ export class UserService {
 
     }
 
-    updateImage({ id, imgUrl }: SaveImageForm) {
-        return this.userRepo.update({ id }, { imgUrl });
+    async updateImage({ id, imgUrl }: SaveImageForm) {
+
+        const fileUrl = await uploadAmazon.default().uploadImg(imgUrl, `user-${id}`);
+
+        await this.userRepo.update({ id }, { imgUrl: fileUrl });
+
+        return {
+            imgUrl: fileUrl,
+        };
+
     }
 
     private async getUserInfo(userId: number) {
