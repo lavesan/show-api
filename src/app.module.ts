@@ -25,10 +25,11 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ScheduleTasksModule } from './modules/schedule-tasks/schedule-tasks.module';
 import { PromotionModule } from './modules/promotion/promotion.module';
 import { FilesModule } from './modules/files/files.module';
+import amazonHelpers from 'src/helpers/amazon.helpers';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [config] }),
+    ConfigModule.forRoot({ isGlobal: true, load: [config, amazonHelpers] }),
     TypeOrmModule.forRoot(config()),
     ScheduleModule.forRoot(),
     UserModule,
