@@ -136,9 +136,9 @@ export class AuthService {
         }
 
         throw new HttpException({
-            status: HttpStatus.NOT_FOUND,
+            status: HttpStatus.BAD_REQUEST,
             message: 'Usuário não encontrado.',
-        }, HttpStatus.NOT_FOUND)
+        }, HttpStatus.BAD_REQUEST);
 
     }
 

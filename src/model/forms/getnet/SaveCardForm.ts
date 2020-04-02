@@ -1,5 +1,6 @@
-import { IsString, Length, MinLength, MaxLength, IsEnum, IsNumber, IsOptional } from "class-validator";
+import { IsString, Length, MinLength, MaxLength, IsEnum, IsNumber, IsOptional, Matches } from "class-validator";
 import { CardBrand } from "src/model/constants/getnet.constants";
+import { cpfCnpjRegex } from "src/helpers/validate.helpers";
 
 export class SaveCardForm {
 
@@ -27,6 +28,10 @@ export class SaveCardForm {
     securityCode: string;
 
     @IsString()
-    cardNumber: string;
+    number: string;
+
+    @Matches(cpfCnpjRegex)
+    @IsOptional()
+    legalDocument: string;
 
 }

@@ -73,6 +73,7 @@ interface IPayCredit {
     amount: number;
     user: UserEntity | null;
     saveCard: boolean;
+    order: OrderEntity;
 }
 
 @Injectable()
@@ -90,6 +91,8 @@ export class GetnetService {
             (err: AxiosError) => err.response ? Promise.reject(err.response.data) :  Promise.reject(err.response),
         );
     }
+
+    private readonly mockCustomerId = 'zero_veneno_customer_not_identified';
 
     private readonly jsonFile = './src/services/getnet/getnet-data.json';
 
@@ -116,7 +119,7 @@ export class GetnetService {
     // TODO: Adicionar JOB para escrever as credenciais no arquivo getnet-data.json sempre que expirar
     async writeAuthTokenOnFile() {
 
-        const loginAuth = await this.login();
+        const loginAuth = await this.login();;
 
         if (loginAuth) {
 
@@ -124,6 +127,8 @@ export class GetnetService {
             fs.writeFileSync(this.jsonFile, stringifyData);
 
         }
+
+        return loginAuth;
 
     }
 
@@ -190,12 +195,15 @@ export class GetnetService {
         // TODO: Vou precisar pegar o ID do ecommerce de Lis e utilizar, isto é OBRIGATÓRIO quando for para produção
         // https://developers.getnet.com.br/api#tag/Tokenizacao%2Fpaths%2F~1v1~1tokens~1card%2Fpost
 
-        const body = {
+        const body: any = {
             card_number: cardNumber,
-            // customer_id: userId,
         };
 
-        const h = this.getAuthHeader();
+        if (userId) {
+            body.customer_id  = userId;
+        }
+
+        const h = this.getAuthHeader({ contentType: 'application/json; charset=utf-8' });
 
         const req = new Request(`${process.env.GETNET_API_URL}/v1/tokens/card`, {
             method: 'POST',
@@ -212,9 +220,9 @@ export class GetnetService {
 
     // 2 step - Salvando o cartão no cofre
     // Response type - ISavedCardResponse
-    async saveCard({ brand, nameOnCard, cardNumber, expirationMonth, expirationYear, securityCode }: SaveCardForm): Promise<any> {
+    async saveCard({ brand, nameOnCard, expirationMonth, expirationYear, securityCode, ...card }: SaveCardForm): Promise<any> {
 
-        const cardToken = await this.generateTokenCard({ cardNumber, userId: 1 });
+        const cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: 1 });
 
         const body = {
             brand,
@@ -304,9 +312,9 @@ export class GetnetService {
     /**
      * @description Primeiro passo do pagamento em débito
      */
-    async payDebitFirstStep({ card, amount, user }: IPayCredit): Promise<IPayDebitResponse> {
+    async payDebitFirstStep({ card, amount, user, order }: IPayCredit): Promise<IPayDebitResponse> {
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: getnetUserId(user.id) });
+        const cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: getnetUserId(user.id) });
 
         if ([CardBrand.MASTERCARD, CardBrand.VISA].includes(card.brand)) {
 
@@ -343,7 +351,7 @@ export class GetnetService {
                 currency: 'BRL',
                 order: {
                     // Identificador da compra (eu seto isso)
-                    order_id: getnetOrderId(12345),
+                    order_id: getnetOrderId(order.id, order.creationDate.toString()),
                 },
                 customer: {
                     // Identificador do comprador (eu setei isso)
@@ -411,13 +419,24 @@ export class GetnetService {
     /**
      * @description Adicionar corpo com lógica https://developers.getnet.com.br/api#tag/Pagamento%2Fpaths%2F~1v1~1payments~1credit%2Fpost
      */
-    async payCredit({ card, amount, user, saveCard }: IPayCredit) {
+    async payCredit({ card, amount, user, saveCard, order }: IPayCredit) {
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card.cardNumber, userId: getnetUserId(user.id) });
+        const userIdGetnet = user ? getnetUserId(user.id) : '';
+
+        const cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: userIdGetnet });
+
+        if (!cardToken || cardToken.status_code === 401 || cardToken.status_code === 400) {
+            throw new HttpException({
+                status: HttpStatus.BAD_REQUEST,
+                message: 'Aconteceu um erro ao validar seu cartão. Por favor, verifique o número dele e tente novamente.',
+            }, HttpStatus.BAD_REQUEST);
+        }
+
+        console.log('cardToken: ', cardToken);
 
         if ([CardBrand.MASTERCARD, CardBrand.VISA].includes(card.brand)) {
 
-            await this.verifyCard({ ...card, cardToken })
+            await this.verifyCard({ ...card, cardToken: cardToken.number_token })
                 .catch(err => {
                     console.log('error: ', err);
                     throw new HttpException({
@@ -428,7 +447,9 @@ export class GetnetService {
 
         }
 
-        let customerData = {};
+        let customerData: any = {
+            customer_id: this.mockCustomerId,
+        };
 
         if (user) {
             customerData = {
@@ -439,74 +460,78 @@ export class GetnetService {
                 // phone_number: user,
                 document_number: user.legalDocument,
                 document_type: user.legalDocumentType,
+                customer_id: getnetUserId(user.id),
             }
         }
 
-        if (cardToken) {
+        // TODO: Verificar como enviar o valor do amount
+        console.log('amount: ', amount);
 
-            const body = {
-                seller_id: process.env.GETNET_SELLER_ID,
-                amount,
-                currency: 'BRL',
-                order: {
-                    // Identificador da compra (eu seto isso)
-                    order_id: getnetOrderId(12345),
+        const formatedAmount = Number(String(amount).replace('.', ''));
+
+        const body = {
+            seller_id: process.env.GETNET_SELLER_ID,
+            amount: formatedAmount,
+            currency: 'BRL',
+            order: {
+                // Identificador da compra (eu seto isso)
+                order_id: getnetOrderId(order.id, order.creationDate.toString()),
+            },
+            customer: {
+                // Identificador do comprador (eu setei isso)
+                billing_address: {},
+                ...customerData,
+            },
+            device: {},
+            // shippings: [
+            //     {
+            //     address: {},
+            //     },
+            // ],
+            credit: {
+                // Se o crédito será feito com confirmação tardia
+                delayed: false,
+                // Se o cartão deve ser salvo para futuras compras
+                save_card_data: saveCard,
+                // Tipo da transação
+                transaction_type: 'FULL',
+                number_installments: 1,
+                card: {
+                    number_token: cardToken.number_token,
+                    // Nome do comprador no cartão
+                    cardholder_name: card.nameOnCard,
+                    // Mês de expiração
+                    expiration_month: card.expirationMonth,
+                    // Ano de expiração
+                    expiration_year: card.expirationYear,
                 },
-                customer: {
-                    // Identificador do comprador (eu setei isso)
-                    customer_id: '12345',
-                    billing_address: {},
-                    ...customerData,
-                },
-                device: {},
-                // shippings: [
-                //     {
-                //     address: {},
-                //     },
-                // ],
-                credit: {
-                    // Se o crédito será feito com confirmação tardia
-                    delayed: false,
-                    // Se o cartão deve ser salvo para futuras compras
-                    save_card_data: saveCard,
-                    // Tipo da transação
-                    transaction_type: 'FULL',
-                    number_installments: 1,
-                    card: {
-                        number_token: cardToken.number_token,
-                        // Nome do comprador no cartão
-                        cardholder_name: card.nameOnCard,
-                        // Mês de expiração
-                        expiration_month: card.expirationMonth,
-                        // Ano de expiração
-                        expiration_year: card.expirationYear,
-                    },
-                },
-            };
+            },
+        };
 
-            const h = this.getAuthHeader();
+        console.log('body: ', body);
 
-            const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit`, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: h,
-                // @ts-ignore
-                mode: 'cors',
-            });
+        const h = this.getAuthHeader();
 
-            const response = await fetch(req)
-                .then(res => res.json())
-                .catch(err => {
-                    console.log('error: ', err);
-                    throw new HttpException({
-                        code: HttpStatus.NOT_ACCEPTABLE,
-                        message: 'Falha ao finalizar o pagamento. Por favor, cheque seus dados e tente novamente.',
-                    }, HttpStatus.NOT_ACCEPTABLE);
-                });
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/payments/credit`, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: h,
+            // @ts-ignore
+            mode: 'cors',
+        });
 
-            return this.finishCreditPayment(response.payment_id);
+        return fetch(req)
+            .then(res => res.json())
+            .then(res => new Promise((resolve, reject) => {
 
-        }
+                if ([400, 4001, 402, 404, 500].includes(res.status_code)) {
+                    console.log('chegou aqui: ', res);
+                    reject(res);
+                }
+
+                resolve(this.finishCreditPayment(res.payment_id));
+
+            }));
 
     }
 

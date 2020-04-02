@@ -7,6 +7,7 @@ import { IPaginateResponseType } from 'src/helpers/response-schema.helpers';
 import { FilterForm } from 'src/model/forms/FilterForm';
 import { CancelOrderForm } from 'src/model/forms/order/CancelOrderForm';
 import { ConfirmOrderForm } from 'src/model/forms/order/ConfirmOrderForm';
+import { GetnetService } from 'src/services/getnet/getnet.service';
 
 @Controller('order')
 export class OrderController {
@@ -14,6 +15,7 @@ export class OrderController {
     constructor(
         private readonly orderToProductService: OrderToProductService,
         private readonly orderService: OrderService,
+        private readonly getnetService: GetnetService,
     ) {}
 
     @Post()
@@ -69,6 +71,11 @@ export class OrderController {
     @Post('all/ids')
     findAllActiveByIds(@Body() orderIds: number[]) {
         return this.orderToProductService.findAllActiveOrdersByIds(orderIds);
+    }
+
+    @Post('reauthenticate/getnet')
+    reauthenticateGetnet(): any {
+        return this.getnetService.writeAuthTokenOnFile();
     }
 
 }

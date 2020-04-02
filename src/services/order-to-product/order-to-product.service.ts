@@ -252,24 +252,19 @@ export class OrderToProductService {
         }
 
         if (order.type === OrderType.CREDIT && card) {
+
             return await this.getnetService.payCredit({
                 card,
                 amount: onlyNumberStringToFloatNumber(order.totalValueCents),
                 user: order.user,
                 saveCard,
+                order,
             })
                 .then(res => {
                     console.log('resposta: ', res);
                     order.payed = true;
                     this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.MADE });
                     return res;
-                })
-                .catch(err => {
-                    console.log('aiaia...deu pau')
-                    throw new HttpException({
-                        code: HttpStatus.BAD_REQUEST,
-                        message: 'Aconteceu um erro ao finalizar a compra, por favor tente novamente em alguns minutos',
-                    }, HttpStatus.BAD_REQUEST);
                 });
         } else {
 
