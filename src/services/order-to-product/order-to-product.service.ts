@@ -261,14 +261,16 @@ export class OrderToProductService {
                 order,
             })
                 .then(res => {
-                    console.log('resposta: ', res);
                     order.payed = true;
-                    this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.MADE });
+                    this.orderService.update({
+                        orderId: order.id,
+                        orderStatus: OrderStatus.MADE,
+                        getnetPaymentId: res.payment_id,
+                        cardCode: res.order_id,
+                    });
                     return res;
                 });
         } else {
-
-            console.log('Entrou em pagar depois com crédito ou dinheiro')
 
             this.orderService.update({ orderId: order.id, orderStatus: OrderStatus.MADE });
 

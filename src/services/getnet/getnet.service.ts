@@ -9,6 +9,7 @@ import { CardBrand } from 'src/model/constants/getnet.constants';
 import { getnetOrderId, getnetUserId } from 'src/helpers/getnet.helpers';
 import { UserEntity } from 'src/entities/user.entity';
 import { OrderEntity } from 'src/entities/order.entity';
+import { CardService } from '../card/card.service';
 
 interface IGetnetLoginResponse {
     access_token: string;
@@ -79,7 +80,10 @@ interface IPayCredit {
 @Injectable()
 export class GetnetService {
 
-    constructor(private readonly httpService: HttpService) {
+    constructor(
+        private readonly httpService: HttpService,
+        private readonly cardService: CardService,
+    ) {
         // 'https://api-sandbox.getnet.com.br'
         this.httpService.axiosRef.defaults.baseURL = process.env.GETNET_API_URL;
         this.httpService.axiosRef.interceptors.request.use(req => {
@@ -200,7 +204,7 @@ export class GetnetService {
         };
 
         if (userId) {
-            body.customer_id  = userId;
+            body.customer_id  = getnetUserId(userId);
         }
 
         const h = this.getAuthHeader({ contentType: 'application/json; charset=utf-8' });
@@ -220,39 +224,112 @@ export class GetnetService {
 
     // 2 step - Salvando o cartão no cofre
     // Response type - ISavedCardResponse
-    async saveCard({ brand, nameOnCard, expirationMonth, expirationYear, securityCode, ...card }: SaveCardForm): Promise<any> {
+    async saveCard({ brand, nameOnCard, expirationMonth, expirationYear, securityCode, legalDocument, user, ...card }: any): Promise<any> {
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: 1 });
+        const cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: user.id })
+            .catch(err => {
+                return err;
+            });
 
         const body = {
             brand,
             number_token: cardToken.number_token,
             // Número no cartão, de 16 à 19 dígitos
-            card_number: '',
+            card_number: card.number,
             cardholder_name: nameOnCard,
             expiration_month: expirationMonth,
             expiration_year: expirationYear,
             security_code: securityCode,
             // Se eu quiser nota fiscal, precisa (SEM MÁSCARA)
-            cardholder_identification: 'cpf ou cnpj do usuário',
+            cardholder_identification: legalDocument,
             // Eu escolho qual o ID deste usuário
-            customer_id: 1,
-            verify_card: true,
+            customer_id: getnetUserId(user.id),
+            verify_card: false,
         };
 
-        return this.httpService.post('/v1/cards', body).toPromise();
+        console.log('body: ', card);
+
+        const h = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/cards`, {
+            method: 'POST',
+            headers: h,
+            body: JSON.stringify(body),
+            // @ts-ignore
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json())
+            .then(res => {
+
+                if (![400, 401, 402, 404, 500].includes(res.status_code)) {
+                    this.cardService.saveOne({
+                        getnetId: res.card_id,
+                        number: card.number,
+                        brand: card.brand,
+                        userId: user.id,
+                    })
+                        .catch(err => {
+                            console.log('deu pau vei...', err);
+                        });
+                }
+                return res;
+
+            });
 
     }
 
     // 3 step - Coletando os dados do cartão no cofre
     // Response type - ICardGetnetSafebox
     async getCardData(cardId: string) {
-        return this.httpService.get(`/v1/cards/${cardId}`).toPromise();
+
+        const h = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/cards/${cardId}`, {
+            method: 'GET',
+            headers: h,
+            // @ts-ignore
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json())
+            .then(res => new Promise((resolve, reject) => {
+
+                if ([400, 401, 402, 404, 403, 500].includes(res.status_code)) {
+                    reject(res);
+                }
+                resolve(res);
+
+            }));
+
     }
 
     // 4 step - Remover o cartão do cofre
-    async removeCard(cardId: string) {
-        return this.httpService.delete(`/v1/cards/${cardId}`).toPromise();
+    async deleteCard(cardId: string) {
+
+        const h = this.getAuthHeader();
+
+        const req = new Request(`${process.env.GETNET_API_URL}/v1/cards/${cardId}`, {
+            method: 'DELETE',
+            headers: h,
+            // @ts-ignore
+            mode: 'cors',
+        });
+
+        return fetch(req)
+            .then(res => res.json())
+            .then(res => new Promise((resolve, reject) => {
+
+                if ([400, 401, 402, 404, 403, 500].includes(res.status_code)) {
+                    reject(res);
+                }
+                this.cardService.deleteByGetnetId(cardId);
+                resolve(res);
+
+            }));
+
     }
 
     async downloadPdf(paymentId: string) {
@@ -423,7 +500,38 @@ export class GetnetService {
 
         const userIdGetnet = user ? getnetUserId(user.id) : '';
 
-        const cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: userIdGetnet });
+        let cardToken = null;
+
+        if (card.id && user) {
+
+            const cardDB = await this.cardService.findOneByUserAndCardId({ cardId: card.id, userId: user.id });
+
+            if (!cardDB) {
+                throw new HttpException({
+                    status: HttpStatus.BAD_REQUEST,
+                    message: 'O cartão não foi encontrado',
+                }, HttpStatus.BAD_REQUEST);
+            }
+
+            cardToken = await this.getCardData(cardDB.getnetId);
+
+        }
+
+        if (saveCard && user) {
+            cardToken = await this.saveCard({ ...card, user: { id: 1 } })
+                .then(res => {
+                    console.log('cartão salvo: ', res);
+                    return res;
+                })
+                .catch(err => {
+                    console.log('erro cartão salvo: ', err);
+                    return err;
+                })
+        }
+
+        if (!cardToken) {
+            cardToken = await this.generateTokenCard({ cardNumber: card.number, userId: userIdGetnet });
+        }
 
         if (!cardToken || cardToken.status_code === 401 || cardToken.status_code === 400) {
             throw new HttpException({
@@ -432,13 +540,10 @@ export class GetnetService {
             }, HttpStatus.BAD_REQUEST);
         }
 
-        console.log('cardToken: ', cardToken);
-
         if ([CardBrand.MASTERCARD, CardBrand.VISA].includes(card.brand)) {
 
             await this.verifyCard({ ...card, cardToken: cardToken.number_token })
                 .catch(err => {
-                    console.log('error: ', err);
                     throw new HttpException({
                         code: HttpStatus.NOT_ACCEPTABLE,
                         message: 'Infelizmente este cartão não passou na validação.',
@@ -463,9 +568,6 @@ export class GetnetService {
                 customer_id: getnetUserId(user.id),
             }
         }
-
-        // TODO: Verificar como enviar o valor do amount
-        console.log('amount: ', amount);
 
         const formatedAmount = Number(String(amount).replace('.', ''));
 
@@ -524,12 +626,11 @@ export class GetnetService {
             .then(res => res.json())
             .then(res => new Promise((resolve, reject) => {
 
-                if ([400, 4001, 402, 404, 500].includes(res.status_code)) {
-                    console.log('chegou aqui: ', res);
+                if ([400, 401, 402, 404, 500].includes(res.status_code)) {
                     reject(res);
                 }
 
-                resolve(this.finishCreditPayment(res.payment_id));
+                resolve(res);
 
             }));
 
@@ -565,8 +666,6 @@ export class GetnetService {
     }
 
     async finishDebitPayment(body: any) {
-
-        console.log('body: ', body);
 
         const h = this.getAuthHeader();
 

@@ -79,12 +79,19 @@ export class OrderService {
 
     }
 
-    async update({ orderId, orderStatus }: UpdateStatusOrderForm): Promise<UpdateResult> {
+    async update({ orderId, orderStatus, getnetPaymentId = null, cardCode = null }: any): Promise<UpdateResult> {
 
-        const data = {
+        const data: any = {
             updateDate: new Date(),
             status: orderStatus,
         };
+
+        if (getnetPaymentId) {
+            data.getnetPaymentId = getnetPaymentId;
+        }
+        if (cardCode) {
+            data.cardCode = cardCode;
+        }
 
         return this.orderRepo.update({ id: orderId }, data);
 

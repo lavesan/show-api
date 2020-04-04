@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { CardType } from '../model/constants/card.constants';
 import { UserEntity } from './user.entity';
+import { CardBrand } from 'src/model/constants/getnet.constants';
 
 @Entity('car_card')
 export class CardEntity {
@@ -11,7 +12,7 @@ export class CardEntity {
     lastDigits: string;
 
     @Column({ name: 'car_brand', type: 'text' })
-    brand: string;
+    brand: CardBrand;
 
     @Column({ name: 'car_getnet_id', type: 'text' })
     getnetId: string;

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CardEntity } from 'src/entities/card.entity';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
+import { CardType } from 'src/model/constants/card.constants';
 
 @Injectable()
 export class CardService {
@@ -11,11 +12,18 @@ export class CardService {
         private readonly cardRepo: Repository<CardEntity>,
     ) {}
 
-    saveOne(card): Promise<CardEntity> {
+    saveOne({ getnetId, ...card }: any): Promise<CardEntity> {
+
+        const lastDigits = card.number.match(/\d{4}$/);
+
+        const formatedLastDigits = `**** **** **** ${lastDigits}`;
 
         const body = {
             ...card,
+            getnetId,
             user: { id: card.userId },
+            type: CardType.CREDIT,
+            lastDigits: formatedLastDigits,
             creationDate: new Date(),
         };
 
@@ -40,6 +48,14 @@ export class CardService {
 
     findAllByUserId(userId: number) {
         return this.cardRepo.find({ user: { id: userId } });
+    }
+
+    findOneByUserAndCardId({ cardId, userId }) {
+        return this.cardRepo.findOne({ id: cardId, user: { id: userId } });
+    }
+
+    deleteByGetnetId(getnetId: string) {
+        return this.cardRepo.delete({ getnetId });
     }
 
 }
