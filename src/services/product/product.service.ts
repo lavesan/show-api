@@ -161,7 +161,7 @@ export class ProductService {
 
         const tokenObj = decodeToken(token);
 
-        if (tokenObj && tokenObj.type === 'ecommerce') {
+        if (!tokenObj || (tokenObj && tokenObj.type === 'ecommerce')) {
             builder.where('pro.status = :status', { status: ProductStatus.ACTIVE });
         }
 
