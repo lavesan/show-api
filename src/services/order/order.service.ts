@@ -27,16 +27,16 @@ export class OrderService {
     time = {
         activeWeek: {
             interval1: {
-                open: '08:00',
+                open: '10:00',
                 close: '13:00',
             },
             interval2: {
-                open: '17:00',
-                close: '19:00',
+                open: '16:30',
+                close: '19:30',
             },
         },
         saturday: {
-            open: '08:30',
+            open: '10:00',
             close: '13:00',
         },
     };
@@ -208,7 +208,9 @@ export class OrderService {
     async findActiveDates(dateInString: string) {
 
         const dateInMoment = moment(dateInString, 'DD/MM/YYYY');
-        const scheduledDates = await this.orderRepo.find({ receiveDate: dateInString });
+        const translatedDate = dateInMoment.format('MM/DD/YYYY');
+
+        const scheduledDates = await this.orderRepo.find({ receiveDate: translatedDate });
 
         const dayOfWeek = dateInMoment.day();
 
@@ -279,7 +281,7 @@ export class OrderService {
                 time: compareDate.format('HH:mm'),
             });
 
-            compareDate.add(30, 'minutes');
+            compareDate.add(1, 'hours');
 
         };
 
