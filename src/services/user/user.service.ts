@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
 import * as moment from 'moment';
@@ -20,6 +20,7 @@ import { removePwd } from 'src/helpers/user.helpers';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { CardService } from '../card/card.service';
 import { IUserLoginReturnedData } from 'src/model/types/user.types';
+import { OrderService } from '../order/order.service';
 const uploadAmazon = require('../../helpers/amazon.helpers');
 
 @Injectable()
@@ -27,6 +28,8 @@ export class UserService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepo: Repository<UserEntity>,
+        @Inject(forwardRef(() => OrderService))
+        private readonly orderService: OrderService,
         private readonly contactService: ContactService,
         private readonly addressService: AddressService,
         private readonly cardService: CardService,
@@ -94,6 +97,7 @@ export class UserService {
                 addresses,
                 contacts,
                 cards: [],
+                orders: [],
             };
 
         } catch(err) {
@@ -136,12 +140,14 @@ export class UserService {
                 const contacts = await this.contactService.findAllByUserId(user.id);
                 const addresses = await this.addressService.findAllByUserId(user.id);
                 const cards = await this.cardService.findAllByUserId(user.id);
+                const orders = await this.orderService.findManyByUserId(user.id);
 
                 return {
                     ...removePwd(user),
                     contacts,
                     addresses,
                     cards,
+                    orders,
                 };
 
             } else if (user.forgotPassword && comparePwdWithHash(password, user.forgotPassword)) {
@@ -329,11 +335,13 @@ export class UserService {
         const contacts = await this.contactService.findAllByUserId(userId);
         const addresses = await this.addressService.findAllByUserId(userId);
         const cards = await this.cardService.findAllByUserId(userId);
+        const orders = await this.orderService.findManyByUserId(userId);
 
         return {
             contacts,
             addresses,
             cards,
+            orders,
         }
 
     }

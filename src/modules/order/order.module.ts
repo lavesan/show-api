@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrderService } from '../../services/order/order.service';
 import { OrderEntity } from '../../entities/order.entity';
@@ -18,8 +18,8 @@ import { ContactModule } from '../contact/contact.module';
 @Module({
     imports: [
       TypeOrmModule.forFeature([OrderEntity, OrderToProductEntity]),
+      forwardRef(() => UserModule),
       OrderModule,
-      UserModule,
       ProductModule,
       SendgridModule,
       GetnetModule,
@@ -30,6 +30,6 @@ import { ContactModule } from '../contact/contact.module';
     ],
     controllers: [OrderBackofficeController, OrderController],
     providers: [OrderService, OrderToProductService],
-    exports: [OrderToProductService],
+    exports: [OrderService, OrderToProductService],
 })
 export class OrderModule {}

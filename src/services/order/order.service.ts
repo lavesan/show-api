@@ -360,4 +360,8 @@ export class OrderService {
 
     }
 
+    findManyByUserId(userId: number) {
+        return this.orderRepo.find({ user: { id: userId } });
+    }
+
 }

@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import * as moment from 'moment';
@@ -27,9 +27,10 @@ export class OrderToProductService {
     constructor(
         @InjectRepository(OrderToProductEntity)
         private readonly orderToProductRepo: Repository<OrderToProductEntity>,
+        @Inject(forwardRef(() => UserService))
+        private readonly userService: UserService,
         private readonly orderService: OrderService,
         private readonly productService: ProductService,
-        private readonly userService: UserService,
         private readonly getnetService: GetnetService,
         private readonly promotionService: PromotionService,
         private readonly comboService: ProductComboService,
@@ -672,8 +673,7 @@ export class OrderToProductService {
 
             const order = await this.orderService.findById(orderId);
 
-            // , OrderStatus.TO_FINISH
-            if (order && ![OrderStatus.CANCELED].includes(order.status)) {
+            if (order && ![OrderStatus.CANCELED, OrderStatus.TO_FINISH, OrderStatus.SENDED].includes(order.status)) {
 
                 const allOrderToProd = await this.orderToProductRepo.find({ order: { id: order.id } });
 
