@@ -20,6 +20,9 @@ export class OrderEntity {
     @Column({ name: 'ord_status', type: 'integer' })
     status: OrderStatus;
 
+    @Column({ name: 'ord_legal_document', type: 'varchar', nullable: true })
+    cpf: string;
+
     @Column({ name: 'ord_total_value_cents', type: 'text' })
     totalValueCents: string;
 

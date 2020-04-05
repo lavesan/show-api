@@ -1,4 +1,4 @@
-import { IsNumber, IsString, MaxLength, IsOptional, Max } from "class-validator";
+import { IsNumber, IsString, MaxLength, IsOptional, Max, MinLength } from "class-validator";
 
 export class SaveCommentForm {
 
@@ -6,7 +6,8 @@ export class SaveCommentForm {
     userId: number;
 
     @IsString()
-    @MaxLength(200)
+    @MinLength(15)
+    @MaxLength(50)
     briefComment: string;
 
     @IsNumber()

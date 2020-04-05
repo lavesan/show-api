@@ -31,13 +31,24 @@ export class CommentService {
             }, HttpStatus.NOT_FOUND);
         }
 
-        const data = {
+        const comment = await this.findByUserId(user.id);
+
+        if (comment) {
+            return await this.updateComment({ commentId: comment.id, briefComment });
+        }
+
+        const data: any = {
             briefComment,
             user: { id:  userId },
-            product: { id:  productId },
             creationDate: new Date(),
             activePlane: null,
         };
+
+        if (productId) {
+            data.product = {
+                id: productId,
+            };
+        }
 
         return this.commentRepo.save(data);
 
@@ -91,6 +102,10 @@ export class CommentService {
 
     }
 
+    findByUserId(userId: number) {
+        return this.commentRepo.findOne({ user: { id: userId } });
+    }
+
     async findAllFilteredAndPaginated({ take, page }: PaginationForm, userFilter: FilterForm[]): Promise<any> {
 
         const skip = skipFromPage(page);
@@ -112,4 +127,5 @@ export class CommentService {
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
 
     }
+
 }

@@ -27,6 +27,10 @@ export class SaveOrderForm {
     @IsOptional()
     changeValueCents: string;
 
+    @IsString()
+    @IsOptional()
+    cpf: string;
+
     @IsObject()
     receive: SaveScheduledTimeForm;
 

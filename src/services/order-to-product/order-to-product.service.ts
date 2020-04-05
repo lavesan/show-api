@@ -672,9 +672,16 @@ export class OrderToProductService {
 
             const order = await this.orderService.findById(orderId);
 
-            if (![OrderStatus.CANCELED, OrderStatus.TO_FINISH].includes(order.status)) {
+            // , OrderStatus.TO_FINISH
+            if (order && ![OrderStatus.CANCELED].includes(order.status)) {
 
-                const allOrderToProd = this.orderToProductRepo.find();
+                const allOrderToProd = await this.orderToProductRepo.find({ order: { id: order.id } });
+
+                orders.push({
+                    ...order,
+                    products: allOrderToProd.filter(ordToProd => ordToProd.product),
+                    combos: allOrderToProd.filter(ordToProd => ordToProd.combo),
+                });
 
             }
 
