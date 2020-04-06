@@ -160,7 +160,8 @@ export class OrderService {
         const builder = this.orderRepo.createQueryBuilder('ord')
             .leftJoinAndSelect('ord.user', 'use')
             .leftJoinAndSelect('ord.address', 'adr')
-            .leftJoinAndSelect('ord.contact', 'con');
+            .leftJoinAndSelect('ord.contact', 'con')
+            .where('ord_status != :value', { value: 0 });
 
         // Vindo do ecommerce, o usuário só verá os SEUS pedidos
         if (id) {

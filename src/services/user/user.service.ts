@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import { UserEntity } from '../../entities/user.entity';
 import { RegisterUserForm } from '../../model/forms/user/RegisterUserForm';
 import { UserRole, UserStatus } from '../../model/constants/user.constants';
-import { generateHashPwd, comparePwdWithHash } from '../../helpers/auth.helpers';
+import { generateHashPwd, comparePwdWithHash, decodeToken } from '../../helpers/auth.helpers';
 import { LoginUserForm } from 'src/model/forms/user/LoginUserForm';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { paginateResponseSchema, skipFromPage, generateQueryFilter, successRes } from 'src/helpers/response-schema.helpers';
@@ -21,6 +21,8 @@ import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 import { CardService } from '../card/card.service';
 import { IUserLoginReturnedData } from 'src/model/types/user.types';
 import { OrderService } from '../order/order.service';
+import { GetnetService } from '../getnet/getnet.service';
+import { ContactType } from 'src/model/constants/contact.constants';
 const uploadAmazon = require('../../helpers/amazon.helpers');
 
 @Injectable()
@@ -33,6 +35,7 @@ export class UserService {
         private readonly contactService: ContactService,
         private readonly addressService: AddressService,
         private readonly cardService: CardService,
+        private readonly getnetService: GetnetService,
     ) {}
 
     async save(user: RegisterUserForm) {
@@ -108,12 +111,77 @@ export class UserService {
 
     }
 
-    async update(user: Partial<UserEntity>): Promise<UpdateResult> {
+    update(user: Partial<UserEntity>): Promise<UpdateResult> {
+
         const data = {
             ...user,
             updateDate: new Date(),
         }
-        return await this.userRepo.update({ id: user.id }, data);
+        return this.userRepo.update({ id: user.id }, data);
+
+    }
+
+    async userUpdating(userInfo, token: string) {
+
+        const tokenObj = decodeToken(token);
+
+        if (!tokenObj) {
+            throw new HttpException({
+                status: HttpStatus.BAD_REQUEST,
+                message: 'Usuário não encontrado',
+            }, HttpStatus.BAD_REQUEST);
+        }
+
+        const { cards, contact, address, ...userData } = userInfo;
+
+        this.userRepo.update({ id: tokenObj.id }, userData);
+
+        // Remove os cartões que o usuário colocou para deletar
+        const cardToRemove = cards.filter(card => !card.actived);
+
+        for (const card of cardToRemove) {
+
+            const cardDB = await this.cardService.findOneByUserAndCardId({ cardId: card.id, userId: tokenObj.id });
+            if (cardDB) {
+                await this.getnetService.deleteCard(cardDB.getnetId);
+            }
+
+        }
+
+        await this.addressService.update({
+            userId: tokenObj.id,
+            ...address,
+        });
+
+        let savedContact = null;
+
+        if (contact.id) {
+            await this.contactService.update({
+                contactId: contact.id,
+                number: contact.number,
+                ddd: contact.ddd,
+                type: ContactType.CELLPHONE,
+            });
+        } else {
+            savedContact = await this.contactService.save({
+                userId: tokenObj.id,
+                number: contact.number,
+                ddd: contact.ddd,
+                type: ContactType.CELLPHONE,
+            })
+        }
+
+        const userDB = await this.findById(tokenObj.id);
+
+        const cardsIntact = cards.filter(card => card.actived);
+
+        return {
+            ...removePwd(userDB),
+            contacts: savedContact ? [savedContact] : [contact],
+            addresses: [address],
+            cards: cardsIntact,
+        };
+
     }
 
     async findByPayload(payload: any): Promise<any> {

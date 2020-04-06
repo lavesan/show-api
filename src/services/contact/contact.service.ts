@@ -14,11 +14,13 @@ export class ContactService {
     ) {}
 
     findWithToken(tokenAuth: string) {
+
         const tokenObj = decodeToken(tokenAuth);
 
         if (tokenObj) {
             return this.findAllByUserId(tokenObj.id);
         }
+
     }
 
     findAllByUserId(userId: number): Promise<ContactEntity[]> {
@@ -37,13 +39,19 @@ export class ContactService {
 
     }
 
-    update({ contactId, ...contact }: UpdateContactForm): Promise<UpdateResult> {
+    update({ contactId, userId, ...contact }: UpdateContactForm): Promise<UpdateResult> {
+
         const data = {
             ...contact,
             updateDate: new Date(),
         }
 
+        // @ts-ignore
+        delete data.id;
+        console.log('contato: ', data);
+
         return this.contactRepo.update({ id: contactId }, data);
+
     }
 
     delete(contactId: number): Promise<DeleteResult> {

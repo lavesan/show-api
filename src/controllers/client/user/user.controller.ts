@@ -1,4 +1,4 @@
-import { Controller, Delete, Param, Put, Body } from '@nestjs/common';
+import { Controller, Delete, Param, Put, Body, Headers } from '@nestjs/common';
 import { UserService } from 'src/services/user/user.service';
 import { SaveImageForm } from 'src/model/forms/promotion/SaveImageForm';
 
@@ -15,6 +15,11 @@ export class UserController {
     @Put('image')
     updateImage(@Body() body: SaveImageForm) {
         return this.userService.updateImage(body);
+    }
+
+    @Put()
+    updateUser(@Body() body, @Headers('authorization') tokenAuth: string) {
+        return this.userService.userUpdating(body, tokenAuth);
     }
 
 }

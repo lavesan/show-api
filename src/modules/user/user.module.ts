@@ -9,6 +9,7 @@ import { ContactModule } from '../contact/contact.module';
 import { AddressModule } from '../address/address.module';
 import { CardModule } from '../card/card.module';
 import { OrderModule } from '../order/order.module';
+import { GetnetModule } from '../getnet/getnet.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { OrderModule } from '../order/order.module';
       AddressModule,
       UserModule,
       CardModule,
+      GetnetModule,
     ],
     controllers: [UserController, BackofficeUserController],
     providers: [UserService],

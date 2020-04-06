@@ -6,4 +6,5 @@ export interface IUpdateAddress {
     number: string;
     complement: string;
     type: string;
+    district: string;
 }
