@@ -161,7 +161,7 @@ export class OrderService {
             .leftJoinAndSelect('ord.user', 'use')
             .leftJoinAndSelect('ord.address', 'adr')
             .leftJoinAndSelect('ord.contact', 'con')
-            .where('ord_status != :value', { value: 0 });
+            .where('ord_status != :value', { value: OrderStatus.TO_FINISH });
 
         // Vindo do ecommerce, o usuário só verá os SEUS pedidos
         if (id) {
@@ -209,8 +209,19 @@ export class OrderService {
 
     }
 
-    async findById(orderId: number): Promise<OrderEntity> {
-        return await this.orderRepo.findOne({ id: orderId });
+    findById(orderId: number): Promise<OrderEntity> {
+        return this.orderRepo.findOne({ id: orderId });
+    }
+
+    findActivesById(orderId: number): Promise<OrderEntity> {
+        return this.orderRepo.findOne({ id: orderId, status: In(
+            [
+                OrderStatus.MADE,
+                OrderStatus.PREPARING,
+                OrderStatus.SENDING,
+                OrderStatus.SENDED,
+            ]
+        ) });
     }
 
     async findActiveDates(dateInString: string) {

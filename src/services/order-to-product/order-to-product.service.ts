@@ -436,8 +436,10 @@ export class OrderToProductService {
     }
 
     async deleteByOrdersIds(orderIds: number[]) {
-        await this.orderService.deleteMany(orderIds);
-        return this.orderToProductRepo.delete({ order: { id: In(orderIds) } })
+
+        await this.orderToProductRepo.delete({ order: { id: In(orderIds) } })
+        return this.orderService.deleteMany(orderIds);
+
     }
 
     async deleteInvalidOrders() {
@@ -453,11 +455,12 @@ export class OrderToProductService {
         const allToRemove = ordersWaitingApprovall.filter(order => {
 
             const momentDate = moment(order.creationDate);
-            const afterOneDay = momentDate.clone().add(1, 'day');
+            const afterOneDay = momentDate.clone().add(1, 'hours');
+            const today = moment();
 
-            return momentDate.isSameOrAfter(afterOneDay);
+            return today.isSameOrAfter(afterOneDay);
 
-        })
+        });
 
         if (!allToRemove.length) {
             return [];
@@ -515,6 +518,12 @@ export class OrderToProductService {
 
         // 2 - Delete todos os dados do pedido
         await this.deleteByOrdersIds(orderIds);
+
+        return {
+            ordersWaitingApprovall,
+            productsToRefund,
+            combosToRefund,
+        }
 
     }
 
@@ -662,7 +671,11 @@ export class OrderToProductService {
     }
 
     findOneData(orderId: number) {
-        return this.orderToProductRepo.find({ order: { id: orderId } });
+        return this.orderToProductRepo.createQueryBuilder('ordToProd')
+            .leftJoinAndSelect('ordToProd.product', 'product')
+            .leftJoinAndSelect('ordToProd.combo', 'combo')
+            .where('orp_ord_id = :orderId', { orderId })
+            .getMany();
     }
 
     async findAllActiveOrdersByIds(orderIds: number[]) {
@@ -673,9 +686,19 @@ export class OrderToProductService {
 
             const order = await this.orderService.findById(orderId);
 
-            if (order && ![OrderStatus.CANCELED, OrderStatus.TO_FINISH, OrderStatus.SENDED].includes(order.status)) {
+            let showOrder = Boolean(order);
 
-                const allOrderToProd = await this.orderToProductRepo.find({ order: { id: order.id } });
+            if (order && OrderStatus.SENDED === order.status) {
+
+                const momentReceiveDate = moment(order.receiveDate).add(2, 'days');
+                const today = moment();
+                showOrder = momentReceiveDate.isAfter(today);
+
+            }
+
+            if (showOrder) {
+
+                const allOrderToProd = await this.findOneData(order.id);
 
                 orders.push({
                     ...order,

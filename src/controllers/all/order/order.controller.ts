@@ -78,4 +78,9 @@ export class OrderController {
         return this.getnetService.writeAuthTokenOnFile();
     }
 
+    @Get('delete')
+    deleteORder() {
+        return this.orderToProductService.deleteInvalidOrders();
+    }
+
 }
