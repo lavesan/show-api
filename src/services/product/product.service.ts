@@ -161,10 +161,6 @@ export class ProductService {
 
         const tokenObj = decodeToken(token);
 
-        if (!tokenObj || (tokenObj && tokenObj.type === 'ecommerce')) {
-            builder.where('pro.status = :status', { status: ProductStatus.ACTIVE });
-        }
-
         if (skip) {
             builder.skip(skip);
         }
@@ -172,7 +168,7 @@ export class ProductService {
             builder.limit(take);
         }
 
-        const [result, count] = await generateQueryFilter({
+        let [result, count] = await generateQueryFilter({
             like: ['pro_name', 'pro_description', 'cat.name'],
             numbers: ['pro_status', 'cat.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
@@ -182,6 +178,10 @@ export class ProductService {
         })
             .orderBy('pro.id', 'ASC')
             .getManyAndCount();
+
+        if (!tokenObj || (tokenObj && tokenObj.type === 'ecommerce')) {
+            result = result.filter(product => product.status === ProductStatus.ACTIVE);
+        }
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
 
