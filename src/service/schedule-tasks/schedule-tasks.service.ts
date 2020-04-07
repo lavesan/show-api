@@ -23,7 +23,7 @@ export class ScheduleTasksService {
     deleteAllTrashOrders() {
         this.orderToProductService.deleteInvalidOrders()
             .then(res => {
-                this.logger.debug(`Pedidos excluidos: ${JSON.stringify(res)}`);
+                // this.logger.debug(`Pedidos excluidos: ${JSON.stringify(res)}`);
             })
             .catch(err => {
                 this.logger.debug(`Erro: ${JSON.stringify(err)}`);

@@ -63,7 +63,7 @@ export class OrderToProductService {
             }, HttpStatus.BAD_REQUEST);
         }
 
-        const { receive, ...orderBody } = body;
+        const { receive, id, ...orderBody } = body;
 
         const tokenObj = decodeToken(token);
 
@@ -76,6 +76,12 @@ export class OrderToProductService {
             description,
             userName,
         } as any;
+
+        let foundOrder = null;
+
+        if (id) {
+            foundOrder = await this.orderService.findById(id);
+        }
 
         // If the token exists, the user is vinculated with the order
         if (tokenObj) {
@@ -144,7 +150,9 @@ export class OrderToProductService {
 
         if (receive) {
 
-            const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive);
+            // TODO: Talvez seja um erro de schedule. Verificar
+            const scheduleIsTaken = await this.orderService.findOneBydateAndTime({ ...receive, id });
+
             if (scheduleIsTaken) {
                 throw new HttpException({
                     status: HttpStatus.BAD_REQUEST,
@@ -157,6 +165,10 @@ export class OrderToProductService {
             data.receiveDate = fullDate.toDate();
             data.receiveTime = fullDate.toDate();
 
+        }
+
+        if (foundOrder) {
+            await this.deleteInvalidOrders(foundOrder.id);
         }
 
         // Decreases the quantity on stock of the products and products from combos
@@ -442,25 +454,42 @@ export class OrderToProductService {
 
     }
 
-    async deleteInvalidOrders() {
+    async deleteInvalidOrders(orderId?: number) {
 
-        // 3 - Exclui os produtos da order-to-produc
-        // Colects all order to remove
-        const ordersWaitingApprovall = await this.orderService.findAllWaitingApproval();
+        let ordersWaitingApprovall = [];
+
+        if (orderId) {
+            ordersWaitingApprovall = [(await this.orderService.findById(orderId))];
+        }
+
+        if (!ordersWaitingApprovall.length) {
+            // 3 - Exclui os produtos da order-to-produc
+            // Colects all order to remove
+            ordersWaitingApprovall = await this.orderService.findAllWaitingApproval();
+        }
 
         if (!ordersWaitingApprovall.length) {
             return [];
         }
 
-        const allToRemove = ordersWaitingApprovall.filter(order => {
+        let allToRemove = [];
 
-            const momentDate = moment(order.creationDate);
-            const afterOneDay = momentDate.clone().add(1, 'hours');
-            const today = moment();
+        if (orderId) {
+            allToRemove = ordersWaitingApprovall;
+        } else {
 
-            return today.isSameOrAfter(afterOneDay);
+            allToRemove = ordersWaitingApprovall.filter(order => {
 
-        });
+                const momentDate = moment(order.creationDate);
+                const afterOneDay = momentDate.clone().add(1, 'hours');
+                const today = moment();
+
+                return today.isSameOrAfter(afterOneDay);
+
+            });
+
+        }
+
 
         if (!allToRemove.length) {
             return [];
@@ -582,7 +611,6 @@ export class OrderToProductService {
 
             // If there's products in the order exceeding the quantity on stock, returns a error with the products
             if (productsExceedingStock.length) {
-                console.log('aiaia... deu pau')
                 throw new HttpException({
                     status: HttpStatus.BAD_REQUEST,
                     message: 'Há produtos que suas quantidades excedem o que temos em estoque.',

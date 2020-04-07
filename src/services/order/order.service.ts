@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult, In } from 'typeorm';
+import { Repository, UpdateResult, In, Not } from 'typeorm';
 import * as moment from 'moment';
 
 import { OrderEntity } from 'src/entities/order.entity';
@@ -229,7 +229,10 @@ export class OrderService {
         const dateInMoment = moment(dateInString, 'DD/MM/YYYY');
         const translatedDate = dateInMoment.format('MM/DD/YYYY');
 
-        const scheduledDates = await this.orderRepo.find({ receiveDate: translatedDate });
+        const scheduledDates = await this.orderRepo.find({ receiveDate: translatedDate })
+            .catch(err => {
+                return this.orderRepo.find({ receiveDate: dateInString });
+            });
 
         const dayOfWeek = dateInMoment.day();
 
@@ -308,7 +311,8 @@ export class OrderService {
 
     }
 
-    async findOneBydateAndTime({ date, time }: SaveScheduledTimeForm): Promise<undefined | OrderEntity> {
+    // SaveScheduledTimeForm
+    async findOneBydateAndTime({ date, time, id }: any): Promise<undefined | OrderEntity> {
         return await this.orderRepo.findOne({
             status: In([
                 OrderStatus.TO_FINISH,
@@ -317,6 +321,7 @@ export class OrderService {
                 OrderStatus.SENDED,
                 OrderStatus.SENDING,
             ]),
+            id: Not(id),
             receiveDate: date,
             receiveTime: time,
         });
