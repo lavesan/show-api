@@ -311,8 +311,7 @@ export class OrderService {
 
     }
 
-    // SaveScheduledTimeForm
-    async findOneBydateAndTime({ date, time, id }: any): Promise<undefined | OrderEntity> {
+    async findOneBydateAndTime({ date, time }: SaveScheduledTimeForm): Promise<undefined | OrderEntity> {
         return await this.orderRepo.findOne({
             status: In([
                 OrderStatus.TO_FINISH,
@@ -321,7 +320,6 @@ export class OrderService {
                 OrderStatus.SENDED,
                 OrderStatus.SENDING,
             ]),
-            id: Not(id),
             receiveDate: date,
             receiveTime: time,
         });

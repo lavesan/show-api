@@ -77,12 +77,6 @@ export class OrderToProductService {
             userName,
         } as any;
 
-        let foundOrder = null;
-
-        if (id) {
-            foundOrder = await this.orderService.findById(id);
-        }
-
         // If the token exists, the user is vinculated with the order
         if (tokenObj) {
             const user = await this.userService.findById(tokenObj.id);
@@ -148,10 +142,15 @@ export class OrderToProductService {
         data.totalValueCents = floatNumberToOnlyNumberString(totalValue);
         data.totalProductValueCents = floatNumberToOnlyNumberString(totalProductValue);
 
+        // Deletes the unconfirmed order from the user
+        if (id) {
+            await this.deleteInvalidOrders(id);
+        }
+
         if (receive) {
 
             // TODO: Talvez seja um erro de schedule. Verificar
-            const scheduleIsTaken = await this.orderService.findOneBydateAndTime({ ...receive, id });
+            const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive);
 
             if (scheduleIsTaken) {
                 throw new HttpException({
@@ -165,10 +164,6 @@ export class OrderToProductService {
             data.receiveDate = fullDate.toDate();
             data.receiveTime = fullDate.toDate();
 
-        }
-
-        if (foundOrder) {
-            await this.deleteInvalidOrders(foundOrder.id);
         }
 
         // Decreases the quantity on stock of the products and products from combos
