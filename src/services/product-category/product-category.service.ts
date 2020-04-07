@@ -215,4 +215,25 @@ export class ProductCategoryService {
 
     }
 
+    async findAllCategoryByCategoryId(fatherCategoryId: number): Promise<number[]> {
+        return await this.mapSomething([fatherCategoryId]);
+    }
+
+    async mapSomething([categoryId, ...categoriesIds]: number[]): Promise<number[]> {
+
+        if (!categoryId) {
+            return [];
+        }
+
+        const found = await this.productCategoryRepo.find({ subCategoryOfId: categoryId });
+        const foundIds = found.map(cat => cat.id);
+
+        return [
+            categoryId,
+            ...(await this.mapSomething(foundIds)),
+            ...(await this.mapSomething(categoriesIds)),
+        ]
+
+    }
+
 }

@@ -161,12 +161,29 @@ export class ProductService {
 
         const tokenObj = decodeToken(token);
 
+        const filters = Array.isArray(productFilter) ? productFilter : [];
+
+        const catFilterIndex = filters.findIndex(filter => filter.field === 'cat.id');
+
+        if (typeof catFilterIndex === 'number' && catFilterIndex >= 0) {
+
+            const found = filters[catFilterIndex];
+            const ids = await this.productCategoryService.findAllCategoryByCategoryId(Number(found.value));
+
+            filters[catFilterIndex] = {
+                ...filters[catFilterIndex],
+                value: ids,
+            }
+
+        }
+
         builder = generateQueryFilter({
             like: ['pro_name', 'pro_description', 'cat.name'],
-            numbers: ['pro_status', 'cat.id', 'pro_quantity_on_stock'],
+            numbers: ['pro_status', 'pro_quantity_on_stock'],
+            inValues: ['cat.id'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
             dates: ['pro_creation_date'],
-            datas: Array.isArray(productFilter) ? productFilter : [],
+            datas: filters,
             builder,
         })
             .orderBy('pro.id', 'ASC');
