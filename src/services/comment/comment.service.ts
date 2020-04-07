@@ -120,7 +120,7 @@ export class CommentService {
             builder,
         })
             .skip(skip)
-            .limit(take)
+            .take(take)
             .orderBy('com_active_place', 'ASC')
             .getManyAndCount();
 

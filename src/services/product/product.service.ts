@@ -156,19 +156,12 @@ export class ProductService {
     async findAllFilteredPaginate({ take, page }: PaginationForm, productFilter: FilterForm[] = [], token: string = ''): Promise<any> {
 
         const skip = page ? skipFromPage(page) : '';
-        const builder = this.productRepo.createQueryBuilder('pro')
+        let builder = this.productRepo.createQueryBuilder('pro')
             .leftJoinAndSelect('pro.category', 'cat');
 
         const tokenObj = decodeToken(token);
 
-        if (skip) {
-            builder.skip(skip);
-        }
-        if (take) {
-            builder.limit(take);
-        }
-
-        let [result, count] = await generateQueryFilter({
+        builder = generateQueryFilter({
             like: ['pro_name', 'pro_description', 'cat.name'],
             numbers: ['pro_status', 'cat.id', 'pro_quantity_on_stock'],
             valueCentsNumbers: ['pro_actual_value', 'pro_last_value'],
@@ -176,8 +169,17 @@ export class ProductService {
             datas: Array.isArray(productFilter) ? productFilter : [],
             builder,
         })
-            .orderBy('pro.id', 'ASC')
-            .getManyAndCount();
+            .orderBy('pro.id', 'ASC');
+
+        if (typeof skip === 'number') {
+            builder = builder.skip(skip);
+        }
+
+        if (take) {
+            builder = builder.take(10);
+        }
+
+        let [result, count] = await builder.getManyAndCount();
 
         if (!tokenObj || (tokenObj && tokenObj.type === 'ecommerce')) {
             result = result.filter(product => product.status === ProductStatus.ACTIVE);

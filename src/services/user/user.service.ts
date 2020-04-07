@@ -337,11 +337,11 @@ export class UserService {
             builder,
         })
             .skip(skip)
-            .limit(take)
+            .take(take)
             .orderBy('use_id', 'ASC')
             .getManyAndCount();
 
-            result = result.map(user => removePwd(user));
+        result = result.map(user => removePwd(user));
 
         return paginateResponseSchema({ data: result, allResultsCount: count, page, limit: take });
     }

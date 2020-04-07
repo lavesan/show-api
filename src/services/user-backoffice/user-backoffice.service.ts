@@ -203,7 +203,7 @@ export class UserBackofficeService {
             builder,
         })
             .skip(skip)
-            .limit(take)
+            .take(take)
             .orderBy('usb_id', 'ASC')
             .getManyAndCount();
 

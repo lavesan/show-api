@@ -276,7 +276,7 @@ export class PromotionService {
             builder,
         })
             .skip(skip)
-            .limit(take)
+            .take(take)
             .orderBy('prm_id', 'ASC')
             .getManyAndCount();
 

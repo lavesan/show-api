@@ -178,7 +178,7 @@ export class OrderService {
             builder,
         })
             .skip(skip)
-            .limit(take)
+            .take(take)
             .orderBy('ord.receiveDate', 'DESC')
             .getManyAndCount();
 
