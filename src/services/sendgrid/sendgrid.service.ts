@@ -75,14 +75,14 @@ export class SendgridService {
                 ${date ? `
                     <p>Entregaremos assim que possível, no dia <b>${moment(date).format('DD/MM/YYYY')}</b> perto do horário de <b>${moment(time).format('HH:mm')}</b></p>
                 ` : ''}
-                <p>Se você quiser acompanhar seu pedido, é só clicar no botão abaixo!</p>
-                <a
-                    href="http://localhost:3001/pedidos/${orderId}"
-                    target="_blank"
-                    style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
-                    Acompanhar pedido
-                </a>
             `,
+            // <p>Se você quiser acompanhar seu pedido, é só clicar no botão abaixo!</p>
+            // <a
+            //     href="http://localhost:3001/pedidos/${orderId}"
+            //     target="_blank"
+            //     style="border: thin solid #1a5914; background-color: #fff; color: #1a5914; border-radius: 5px; padding: 5px 15px;">
+            //     Acompanhar pedido
+            // </a>
         }),
         default() {},
     };

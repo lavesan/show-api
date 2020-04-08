@@ -714,9 +714,13 @@ export class OrderToProductService {
 
             const order = await this.orderService.findById(orderId);
 
+            if (!order || order.status === OrderStatus.TO_FINISH) {
+                break;
+            }
+
             let showOrder = Boolean(order);
 
-            if (order && OrderStatus.SENDED === order.status) {
+            if ((OrderStatus.SENDED === order.status || OrderStatus.CANCELED === order.status)) {
 
                 const momentReceiveDate = moment(order.receiveDate).add(2, 'days');
                 const today = moment();

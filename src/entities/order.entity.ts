@@ -71,7 +71,7 @@ export class OrderEntity {
     deleteDate: Date;
 
     @Column({ name: 'ord_user_name', type: 'varchar', nullable: true })
-    clientName: string;
+    userName: string;
 
     @ManyToOne(table => UserEntity, user => user.id, { eager: true })
     @JoinColumn({ name: 'ord_use_id' })
