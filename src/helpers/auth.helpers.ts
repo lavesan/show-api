@@ -25,6 +25,10 @@ export const decodeToken = (token: string): IDecodeTokenType | null => {
     return token ? jwtDecode(token) : null;
 }
 
+export const decodeGenericData = data => {
+    return data ? jwtDecode(data) : null;
+}
+
 export const validateToken = ({ secretKey, req, next }) => {
 
     const bearerTokenString: string = req.headers.authorization;

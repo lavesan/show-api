@@ -21,6 +21,7 @@ import { ProductInfoForm } from 'src/model/forms/product/ProductInfoForm';
 import { ComboInfoForm } from 'src/model/forms/combo/ComboInfoForm';
 import { AddressService } from '../address/address.service';
 import { ContactService } from '../contact/contact.service';
+import { decodeGenericData } from 'src/helpers/auth.helpers';
 
 @Injectable()
 export class OrderToProductService {
@@ -261,8 +262,12 @@ export class OrderToProductService {
 
         if (order.type === OrderType.CREDIT && card) {
 
+            const decodedCard = decodeGenericData(card);
+
+            delete decodedCard.iat;
+
             return await this.getnetService.payCredit({
-                card,
+                card: decodedCard,
                 amount: onlyNumberStringToFloatNumber(order.totalValueCents),
                 user: order.user,
                 saveCard,
