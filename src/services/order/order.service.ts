@@ -57,6 +57,8 @@ export class OrderService {
                 date: order.receiveDate,
                 time: order.receiveTime,
                 totalValue: order.totalValueCents,
+                totalProductValueCents: order.totalProductValueCents,
+                totalFreightValuesCents: order.totalFreightValuesCents,
                 changeValue: order.changeValueCents,
                 orderId: order.id,
             });
@@ -376,7 +378,7 @@ export class OrderService {
     }
 
     findManyByUserId(userId: number) {
-        return this.orderRepo.find({ user: { id: userId } });
+        return this.orderRepo.find({ user: { id: userId }, status: Not(In([OrderStatus.TO_FINISH])) });
     }
 
 }

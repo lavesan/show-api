@@ -61,7 +61,7 @@ export class SendgridService {
                 ${password}
             `,
         }),
-        newOrder: ({ to, name, date, time, orderId, changeValue, totalValue }) => ({
+        newOrder: ({ to, name, date, time, orderId, changeValue, totalValue, totalFreightValuesCents, totalProductValueCents }) => ({
             to,
             from: this.from,
             subject: 'Zero veneno loja',
@@ -69,7 +69,9 @@ export class SendgridService {
             html: `
                 <h2>Seu pedido foi feito com sucesso, ${name}!</h2>
                 <div>
-                    <p>Valor do pedido: ${numberStringToReal(totalValue)}</p>
+                    <p>Valor total dos produtos: ${numberStringToReal(totalProductValueCents)}</p>
+                    <p>Valor total do frete: ${numberStringToReal(totalFreightValuesCents)}</p>
+                    <p>Valor total do pedido: ${numberStringToReal(totalValue)}</p>
                     ${changeValue ? `<p>Levar troco para: ${numberStringToReal(changeValue)}</p>` : ''}
                 </div>
                 ${date ? `

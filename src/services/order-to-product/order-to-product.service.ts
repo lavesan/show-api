@@ -150,7 +150,6 @@ export class OrderToProductService {
 
         if (receive) {
 
-            // TODO: Talvez seja um erro de schedule. Verificar
             const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive);
 
             if (scheduleIsTaken) {
@@ -713,6 +712,8 @@ export class OrderToProductService {
         for (const orderId of orderIds) {
 
             const order = await this.orderService.findById(orderId);
+
+            console.log('order: ', order);
 
             if (!order || order.status === OrderStatus.TO_FINISH) {
                 break;
