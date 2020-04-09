@@ -1,4 +1,4 @@
-import { Controller, Post, Query, Body, Put, Get } from '@nestjs/common';
+import { Controller, Post, Query, Body, Put, Get, Delete, Param } from '@nestjs/common';
 import { OrderService } from 'src/services/order/order.service';
 import { PaginationForm } from 'src/model/forms/PaginationForm';
 import { FilterForm } from 'src/model/forms/FilterForm';
@@ -45,8 +45,8 @@ export class OrderBackofficeController {
         return this.orderToProductService.findUserStatistic(userId);
     }
 
-    @Put('delete')
-    deleteORder(@Body() orderId: number) {
+    @Delete('delete/:id')
+    deleteORder(@Param() orderId: number) {
         return this.orderToProductService.deleteInvalidOrders(orderId);
     }
 
