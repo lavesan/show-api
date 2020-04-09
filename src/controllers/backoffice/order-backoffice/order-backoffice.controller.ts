@@ -46,7 +46,7 @@ export class OrderBackofficeController {
     }
 
     @Delete('delete/:id')
-    deleteORder(@Param() orderId: number) {
+    deleteORder(@Param('id') orderId: number) {
         return this.orderToProductService.deleteInvalidOrders(orderId);
     }
 
