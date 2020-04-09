@@ -52,9 +52,6 @@ export default () => {
                         reject(err);
                     }
 
-                    console.log('data: ', data);
-                    console.log('data: ', data.Location);
-
                     resolve(data.Location);
 
                 });

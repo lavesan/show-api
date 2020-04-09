@@ -225,19 +225,19 @@ export class ProductService {
                 const mappedResponse = [];
                 for (const promo of res) {
 
-                    const productsIds = promo.products.map(({ id }) => id);
+                    const productsIds = promo.products.map(({ productId }) => productId);
                     const products = await this.findAllProductsFromPromotions(productsIds);
 
                     const mappedProds = products.map(prod => {
 
-                        const promoProd = promo.products.find(pro => pro.id === prod.id);
+                        const promoProd = promo.products.find(pro => pro.productId === prod.id);
 
                         let returnData = { ...prod };
 
                         if (promoProd) {
                             returnData = {
-                                ...returnData,
                                 ...promoProd,
+                                ...returnData,
                                 promotionalValueCents: promoProd.valueCents,
                             }
                         }

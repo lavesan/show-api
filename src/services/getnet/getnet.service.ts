@@ -247,8 +247,6 @@ export class GetnetService {
             verify_card: false,
         };
 
-        console.log('body: ', card);
-
         const h = this.getAuthHeader();
 
         const req = new Request(`${process.env.GETNET_API_URL}/v1/cards`, {
@@ -609,8 +607,6 @@ export class GetnetService {
                 },
             },
         };
-
-        console.log('body: ', body);
 
         const h = this.getAuthHeader();
 

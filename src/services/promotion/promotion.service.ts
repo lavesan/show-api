@@ -51,6 +51,7 @@ export class PromotionService {
                 .values(insertValues)
                 .execute()
                     .catch(() => {
+                        this.promotionRepo.delete(promotion.id);
                         throw new HttpException({
                             code: HttpStatus.NOT_FOUND,
                             message: 'Um dos produtos não foi encontrado.',
@@ -178,7 +179,7 @@ export class PromotionService {
 
     }
 
-    findAllProductsByPromotionIds(promotionIds: number[]): Promise<ProductPromotionEntity[]> {
+    async findAllProductsByPromotionIds(promotionIds: number[]): Promise<ProductPromotionEntity[]> {
         return this.productPromotionRepo.find({ promotionId: In(promotionIds) });
     }
 
