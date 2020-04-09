@@ -45,4 +45,9 @@ export class OrderBackofficeController {
         return this.orderToProductService.findUserStatistic(userId);
     }
 
+    @Put('delete')
+    deleteORder(@Body() orderId: number) {
+        return this.orderToProductService.deleteInvalidOrders(orderId);
+    }
+
 }

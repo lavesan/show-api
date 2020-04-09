@@ -60,7 +60,7 @@ export class UserEntity {
     @Column({ name: 'use_choosen_role', type: 'integer', nullable: true })
     choosenRole: UserRole;
 
-    @Column({ name: 'use_description', type: 'text' })
+    @Column({ name: 'use_description', type: 'text', nullable: true })
     description: string;
 
     @Column({ name: 'use_term_of_contract', type: 'boolean' })
