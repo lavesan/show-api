@@ -158,8 +158,6 @@ export class OrderToProductService {
                         date: moment(receive.date, 'DD/MM/YYYY').format('MM/DD/YYYY'),
                     }
 
-                    console.log('receiveFormatted: ', receiveFormatted);
-
                     return this.orderService.findOneBydateAndTime(receiveFormatted);
 
                 });
