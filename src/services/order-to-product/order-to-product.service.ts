@@ -150,16 +150,8 @@ export class OrderToProductService {
 
         if (receive) {
 
-            let isBrazilian = true;
-
-            console.log('receive: ', receive);
-
             const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive)
                 .catch(err => {
-
-                    console.log('caiu no erro');
-
-                    isBrazilian = false;
 
                     const receiveFormatted = {
                         ...receive,
@@ -179,13 +171,7 @@ export class OrderToProductService {
                 }, HttpStatus.BAD_REQUEST);
             }
 
-            const parseMomentDate = isBrazilian
-                ? 'DD/MM/YYYY HH:mm'
-                : 'MM/DD/YYYY HH:mm';
-
-            const fullDate = moment(`${receive.date} ${receive.time}`, parseMomentDate);
-
-            console.log('fullDate: ', fullDate);
+            const fullDate = moment(`${receive.date} ${receive.time}`, 'DD/MM/YYYY HH:mm');
 
             data.receiveDate = fullDate.toDate();
             data.receiveTime = fullDate.toDate();
