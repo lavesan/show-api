@@ -150,7 +150,21 @@ export class OrderToProductService {
 
         if (receive) {
 
-            const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive);
+            let isBrazilian = true;
+
+            const scheduleIsTaken = await this.orderService.findOneBydateAndTime(receive)
+                .catch(err => {
+
+                    isBrazilian = false;
+
+                    const receiveFormatted = {
+                        ...receive,
+                        date: moment(receive.date, 'DD/MM/YYYY').format('MM/DD/YYYY'),
+                    }
+
+                    return this.orderService.findOneBydateAndTime(receiveFormatted);
+
+                });
 
             if (scheduleIsTaken) {
                 throw new HttpException({
@@ -159,7 +173,11 @@ export class OrderToProductService {
                 }, HttpStatus.BAD_REQUEST);
             }
 
-            const fullDate = moment(`${receive.date} ${receive.time}`, 'DD/MM/YYYY HH:mm');
+            const parseMomentDate = isBrazilian
+                ? 'DD/MM/YYYY HH:mm'
+                : 'MM/DD/YYYY HH:mm';
+
+            const fullDate = moment(`${receive.date} ${receive.time}`, parseMomentDate);
 
             data.receiveDate = fullDate.toDate();
             data.receiveTime = fullDate.toDate();
@@ -255,7 +273,7 @@ export class OrderToProductService {
         if (!order) {
             throw new HttpException({
                 status: HttpStatus.NOT_FOUND,
-                message: 'O seu pedido passou do tempo limite para ser aceito (1 dia). Por favor, faça outro.',
+                message: 'O seu pedido passou do tempo limite para ser aceito (1 hora). Por favor, faça outro.',
             }, HttpStatus.NOT_FOUND);
         }
 
@@ -712,8 +730,6 @@ export class OrderToProductService {
         for (const orderId of orderIds) {
 
             const order = await this.orderService.findById(orderId);
-
-            console.log('order: ', order);
 
             if (!order || order.status === OrderStatus.TO_FINISH) {
                 break;

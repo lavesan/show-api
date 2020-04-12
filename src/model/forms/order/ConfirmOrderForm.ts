@@ -1,5 +1,4 @@
-import { IsNumber, IsObject, IsOptional, IsBoolean, IsString } from "class-validator";
-import { SaveCardForm } from "../getnet/SaveCardForm";
+import { IsNumber, IsOptional, IsBoolean, IsString } from "class-validator";
 
 export class ConfirmOrderForm {
 
@@ -7,6 +6,7 @@ export class ConfirmOrderForm {
     id: number;
 
     @IsBoolean()
+    @IsOptional()
     saveCard: boolean;
 
     @IsString()
