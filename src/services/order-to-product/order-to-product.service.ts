@@ -506,7 +506,11 @@ export class OrderToProductService {
 
         const orderIds = allToRemove.map(order => order.id);
 
-        const ordersToProducts = await this.orderToProductRepo.find({ order: { id: In(orderIds) } });
+        const ordersToProducts = await this.orderToProductRepo.createQueryBuilder('orp')
+            .where('orp_ord_id IN (:...value)', { value: orderIds })
+            .leftJoinAndSelect('orp.product', 'product')
+            .leftJoinAndSelect('orp.combo', 'combo')
+            .getMany();
 
         const combosToRefund = [];
 
@@ -599,7 +603,7 @@ export class OrderToProductService {
                 if (quantity < 0) {
                     throw new HttpException({
                         status: HttpStatus.EXPECTATION_FAILED,
-                        message: `A quantidade do produtos ${product.name} está negativa. Valor não aceitável.`,
+                        message: `A quantidade do produto ${product.name} está negativa. Valor não aceitável.`,
                     }, HttpStatus.EXPECTATION_FAILED);
                 }
 
