@@ -367,7 +367,6 @@ export class OrderService {
                 OrderStatus.MADE,
                 OrderStatus.PREPARING,
                 OrderStatus.SENDING,
-                OrderStatus.SENDED,
             ]),
         });
 
