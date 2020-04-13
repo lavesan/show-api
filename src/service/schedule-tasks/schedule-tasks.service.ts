@@ -19,15 +19,15 @@ export class ScheduleTasksService {
         this.logger.debug('Autenticação do getnet refeita');
     }
 
-    // @Interval(1800000)
-    // deleteAllTrashOrders() {
-    //     this.orderToProductService.deleteInvalidOrders()
-    //         .then(res => {
-    //             // this.logger.debug(`Pedidos excluidos: ${JSON.stringify(res)}`);
-    //         })
-    //         .catch(err => {
-    //             this.logger.debug(`Erro: ${JSON.stringify(err)}`);
-    //         });
-    // }
+    @Interval(1800000)
+    deleteAllTrashOrders() {
+        this.orderToProductService.deleteInvalidOrders()
+            .then(res => {
+                // this.logger.debug(`Pedidos excluidos: ${JSON.stringify(res)}`);
+            })
+            .catch(err => {
+                this.logger.debug(`Erro: ${JSON.stringify(err)}`);
+            });
+    }
 
 }
