@@ -262,12 +262,25 @@ export class ProductService {
 
     async debitQuantityOnStock(debitProductQuantity: IDebitProductQuantity[]) {
 
+        // Operar com um valor já salvo no BD
+        // for (const { id, quantity } of debitProductQuantity) {
+        //     await this.productRepo.createQueryBuilder()
+        //         .update()
+        //         .set({ quantityOnStock: () => `pro_quantity_on_stock - ${quantity}` })
+        //         .where('id = :id', { id })
+        //         .execute();
+        // }
         for (const { id, quantity } of debitProductQuantity) {
+
+            const product = await this.findById(id);
+            let finalQuantity = product.quantityOnStock - quantity;
+            finalQuantity = Number(finalQuantity.toFixed(3));
             await this.productRepo.createQueryBuilder()
                 .update()
-                .set({ quantityOnStock: () => `pro_quantity_on_stock - ${quantity}` })
+                .set({ quantityOnStock: finalQuantity })
                 .where('id = :id', { id })
                 .execute();
+
         }
 
     }
@@ -275,11 +288,17 @@ export class ProductService {
     async addQuantitiesOnStock(debitProductQuantity: IDebitProductQuantity[]) {
 
         for (const { id, quantity } of debitProductQuantity) {
+
+            const product = await this.findById(id);
+            let finalQuantity = product.quantityOnStock + quantity;
+            finalQuantity = Number(finalQuantity.toFixed(3));
             await this.productRepo.createQueryBuilder()
                 .update()
-                .set({ quantityOnStock: () => `pro_quantity_on_stock + ${quantity}` })
+                .set({ quantityOnStock: finalQuantity })
+                // .set({ quantityOnStock: () => `pro_quantity_on_stock + ${quantity}` })
                 .where('id = :id', { id })
                 .execute();
+
         }
 
     }

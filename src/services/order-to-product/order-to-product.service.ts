@@ -78,6 +78,11 @@ export class OrderToProductService {
             userName,
         } as any;
 
+        // Deletes the unconfirmed order from the user
+        if (id) {
+            await this.deleteInvalidOrders(id);
+        }
+
         // If the token exists, the user is vinculated with the order
         if (tokenObj) {
             const user = await this.userService.findById(tokenObj.id);
@@ -142,11 +147,6 @@ export class OrderToProductService {
 
         data.totalValueCents = floatNumberToOnlyNumberString(totalValue);
         data.totalProductValueCents = floatNumberToOnlyNumberString(totalProductValue);
-
-        // Deletes the unconfirmed order from the user
-        if (id) {
-            await this.deleteInvalidOrders(id);
-        }
 
         if (receive) {
 
@@ -469,6 +469,9 @@ export class OrderToProductService {
 
         if (orderId) {
             ordersWaitingApprovall = [(await this.orderService.findById(orderId))];
+            if (!ordersWaitingApprovall[0]) {
+                return [];
+            }
         }
 
         if (!ordersWaitingApprovall.length) {
@@ -624,9 +627,12 @@ export class OrderToProductService {
 
             // If there's products in the order exceeding the quantity on stock, returns a error with the products
             if (productsExceedingStock.length) {
+
+                const exceedProductsNames = productsExceedingStock.map(prod => prod.name);
+
                 throw new HttpException({
                     status: HttpStatus.BAD_REQUEST,
-                    message: 'Há produtos que suas quantidades excedem o que temos em estoque.',
+                    message: `Os produtos ${exceedProductsNames.join(', ')} excedem o que temos em estoque.`,
                     products: productsExceedingStock,
                 }, HttpStatus.BAD_REQUEST);
             }
