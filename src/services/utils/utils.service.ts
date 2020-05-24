@@ -12,7 +12,25 @@ export class UtilsService {
     ) {}
 
     save(body: UtilsEntity) {
-        return this.userRepo.save(body);
+
+        let data = body;
+        if (body.equalAddress) {
+            data = {
+                ...data,
+                nameWhoReceives: data.name,
+                addressWhoReceives: data.address1,
+                cpfSent: '',
+                address2: data.address1,
+                complement2: data.complement,
+                city2: data.city,
+                state2: data.state,
+                cep2: data.cep,
+                country2: data.country,
+            }
+        }
+
+        return this.userRepo.save(data);
+
     }
 
     findAll(): Promise<UtilsEntity[]> {
