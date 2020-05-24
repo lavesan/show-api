@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { UtilsEntity } from 'src/entities/user.entity';
+import { FilterForm } from 'src/models/FilterForm';
 
 @Injectable()
 export class UtilsService {
@@ -33,8 +34,16 @@ export class UtilsService {
 
     }
 
-    findAll(): Promise<UtilsEntity[]> {
-        return this.userRepo.find();
+    findAll(filter: FilterForm[]): Promise<UtilsEntity[]> {
+
+        const builder = this.userRepo.createQueryBuilder();
+
+        filter.forEach(filt => {
+            builder.where(`${filt.field} ILIKE '%${filt.value}%'`);
+        });
+
+        return builder.getMany();
+
     }
 
 }

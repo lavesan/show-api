@@ -1,6 +1,7 @@
 import { Controller, Get, Body, Post } from '@nestjs/common';
 import { UtilsService } from 'src/services/utils/utils.service';
 import { UtilsEntity } from 'src/entities/user.entity';
+import { FilterForm } from 'src/models/FilterForm';
 
 @Controller('utils')
 export class UtilsController {
@@ -12,9 +13,9 @@ export class UtilsController {
         return this.utilsService.save(body);
     }
 
-    @Get()
-    listAll() {
-        return this.utilsService.findAll();
+    @Post('list')
+    listAll(@Body() filter: FilterForm[]) {
+        return this.utilsService.findAll(filter);
     }
 
 }
